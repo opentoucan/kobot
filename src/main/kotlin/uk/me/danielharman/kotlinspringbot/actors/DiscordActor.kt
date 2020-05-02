@@ -22,6 +22,9 @@ class DiscordActor(val guildService: GuildService) : UntypedAbstractActor() {
     @Value("\${discord.token}")
     private lateinit var token: String
 
+    @Value("\${discord.prefix}")
+    private lateinit var prefix: String
+
     override fun onReceive(message: Any?) = when (message) {
         "start" -> start()
         else -> println("received unknown message")
@@ -41,7 +44,7 @@ class DiscordActor(val guildService: GuildService) : UntypedAbstractActor() {
                 GUILD_EMOJIS,
                 GUILD_MESSAGE_REACTIONS)
                 .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "Doing bot things"))
-                .addEventListeners(MessageListener(guildService))
+                .addEventListeners(MessageListener(guildService, prefix))
 
         jda = builder.build().awaitReady()
 

@@ -16,10 +16,9 @@ import net.dv8tion.jda.api.managers.AudioManager
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.audio.GuildMusicManager
 import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
-import uk.me.danielharman.kotlinspringbot.conf.Settings
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 
-class MessageListener(private val guildService: GuildService) : ListenerAdapter() {
+class MessageListener(private val guildService: GuildService, private val commandPrefix: String) : ListenerAdapter() {
 
     private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
     private val musicManagers: HashMap<Long, GuildMusicManager> = hashMapOf()
@@ -39,7 +38,7 @@ class MessageListener(private val guildService: GuildService) : ListenerAdapter(
 
         logger.info("${author.asTag} said ${message1.contentStripped}")
 
-        if (message1.contentStripped.startsWith(Settings.commandPrefix)) {
+        if (message1.contentStripped.startsWith(commandPrefix)) {
             runCommand(message)
         } else {
             val words = message1.contentStripped
@@ -56,7 +55,7 @@ class MessageListener(private val guildService: GuildService) : ListenerAdapter(
 
     //A lot of the var passing needs to be reworked to be more consistant
     private fun runCommand(message: GuildMessageReceivedEvent) {
-        val cmd = message.message.contentStripped.split(" ")[0].removePrefix(Settings.commandPrefix)
+        val cmd = message.message.contentStripped.split(" ")[0].removePrefix(commandPrefix)
         val channel = message.channel
 
         when (cmd) {
@@ -68,6 +67,7 @@ class MessageListener(private val guildService: GuildService) : ListenerAdapter(
             "save" -> savePhrase(message)
             "play" -> loadAndPlay(message, channel, message.message.contentStripped.split(" ")[1])
             "skip" -> skipTrack(message.channel)
+            "disconnect" -> disconnect(message)
             //TODO add parse check
             "vol" -> vol(message.channel, message.message.contentStripped.split(" ")[1].toInt())
             else -> {
@@ -224,6 +224,11 @@ class MessageListener(private val guildService: GuildService) : ListenerAdapter(
         }
         musicManager.player.volume = newVol
         channel.sendMessage("Setting volume to $newVol").queue()
+    }
+
+    private fun disconnect(message: GuildMessageReceivedEvent) {
+        val audioManager = message.guild.audioManager
+        if (audioManager.isConnected) audioManager.closeAudioConnection()
     }
 
     //endregion
