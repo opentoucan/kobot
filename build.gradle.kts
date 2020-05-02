@@ -20,10 +20,11 @@ configurations {
 
 repositories {
 	mavenCentral()
+	jcenter()
 }
 
 dependencies {
-	implementation(group="com.discord4j", name="discord4j-core", version="3.1.0.M2")
+	implementation("net.dv8tion:JDA:4.1.1_141")
 	implementation(group="com.typesafe.akka", name="akka-actor_2.13", version="2.6.5")
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
