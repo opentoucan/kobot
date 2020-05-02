@@ -5,19 +5,19 @@ import org.springframework.data.mongodb.core.query.Criteria.where
 import org.springframework.data.mongodb.core.query.Query.query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
-import uk.me.danielharman.kotlinspringbot.models.Guild
+import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.repositories.GuildRepository
 
 @Service
 class GuildService(private val guildRepository: GuildRepository, private val mongoTemplate: MongoTemplate) {
 
-    fun getGuild(serverId: String): Guild? = guildRepository.findByGuildId(serverId)
-    fun createGuild(guildId: String): Guild = guildRepository.save(Guild(guildId))
+    fun getGuild(serverId: String): SpringGuild? = guildRepository.findByGuildId(serverId)
+    fun createGuild(guildId: String): SpringGuild = guildRepository.save(SpringGuild(guildId))
 
     fun updateUserCount(guildId: String, userId: String, count: Int) {
         val update = Update()
         update.inc("userWordCounts.$userId", count)
-        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)), update, Guild::class.java)
+        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)), update, SpringGuild::class.java)
     }
 
     fun addWord(guildId: String, words: List<String>) {
@@ -34,7 +34,7 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
         for (word: String in words) {
             update.inc("wordCounts.$word", 1)
         }
-        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)), update, Guild::class.java)
+        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)), update, SpringGuild::class.java)
 
     }
 
@@ -45,7 +45,7 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
         }
         val update = Update()
         update.set("savedCommands.$command", phrase)
-        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)), update, Guild::class.java)
+        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)), update, SpringGuild::class.java)
     }
 
     fun getCommand(guildId: String, command: String): String {
