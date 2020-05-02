@@ -2,11 +2,11 @@ package uk.me.danielharman.kotlinspringbot.repositories
 
 import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
-import uk.me.danielharman.kotlinspringbot.models.ServerStats
+import uk.me.danielharman.kotlinspringbot.models.Guild
 
 @Repository
-interface StatsRepository : MongoRepository<ServerStats, String> {
+interface GuildRepository : MongoRepository<Guild, String> {
 
-    fun findByServerId(serverId: String) : ServerStats?
+    fun findByGuildId(guildId: String) : Guild?
 
 }

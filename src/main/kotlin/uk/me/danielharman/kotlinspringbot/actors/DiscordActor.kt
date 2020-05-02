@@ -4,6 +4,7 @@ import akka.actor.UntypedAbstractActor
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
@@ -13,12 +14,12 @@ import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.conf.Settings.commandPrefix
-import uk.me.danielharman.kotlinspringbot.services.StatsService
+import uk.me.danielharman.kotlinspringbot.services.GuildService
 import kotlin.collections.MutableMap.MutableEntry
 
 @Component
 @Scope("prototype")
-class DiscordActor(val statsService: StatsService) : UntypedAbstractActor() {
+class DiscordActor(val guildService: GuildService) : UntypedAbstractActor() {
 
     private lateinit var jda: JDA
 
@@ -43,7 +44,8 @@ class DiscordActor(val statsService: StatsService) : UntypedAbstractActor() {
                 GUILD_VOICE_STATES,
                 GUILD_EMOJIS,
                 GUILD_MESSAGE_REACTIONS)
-                .addEventListeners(MessageListener(statsService))
+                .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "Doing bot things"))
+                .addEventListeners(MessageListener(guildService))
 
         jda = builder.build().awaitReady()
 
@@ -52,7 +54,7 @@ class DiscordActor(val statsService: StatsService) : UntypedAbstractActor() {
 
 }
 
-class MessageListener(val statsService: StatsService) : ListenerAdapter() {
+class MessageListener(val guildService: GuildService) : ListenerAdapter() {
 
     override fun onGuildMessageReceived(message: GuildMessageReceivedEvent) {
 
@@ -64,12 +66,16 @@ class MessageListener(val statsService: StatsService) : ListenerAdapter() {
         if (message1.contentStripped.startsWith(commandPrefix)) {
             runCommand(message)
         } else {
-            statsService.addWord(message.guild.id, message1.contentStripped
+
+            val words = message1.contentStripped
                     .toLowerCase()
                     .replace(Regex("[.!?,\\\\-]"), "")
                     .split(" ")
                     .filter { s -> s.isNotBlank() }
-            )
+
+            guildService.updateUserCount(message.guild.id, message.author.id, words.size)
+            guildService.addWord(message.guild.id, words)
+
         }
     }
 
@@ -79,16 +85,68 @@ class MessageListener(val statsService: StatsService) : ListenerAdapter() {
 
         when (cmd) {
             "ping" -> channel.sendMessage("pong").complete()
-            "stats" -> channel.sendMessage(createStatsEmbed(message.guild.id)).complete()
+            "stats" -> channel.sendMessage(createStatsEmbed(message.guild.id, message)).complete()
+            "userStats" -> channel.sendMessage(createUserWordCountsEmbed(message.guild.id, message)).complete()
             "info" -> channel.sendMessage(EmbedBuilder().setTitle("Kotlin Discord Bot").appendDescription("This is a Discord bot written in Kotlin using Spring and Akka Actors").build()).complete()
-            else -> channel.sendMessage("No such command $cmd").complete()
+            "save" -> savePhrase(message)
+            else -> {
+                channel.sendMessage(guildService.getCommand(message.guild.id, cmd)).complete()
+            }
         }
 
     }
 
-    private fun createStatsEmbed(serverId: String): MessageEmbed {
+    private fun createUserWordCountsEmbed(guildId: String, message: GuildMessageReceivedEvent): MessageEmbed {
 
-        val stats = statsService.getStats(serverId)
+        val guildName = message.guild.name
+
+        val guild = guildService.getGuild(guildId)
+
+        return if (guild == null) {
+            EmbedBuilder().addField("error", "Could not find stats for server", false).build()
+        } else {
+
+            val comparator = Comparator { entry1: MutableEntry<String, Int>, entry2: MutableEntry<String, Int>
+                ->
+                entry2.value - entry1.value
+            }
+
+            val stringBuilder = StringBuilder()
+
+            guild.userWordCounts.entries.stream().sorted(comparator).limit(20).forEach { (s, i) ->
+                run {
+                    val userById = message.jda.getUserById(s)
+                    if (userById != null) {
+                        stringBuilder.append("${userById.name} - $i\n")
+                    }
+                }
+            }
+
+            EmbedBuilder().appendDescription(stringBuilder.toString()).setColor(0x9d03fc).setTitle("Word said per user for $guildName").build()
+        }
+
+    }
+
+    private fun savePhrase(message: GuildMessageReceivedEvent) {
+        val content = message.message.contentStripped
+
+        val split = content.split(" ")
+
+        if (split.size < 3) {
+            message.channel.sendMessage("Phrase missing").complete()
+            return
+        }
+
+        guildService.saveCommand(message.guild.id, split[1], split.subList(2, split.size).joinToString(" "))
+
+        message.channel.sendMessage("Saved!").complete()
+    }
+
+    private fun createStatsEmbed(guildId: String, message: GuildMessageReceivedEvent): MessageEmbed {
+
+        val guildName = message.guild.name
+
+        val stats = guildService.getGuild(guildId)
 
         return if (stats == null) {
             EmbedBuilder().addField("error", "Could not find stats for server", false).build()
@@ -103,7 +161,7 @@ class MessageListener(val statsService: StatsService) : ListenerAdapter() {
 
             stats.wordCounts.entries.stream().sorted(comparator).limit(20).forEach { (s, i) -> stringBuilder.append("$s - $i\n") }
 
-            EmbedBuilder().appendDescription(stringBuilder.toString()).setColor(0x9d03fc).setTitle("Stats for $serverId").build()
+            EmbedBuilder().appendDescription(stringBuilder.toString()).setColor(0x9d03fc).setTitle("Word counts for $guildName").build()
         }
 
     }
