@@ -55,6 +55,13 @@ class MessageListener(private val guildService: GuildService, private val comman
 
     //A lot of the var passing needs to be reworked to be more consistant
     private fun runCommand(message: GuildMessageReceivedEvent) {
+
+        if(message.author.id == message.jda.selfUser.id || message.author.isBot)
+        {
+            logger.info("Not running command as author is me or a bot")
+            return
+        }
+
         val cmd = message.message.contentStripped.split(" ")[0].removePrefix(commandPrefix)
         val channel = message.channel
 
