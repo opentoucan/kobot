@@ -11,6 +11,8 @@ class SpringGuild(private val guildId: String) {
     var commandCounts: HashMap<String, Int> = hashMapOf()
     var userWordCounts: HashMap<String, Int> = hashMapOf()
     var savedCommands: HashMap<String, String> = hashMapOf()
+    var privilegedUsers : List<String> = listOf()
+    var logChannelId: String = ""
 
     override fun toString(): String {
         return "ChannelStats(guildId='$guildId', id='$id', wordCounts=$wordCounts, commandCounts=$commandCounts)"

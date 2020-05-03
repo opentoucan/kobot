@@ -51,11 +51,35 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
     fun getCommand(guildId: String, command: String): String {
         val guild = getGuild(guildId)
 
-        return if(guild != null){
-            guild.savedCommands[command]?: "No such command"
-        }
-        else
+        return if (guild != null) {
+            guild.savedCommands[command] ?: "No such command"
+        } else
             "Guild was not found"
+    }
+
+    fun setGuildLogChannel(guildId: String, channelId: String) {
+        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
+                Update().set("logChannelId", channelId), SpringGuild::class.java)
+    }
+
+    fun isPrivileged(guildId: String, userId: String): Boolean {
+        val guild = getGuild(guildId) ?: return false
+        return guild.privilegedUsers.contains(userId)
+    }
+
+    fun addPrivileged(guildId: String, userId: String) {
+        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
+                Update().addToSet("privilegedUsers", userId), SpringGuild::class.java)
+    }
+
+    fun removedPrivileged(guildId: String, userId: String) {
+
+        val guild = getGuild(guildId)?: return
+
+        val filter = guild.privilegedUsers.filter { s -> s != userId }
+
+        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
+                Update().set("privilegedUsers", filter), SpringGuild::class.java)
     }
 
 }

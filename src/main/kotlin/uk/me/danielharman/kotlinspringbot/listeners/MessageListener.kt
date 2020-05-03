@@ -17,8 +17,10 @@ import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.audio.GuildMusicManager
 import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
 import uk.me.danielharman.kotlinspringbot.services.GuildService
+import kotlin.system.exitProcess
 
-class MessageListener(private val guildService: GuildService, private val commandPrefix: String) : ListenerAdapter() {
+class MessageListener(private val guildService: GuildService, private val commandPrefix: String,
+                      private val privilegedCommandPrefix: String, private val primaryPrivilegedUserId: String) : ListenerAdapter() {
 
     private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
     private val musicManagers: HashMap<Long, GuildMusicManager> = hashMapOf()
@@ -36,14 +38,18 @@ class MessageListener(private val guildService: GuildService, private val comman
         val author = message.author
         val message1 = message.message
 
-        logger.info("${author.asTag} said ${message1.contentStripped}")
+        logger.info("[${message.guild.name}] #${message.channel.name} <${author.asTag}>: ${message1.contentStripped}")
 
         if (message1.contentStripped.startsWith(commandPrefix)) {
             runCommand(message)
-        } else {
+        }
+        else if (message1.contentStripped.startsWith(privilegedCommandPrefix)) {
+            runPrivilegedCommand(message)
+        }
+        else {
             val words = message1.contentStripped
                     .toLowerCase()
-                    .replace(Regex("[.!?,\\\\-]"), "")
+                    .replace(Regex("[.!?,$\\\\-]"), "")
                     .split(" ")
                     .filter { s -> s.isNotBlank() }
 
@@ -74,12 +80,74 @@ class MessageListener(private val guildService: GuildService, private val comman
             "save" -> savePhrase(message)
             "play" -> loadAndPlay(message, channel, message.message.contentStripped.split(" ")[1])
             "skip" -> skipTrack(message.channel)
-            "disconnect" -> disconnect(message)
+
             //TODO add parse check
             "vol" -> vol(message.channel, message.message.contentStripped.split(" ")[1].toInt())
             else -> {
                 channel.sendMessage(guildService.getCommand(message.guild.id, cmd)).queue()
             }
+        }
+
+    }
+
+    private fun runPrivilegedCommand(message: GuildMessageReceivedEvent) {
+        if(message.author.id == message.jda.selfUser.id || message.author.isBot)
+        {
+            logger.info("Not running command as author is me or a bot")
+            return
+        }
+
+        val cmd = message.message.contentStripped.split(" ")[0].removePrefix(privilegedCommandPrefix)
+        val channel = message.channel
+
+        logger.info(cmd)
+
+        if(message.author.id != primaryPrivilegedUserId
+                && guildService.isPrivileged(message.guild.id, message.author.id)){
+            channel.sendMessage("You are not a privileged user!").queue()
+        }
+
+        when (cmd) {
+            "ping" -> channel.sendMessage("pong").queue()
+            "addprivileged" -> guildService.addPrivileged(message.guild.id, message.message.contentStripped.split(" ")[1])
+            "removeprivileged" -> guildService.removedPrivileged(message.guild.id, message.message.contentStripped.split(" ")[1])
+            "privilegedusers" -> channel.sendMessage(createPrivilegedEmbed(message.guild.id, message)).queue()
+            "disconnect" -> disconnect(message)
+            "quit" -> {
+                channel.sendMessage("Bye!").complete()
+                exitProcess(0)
+            }
+            else -> channel.sendMessage("No such command $cmd").queue()
+        }
+    }
+
+    private fun createPrivilegedEmbed(guildId: String, message: GuildMessageReceivedEvent): MessageEmbed {
+
+        val guildName = message.guild.name
+
+        val guild = guildService.getGuild(guildId)
+
+        return if (guild == null) {
+            EmbedBuilder().addField("error", "Could not find guild", false).build()
+        } else {
+
+            val stringBuilder = StringBuilder()
+
+            val userById = message.jda.getUserById(primaryPrivilegedUserId)
+            if (userById != null) {
+                stringBuilder.append("Bot controller:  ${userById.name} - <$primaryPrivilegedUserId>\n")
+            }
+
+            guild.privilegedUsers.forEach { s ->
+                run {
+                    val name = message.jda.getUserById(s)
+                    if (name != null) {
+                        stringBuilder.append("${name.name} - <$s>\n")
+                    }
+                }
+            }
+
+            EmbedBuilder().appendDescription(stringBuilder.toString()).setColor(0x9d03fc).setTitle("Privileged users for $guildName").build()
         }
 
     }
