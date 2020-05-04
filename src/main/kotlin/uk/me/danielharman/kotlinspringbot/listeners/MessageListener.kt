@@ -16,7 +16,9 @@ import net.dv8tion.jda.api.managers.AudioManager
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.audio.GuildMusicManager
 import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
+import uk.me.danielharman.kotlinspringbot.helpers.Comparators.mapStrIntComparator
 import uk.me.danielharman.kotlinspringbot.services.GuildService
+import java.awt.Color
 import kotlin.system.exitProcess
 
 class MessageListener(private val guildService: GuildService, private val commandPrefix: String,
@@ -33,37 +35,39 @@ class MessageListener(private val guildService: GuildService, private val comman
 
     //region text
 
-    override fun onGuildMessageReceived(message: GuildMessageReceivedEvent) {
+    override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
 
-        val author = message.author
-        val message1 = message.message
+        val author = event.author
+        val message = event.message
+        val guild = event.guild
+        val member = guild.getMember(author)
 
-        logger.info("[${message.guild.name}] #${message.channel.name} <${author.asTag}>: ${message1.contentStripped}")
+        logger.info("[${guild.name}] #${event.channel.name} <${member?.nickname ?: author.asTag}>: ${message.contentDisplay}")
 
-        if (message1.contentStripped.startsWith(commandPrefix)) {
-            runCommand(message)
-        }
-        else if (message1.contentStripped.startsWith(privilegedCommandPrefix)) {
-            runPrivilegedCommand(message)
-        }
-        else {
-            val words = message1.contentStripped
-                    .toLowerCase()
-                    .replace(Regex("[.!?,$\\\\-]"), "")
-                    .split(" ")
-                    .filter { s -> s.isNotBlank() }
+        when {
+            message.contentStripped.startsWith(commandPrefix) -> {
+                runCommand(event)
+            }
+            message.contentStripped.startsWith(privilegedCommandPrefix) -> {
+                runPrivilegedCommand(event)
+            }
+            else -> {
+                val words = message.contentStripped
+                        .toLowerCase()
+                        .replace(Regex("[.!?,$\\\\-]"), "")
+                        .split(" ")
+                        .filter { s -> s.isNotBlank() }
 
-            guildService.updateUserCount(message.guild.id, message.author.id, words.size)
-            guildService.addWord(message.guild.id, words)
+                guildService.updateUserCount(guild.id, author.id, words.size)
+                guildService.addWord(guild.id, words)
 
+            }
         }
     }
 
-    //A lot of the var passing needs to be reworked to be more consistant
     private fun runCommand(message: GuildMessageReceivedEvent) {
 
-        if(message.author.id == message.jda.selfUser.id || message.author.isBot)
-        {
+        if (message.author.id == message.jda.selfUser.id || message.author.isBot) {
             logger.info("Not running command as author is me or a bot")
             return
         }
@@ -73,16 +77,14 @@ class MessageListener(private val guildService: GuildService, private val comman
 
         when (cmd) {
             "ping" -> channel.sendMessage("pong").queue()
-            "stats" -> channel.sendMessage(createStatsEmbed(message.guild.id, message)).queue()
-            "userStats" -> channel.sendMessage(createUserWordCountsEmbed(message.guild.id, message)).queue()
-            "info" -> channel.sendMessage(EmbedBuilder().setTitle("Kotlin Discord Bot")
-                    .appendDescription("This is a Discord bot written in Kotlin using Spring and Akka Actors").build()).queue()
+            "stats" -> channel.sendMessage(createStatsEmbed(message)).queue()
+            "userstats" -> channel.sendMessage(createUserWordCountsEmbed(message)).queue()
+            "info" -> channel.sendMessage(createInfoEmbed()).queue()
             "save" -> savePhrase(message)
             "play" -> loadAndPlay(message, channel, message.message.contentStripped.split(" ")[1])
             "skip" -> skipTrack(message.channel)
-
-            //TODO add parse check
-            "vol" -> vol(message.channel, message.message.contentStripped.split(" ")[1].toInt())
+            "vol" -> setVol(message)
+            "saved", "help" -> todoMessage(message)
             else -> {
                 channel.sendMessage(guildService.getCommand(message.guild.id, cmd)).queue()
             }
@@ -90,9 +92,21 @@ class MessageListener(private val guildService: GuildService, private val comman
 
     }
 
+    private fun createInfoEmbed() = EmbedBuilder()
+            .setTitle("Kotlin Discord Bot")
+            .setColor(Color.blue)
+            .appendDescription("This is a Discord bot written in Kotlin using Spring and Akka Actors")
+            .addField("Chumps", "Daniel Harman\nKieran Dennis", false)
+            .addField("Libraries", "https://akka.io, https://spring.io, https://kotlinlang.org", false)
+            .addField("Source", "https://gitlab.com/update-gitlab.yml/kotlinspringbot", false)
+            .build()
+
+    private fun setVol(message: GuildMessageReceivedEvent) = vol(message.channel, message.message.contentStripped.split(" ")[1].toInt())
+
+    private fun todoMessage(message: GuildMessageReceivedEvent) = message.channel.sendMessage("Not implemented").queue()
+
     private fun runPrivilegedCommand(message: GuildMessageReceivedEvent) {
-        if(message.author.id == message.jda.selfUser.id || message.author.isBot)
-        {
+        if (message.author.id == message.jda.selfUser.id || message.author.isBot) {
             logger.info("Not running command as author is me or a bot")
             return
         }
@@ -100,17 +114,15 @@ class MessageListener(private val guildService: GuildService, private val comman
         val cmd = message.message.contentStripped.split(" ")[0].removePrefix(privilegedCommandPrefix)
         val channel = message.channel
 
-        logger.info(cmd)
-
-        if(message.author.id != primaryPrivilegedUserId
-                && guildService.isPrivileged(message.guild.id, message.author.id)){
+        if (message.author.id != primaryPrivilegedUserId
+                && guildService.isPrivileged(message.guild.id, message.author.id)) {
             channel.sendMessage("You are not a privileged user!").queue()
         }
 
         when (cmd) {
             "ping" -> channel.sendMessage("pong").queue()
-            "addprivileged" -> guildService.addPrivileged(message.guild.id, message.message.contentStripped.split(" ")[1])
-            "removeprivileged" -> guildService.removedPrivileged(message.guild.id, message.message.contentStripped.split(" ")[1])
+            "addprivileged" -> addPrivileged(message)
+            "removeprivileged" -> removePrivileged(message)
             "privilegedusers" -> channel.sendMessage(createPrivilegedEmbed(message.guild.id, message)).queue()
             "disconnect" -> disconnect(message)
             "quit" -> {
@@ -121,10 +133,13 @@ class MessageListener(private val guildService: GuildService, private val comman
         }
     }
 
+    private fun addPrivileged(message: GuildMessageReceivedEvent) = guildService.addPrivileged(message.guild.id, message.message.contentStripped.split(" ")[1])
+
+    private fun removePrivileged(message: GuildMessageReceivedEvent) = guildService.removedPrivileged(message.guild.id, message.message.contentStripped.split(" ")[1])
+
     private fun createPrivilegedEmbed(guildId: String, message: GuildMessageReceivedEvent): MessageEmbed {
 
         val guildName = message.guild.name
-
         val guild = guildService.getGuild(guildId)
 
         return if (guild == null) {
@@ -147,36 +162,34 @@ class MessageListener(private val guildService: GuildService, private val comman
                 }
             }
 
-            EmbedBuilder().appendDescription(stringBuilder.toString()).setColor(0x9d03fc).setTitle("Privileged users for $guildName").build()
+            EmbedBuilder()
+                    .appendDescription(stringBuilder.toString())
+                    .setColor(0x9d03fc)
+                    .setTitle("Privileged users for $guildName")
+                    .build()
         }
 
     }
 
-    private fun createUserWordCountsEmbed(guildId: String, message: GuildMessageReceivedEvent): MessageEmbed {
+    private fun createUserWordCountsEmbed(message: GuildMessageReceivedEvent): MessageEmbed {
 
+        val guildId = message.guild.id
         val guildName = message.guild.name
+        val springGuild = guildService.getGuild(guildId)
 
-        val guild = guildService.getGuild(guildId)
-
-        return if (guild == null) {
+        return if (springGuild == null) {
             EmbedBuilder().addField("error", "Could not find stats for server", false).build()
         } else {
 
-            val comparator = Comparator { entry1: MutableMap.MutableEntry<String, Int>, entry2: MutableMap.MutableEntry<String, Int>
-                ->
-                entry2.value - entry1.value
-            }
-
             val stringBuilder = StringBuilder()
 
-            guild.userWordCounts.entries.stream().sorted(comparator).limit(20).forEach { (s, i) ->
-                run {
-                    val userById = message.jda.getUserById(s)
-                    if (userById != null) {
-                        stringBuilder.append("${userById.name} - $i\n")
+            springGuild.userWordCounts.entries
+                    .stream()
+                    .sorted(mapStrIntComparator)
+                    .limit(20)
+                    .forEach { (s, i) ->
+                        stringBuilder.append("${message.jda.getUserById(s)?.name ?: s} - $i words\n")
                     }
-                }
-            }
 
             EmbedBuilder().appendDescription(stringBuilder.toString()).setColor(0x9d03fc).setTitle("Word said per user for $guildName").build()
         }
@@ -185,7 +198,6 @@ class MessageListener(private val guildService: GuildService, private val comman
 
     private fun savePhrase(message: GuildMessageReceivedEvent) {
         val content = message.message.contentStripped
-
         val split = content.split(" ")
 
         if (split.size < 3) {
@@ -198,26 +210,28 @@ class MessageListener(private val guildService: GuildService, private val comman
         message.channel.sendMessage("Saved!").queue()
     }
 
-    private fun createStatsEmbed(guildId: String, message: GuildMessageReceivedEvent): MessageEmbed {
+    private fun createStatsEmbed(message: GuildMessageReceivedEvent): MessageEmbed {
 
+        val guildId = message.guild.id
         val guildName = message.guild.name
+        val springGuild = guildService.getGuild(guildId)
 
-        val stats = guildService.getGuild(guildId)
-
-        return if (stats == null) {
+        return if (springGuild == null) {
             EmbedBuilder().addField("error", "Could not find stats for server", false).build()
         } else {
 
-            val comparator = Comparator { entry1: MutableMap.MutableEntry<String, Int>, entry2: MutableMap.MutableEntry<String, Int>
-                ->
-                entry2.value - entry1.value
-            }
-
             val stringBuilder = StringBuilder()
 
-            stats.wordCounts.entries.stream().sorted(comparator).limit(20).forEach { (s, i) -> stringBuilder.append("$s - $i\n") }
+            springGuild.wordCounts.entries
+                    .stream()
+                    .sorted(mapStrIntComparator)
+                    .limit(20)
+                    .forEach { (s, i) -> stringBuilder.append("$s - $i\n") }
 
-            EmbedBuilder().appendDescription(stringBuilder.toString()).setColor(0x9d03fc).setTitle("Word counts for $guildName").build()
+            EmbedBuilder()
+                    .appendDescription(stringBuilder.toString())
+                    .setColor(0x9d03fc)
+                    .setTitle("Word counts for $guildName").build()
         }
 
     }
@@ -254,12 +268,14 @@ class MessageListener(private val guildService: GuildService, private val comman
 
         if (voiceState == null) {
             channel.sendMessage("Can't find member voicestate! Are you in a channel?").queue()
+            return
         }
 
-        val voiceChannel = voiceState?.channel
+        val voiceChannel = voiceState.channel
 
         if (voiceChannel == null) {
             channel.sendMessage("Can't find voice channel! Are you in a channel?").queue()
+            return
         }
 
         playerManager.loadItemOrdered(musicManager, trackUrl, NewAudioResultHandler(voiceChannel, musicManager, channel, this))
@@ -278,6 +294,9 @@ class MessageListener(private val guildService: GuildService, private val comman
     }
 
     private fun joinUserVoiceChannel(voiceChannel: VoiceChannel?, audioManager: AudioManager) {
+        if(voiceChannel == null)
+            return
+
         if (!audioManager.isConnected && !audioManager.isAttemptingToConnect) {
             try {
                 audioManager.openAudioConnection(voiceChannel)
@@ -290,12 +309,10 @@ class MessageListener(private val guildService: GuildService, private val comman
     private fun vol(channel: TextChannel, vol: Int) {
         val musicManager = getGuildAudioPlayer(channel.guild)
 
-        var newVol = vol
-
-        if (newVol > 100) {
-            newVol = 100
-        } else if (newVol < 0) {
-            newVol = 0
+        val newVol = when {
+            vol > 100 -> 100
+            vol < 0 -> 0
+            else -> vol
         }
         musicManager.player.volume = newVol
         channel.sendMessage("Setting volume to $newVol").queue()
