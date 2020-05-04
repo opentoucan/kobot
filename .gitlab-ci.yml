@@ -1,0 +1,38 @@
+stages:
+  - build
+  - test
+  - dockerbuild
+  - deployqa
+
+build:
+  stage: build
+  tags:
+    - shell
+  script:
+    - ./gradlew --build-cache assemble
+  artifacts:
+    paths:
+      - build/libs
+
+test:
+  stage: test
+  tags:
+    - shell
+  script: ./gradlew check --info
+
+dockerbuild:
+  stage: dockerbuild
+  tags:
+    - shell 
+    - docker
+  only:
+    - "master"
+  before_script:
+    - "docker --version"
+    - "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
+  script:
+    - "docker build -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_SHA} --pull ."
+    - "docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_SHA}"
+    - "docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest"
+  after_script:
+    - "docker logout ${CI_REGISTRY}"
