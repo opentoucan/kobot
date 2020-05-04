@@ -13,6 +13,8 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.managers.AudioManager
+import org.joda.time.Period
+import org.joda.time.format.PeriodFormatterBuilder
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.audio.GuildMusicManager
 import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
@@ -83,7 +85,8 @@ class MessageListener(private val guildService: GuildService, private val comman
             "save" -> savePhrase(message)
             "play" -> loadAndPlay(message, channel, message.message.contentStripped.split(" ")[1])
             "skip" -> skipTrack(message.channel)
-            "vol" -> setVol(message)
+            "nowplaying", "trackinfo" -> channel.sendMessage(trackInfo(message.channel)).queue()
+            "vol", "volume" -> setVol(message)
             "saved", "help" -> todoMessage(message)
             else -> {
                 channel.sendMessage(guildService.getCommand(message.guild.id, cmd)).queue()
@@ -239,6 +242,40 @@ class MessageListener(private val guildService: GuildService, private val comman
 
 
     //region Audio
+    fun trackInfo(channel: TextChannel): MessageEmbed {
+        val guildAudioPlayer = getGuildAudioPlayer(channel.guild)
+
+        val audioTrack = guildAudioPlayer.player.playingTrack
+                ?: return EmbedBuilder().setTitle("Error").setColor(Color.red)
+                        .setDescription("Not playing anything").build()
+
+        val trackDuration = Period(audioTrack.duration)
+        val playedDuration = Period(audioTrack.position)
+
+        val fmt = PeriodFormatterBuilder()
+                .printZeroAlways()
+                .minimumPrintedDigits(2)
+                .appendHours()
+                .appendSeparator(":")
+                .printZeroAlways()
+                .minimumPrintedDigits(2)
+                .appendMinutes()
+                .appendSeparator(":")
+                .printZeroAlways()
+                .minimumPrintedDigits(2)
+                .appendSeconds()
+                .toFormatter()
+
+        val durationStr = "${fmt.print(playedDuration)}/${fmt.print(trackDuration)}"
+
+        return EmbedBuilder()
+                .setTitle("Music")
+                .setColor(0x2e298f)
+                .addField("Track Title", audioTrack.info.title, false)
+                .addField("Track Author", audioTrack.info.author, false)
+                .addField("Track Length", durationStr, false)
+                .build()
+    }
 
     @Synchronized
     private fun getGuildAudioPlayer(guild: Guild): GuildMusicManager {
@@ -279,7 +316,6 @@ class MessageListener(private val guildService: GuildService, private val comman
         }
 
         playerManager.loadItemOrdered(musicManager, trackUrl, NewAudioResultHandler(voiceChannel, musicManager, channel, this))
-        channel.sendMessage("Queuing $trackUrl").queue()
     }
 
     fun play(voiceChannel: VoiceChannel?, guild: Guild, musicManager: GuildMusicManager, track: AudioTrack) {
@@ -294,8 +330,12 @@ class MessageListener(private val guildService: GuildService, private val comman
     }
 
     private fun joinUserVoiceChannel(voiceChannel: VoiceChannel?, audioManager: AudioManager) {
-        if(voiceChannel == null)
+        if (voiceChannel == null)
             return
+
+//        if(audioManager.isConnected){
+//            audioManager.connectedChannel.
+//        }
 
         if (!audioManager.isConnected && !audioManager.isAttemptingToConnect) {
             try {
