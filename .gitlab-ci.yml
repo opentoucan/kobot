@@ -2,8 +2,7 @@ stages:
   - build
   - test
   - dockerbuild
-  - deployqa
-
+  
 build:
   stage: build
   tags:
