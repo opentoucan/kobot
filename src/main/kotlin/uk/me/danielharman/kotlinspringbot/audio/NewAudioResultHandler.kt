@@ -5,6 +5,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackState
+import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.VoiceChannel
 import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
@@ -16,11 +17,11 @@ class NewAudioResultHandler(private val voiceChannel: VoiceChannel?, private val
 
     override fun trackLoaded(track: AudioTrack) {
         parent.play(voiceChannel, channel.guild, musicManager, track)
-        if(musicManager.player.playingTrack == null
-                || musicManager.player.playingTrack.state == AudioTrackState.FINISHED)
-            channel.sendMessage(parent.trackInfo(channel)).queue()
-        else
             channel.sendMessage("Queued track").queue()
+
+        if(musicManager.player.playingTrack != null)
+            channel.jda.presence.activity = Activity.of(Activity.ActivityType.LISTENING, musicManager.player.playingTrack.info.title)
+
     }
 
     override fun playlistLoaded(playlist: AudioPlaylist) {

@@ -87,7 +87,8 @@ class MessageListener(private val guildService: GuildService, private val comman
             "skip" -> skipTrack(message.channel)
             "nowplaying", "trackinfo" -> channel.sendMessage(trackInfo(message.channel)).queue()
             "vol", "volume" -> setVol(message)
-            "saved", "help" -> todoMessage(message)
+            "saved" -> channel.sendMessage(createSavedCommandsEmbed(message.guild.id)).queue()
+            "help" -> channel.sendMessage(createHelpEmbed()).queue()
             else -> {
                 channel.sendMessage(guildService.getCommand(message.guild.id, cmd)).queue()
             }
@@ -95,7 +96,35 @@ class MessageListener(private val guildService: GuildService, private val comman
 
     }
 
-    private fun createInfoEmbed() = EmbedBuilder()
+    private fun createHelpEmbed(): MessageEmbed = EmbedBuilder()
+            .setColor(Color.green)
+            .setTitle("Commands")
+            .addField("Commands", "ping, stats, userstats, info, save, " +
+                    "play, skip, nowplaying, trackinfo, vol, volume, saved, help", false)
+            .addField("Further help", "${commandPrefix}help <command>", true)
+            .build()
+
+    private fun createSavedCommandsEmbed(guildId: String): MessageEmbed {
+
+        val guild = guildService.getGuild(guildId) ?: return createErrorEmbed("Guild not found")
+
+        val stringBuilder = StringBuilder()
+        guild.savedCommands.entries.forEach { (s, _) -> stringBuilder.append("$s ") }
+
+        return EmbedBuilder()
+                .setTitle("Saved commands")
+                .setColor(0x9d03fc)
+                .setDescription(stringBuilder.toString())
+                .build()
+    }
+
+    private fun createErrorEmbed(message: String): MessageEmbed = EmbedBuilder()
+            .setTitle("Error")
+            .setDescription(message)
+            .setColor(Color.RED)
+            .build()
+
+    private fun createInfoEmbed(): MessageEmbed = EmbedBuilder()
             .setTitle("Kotlin Discord Bot")
             .setColor(Color.blue)
             .appendDescription("This is a Discord bot written in Kotlin using Spring and Akka Actors")
@@ -104,7 +133,8 @@ class MessageListener(private val guildService: GuildService, private val comman
             .addField("Source", "https://gitlab.com/update-gitlab.yml/kotlinspringbot", false)
             .build()
 
-    private fun setVol(message: GuildMessageReceivedEvent) = vol(message.channel, message.message.contentStripped.split(" ")[1].toInt())
+    private fun setVol(message: GuildMessageReceivedEvent)
+            = vol(message.channel, message.message.contentStripped.split(" ")[1].toInt())
 
     private fun todoMessage(message: GuildMessageReceivedEvent) = message.channel.sendMessage("Not implemented").queue()
 
@@ -136,9 +166,11 @@ class MessageListener(private val guildService: GuildService, private val comman
         }
     }
 
-    private fun addPrivileged(message: GuildMessageReceivedEvent) = guildService.addPrivileged(message.guild.id, message.message.contentStripped.split(" ")[1])
+    private fun addPrivileged(message: GuildMessageReceivedEvent)
+            = guildService.addPrivileged(message.guild.id, message.message.contentStripped.split(" ")[1])
 
-    private fun removePrivileged(message: GuildMessageReceivedEvent) = guildService.removedPrivileged(message.guild.id, message.message.contentStripped.split(" ")[1])
+    private fun removePrivileged(message: GuildMessageReceivedEvent)
+            = guildService.removedPrivileged(message.guild.id, message.message.contentStripped.split(" ")[1])
 
     private fun createPrivilegedEmbed(guildId: String, message: GuildMessageReceivedEvent): MessageEmbed {
 
@@ -194,7 +226,11 @@ class MessageListener(private val guildService: GuildService, private val comman
                         stringBuilder.append("${message.jda.getUserById(s)?.name ?: s} - $i words\n")
                     }
 
-            EmbedBuilder().appendDescription(stringBuilder.toString()).setColor(0x9d03fc).setTitle("Word said per user for $guildName").build()
+            EmbedBuilder()
+                    .appendDescription(stringBuilder.toString())
+                    .setColor(0x9d03fc)
+                    .setTitle("Word said per user for $guildName")
+                    .build()
         }
 
     }
@@ -242,7 +278,7 @@ class MessageListener(private val guildService: GuildService, private val comman
 
 
     //region Audio
-    fun trackInfo(channel: TextChannel): MessageEmbed {
+    private fun trackInfo(channel: TextChannel): MessageEmbed {
         val guildAudioPlayer = getGuildAudioPlayer(channel.guild)
 
         val audioTrack = guildAudioPlayer.player.playingTrack
