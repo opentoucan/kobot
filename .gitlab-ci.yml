@@ -50,6 +50,6 @@ deploy:
   script:
     - "docker pull  ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest"
     - "docker pull  ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_SHA}"
-    - "docker service update --image ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_SHA} kotlinBot_bot"
+    - "docker service update --with-registry-auth --image ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_SHA} kotlinBot_bot"
   after_script:
     - "docker logout ${CI_REGISTRY}"
