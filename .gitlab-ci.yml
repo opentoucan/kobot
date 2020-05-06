@@ -2,6 +2,7 @@ stages:
   - build
   - test
   - dockerbuild
+  - deploy
   
 build:
   stage: build
@@ -33,5 +34,22 @@ dockerbuild:
     - "docker build -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_SHA} --pull ."
     - "docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_SHA}"
     - "docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest"
+  after_script:
+    - "docker logout ${CI_REGISTRY}"
+    
+deploy:
+  stage: deploy
+  tags:
+    - ssh
+  only:
+    - "master"
+  before_script:
+    - "docker --version"
+    - "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
+    - "docker stack services kotlinBot"
+  script:
+    - "docker pull  ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest"
+    - "docker pull  ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_SHA}"
+    - "docker service update --image ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_SHA} kotlinBot_bot"
   after_script:
     - "docker logout ${CI_REGISTRY}"
