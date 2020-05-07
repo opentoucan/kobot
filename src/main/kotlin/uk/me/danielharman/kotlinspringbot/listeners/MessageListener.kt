@@ -5,10 +5,7 @@ import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.entities.TextChannel
-import net.dv8tion.jda.api.entities.VoiceChannel
+import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.hooks.ListenerAdapter
@@ -34,6 +31,7 @@ class MessageListener(private val guildService: GuildService, private val comman
         AudioSourceManagers.registerLocalSource(playerManager)
     }
 
+
     //region text
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
 
@@ -43,6 +41,14 @@ class MessageListener(private val guildService: GuildService, private val comman
         val member = guild.getMember(author)
 
         logger.debug("[${guild.name}] #${event.channel.name} <${member?.nickname ?: author.asTag}>: ${message.contentDisplay}")
+
+        if(event.message.isMentioned(event.jda.selfUser, Message.MentionType.USER)){
+            val emotesByName = guild.getEmotesByName("piing", true)
+            if(emotesByName.size >= 1)
+                message.addReaction(emotesByName[0]).queue()
+            else
+                message.addReaction("U+1F621").queue()
+        }
 
         when {
             message.contentStripped.startsWith(commandPrefix) -> {
