@@ -18,7 +18,6 @@ import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
 import uk.me.danielharman.kotlinspringbot.helpers.Comparators.mapStrIntComparator
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 import java.awt.Color
-import kotlin.system.exitProcess
 
 class MessageListener(private val guildService: GuildService, private val commandPrefix: String,
                       private val privilegedCommandPrefix: String, private val primaryPrivilegedUserId: String) : ListenerAdapter() {
@@ -194,9 +193,39 @@ class MessageListener(private val guildService: GuildService, private val comman
             "addprivileged" -> addPrivileged(event)
             "removeprivileged" -> removePrivileged(event)
             "privilegedusers" -> channel.sendMessage(createPrivilegedEmbed(event.guild.id, event)).queue()
+            "purge" -> purgeMessagesPrivileged(event)
             "disconnect" -> disconnect(event)
             else -> channel.sendMessage("No such command $cmd").queue()
         }
+    }
+
+    private fun purgeMessagesPrivileged(event: GuildMessageReceivedEvent) {
+
+        val s = event.message.contentStripped.split(" ")
+
+        if(s.size < 2){
+            event.channel.sendMessage("Number of to delete messages not given.").queue()
+            return
+        }
+
+        val number = s[1].toInt()
+
+        if(number > 50){
+            event.channel.sendMessage("Careful now!").queue()
+            return
+        }
+
+        val messages = event.channel.history.retrievePast(number).complete()
+
+        try {
+            event.channel.purgeMessages(messages)
+        }
+        catch (e: InsufficientPermissionException){
+            event.channel.sendMessage("I don't have permissions to delete messages!").queue()
+            return
+        }
+
+        event.channel.sendMessage("https://cdn.discordapp.com/attachments/554379034750877707/650988065539620874/giphy_1.gif").queue()
     }
 
     private fun addPrivileged(message: GuildMessageReceivedEvent) = guildService.addPrivileged(message.guild.id, message.message.contentStripped.split(" ")[1])
