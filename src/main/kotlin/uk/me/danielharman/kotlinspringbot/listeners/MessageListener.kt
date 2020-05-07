@@ -42,9 +42,9 @@ class MessageListener(private val guildService: GuildService, private val comman
 
         logger.debug("[${guild.name}] #${event.channel.name} <${member?.nickname ?: author.asTag}>: ${message.contentDisplay}")
 
-        if(event.message.isMentioned(event.jda.selfUser, Message.MentionType.USER)){
+        if (event.message.isMentioned(event.jda.selfUser, Message.MentionType.USER)) {
             val emotesByName = guild.getEmotesByName("piing", true)
-            if(emotesByName.size >= 1)
+            if (emotesByName.size >= 1)
                 message.addReaction(emotesByName[0]).queue()
             else
                 message.addReaction("U+1F621").queue()
@@ -87,6 +87,7 @@ class MessageListener(private val guildService: GuildService, private val comman
             "play" -> playMusic(event)
             "pause" -> todoMessage(event)
             "skip" -> skipTrack(event.channel)
+            "avatar" -> showAvatar(event)
             "nowplaying", "trackinfo" -> channel.sendMessage(trackInfo(event.channel)).queue()
             "vol", "volume" -> setVol(event)
             "saved" -> channel.sendMessage(createSavedCommandsEmbed(event.guild.id)).queue()
@@ -98,9 +99,25 @@ class MessageListener(private val guildService: GuildService, private val comman
 
     }
 
-    private fun playMusic(event: GuildMessageReceivedEvent){
+    private fun showAvatar(event: GuildMessageReceivedEvent) {
+        val mentionedUsers = event.message.mentionedUsers
+
+        if (mentionedUsers.size < 0) {
+            event.channel.sendMessage("No users specified").queue()
+        }
+        mentionedUsers.forEach { u ->
+            event.channel.sendMessage(EmbedBuilder()
+                    .setTitle("Avatar")
+                    .setAuthor(u.asTag)
+                    .setImage(u.effectiveAvatarUrl)
+                    .build()
+            ).queue()
+        }
+    }
+
+    private fun playMusic(event: GuildMessageReceivedEvent) {
         val split = event.message.contentStripped.split(" ")
-        if(split.size < 2)
+        if (split.size < 2)
             togglePaused(event)
 
         loadAndPlay(event, event.channel, split[1])
@@ -147,12 +164,12 @@ class MessageListener(private val guildService: GuildService, private val comman
             .setColor(colour)
 
     private fun createInfoEmbed(): MessageEmbed =
-            infoEmbedBuilder(title="Kot Bot")
-            .appendDescription("This is a Discord bot written in Kotlin using Spring and Akka Actors")
-            .addField("Chumps", "Daniel Harman\nKieran Dennis", false)
-            .addField("Libraries", "https://akka.io, https://spring.io, https://kotlinlang.org", false)
-            .addField("Source", "https://gitlab.com/update-gitlab.yml/kotlinspringbot", false)
-            .build()
+            infoEmbedBuilder(title = "Kot Bot")
+                    .appendDescription("This is a Discord bot written in Kotlin using Spring and Akka Actors")
+                    .addField("Chumps", "Daniel Harman\nKieran Dennis", false)
+                    .addField("Libraries", "https://akka.io, https://spring.io, https://kotlinlang.org", false)
+                    .addField("Source", "https://gitlab.com/update-gitlab.yml/kotlinspringbot", false)
+                    .build()
 
     private fun setVol(message: GuildMessageReceivedEvent) = vol(message.channel, message.message.contentStripped.split(" ")[1].toInt())
 
