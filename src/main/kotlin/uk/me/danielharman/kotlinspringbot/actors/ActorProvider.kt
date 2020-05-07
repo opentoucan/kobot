@@ -15,7 +15,7 @@ class ActorProvider(var actorSystem: ActorSystem){
 
     private var actors: HashMap<String, ActorRef> = hashMapOf()
 
-    fun getActor(name: String): ActorRef = actors.getOrDefault(name, null) ?: throw Exception()
+    fun getActor(name: String): ActorRef? = actors[name]
 
     fun createActor(beanName: String, name: String) : ActorRef? {
 

@@ -14,7 +14,7 @@ class SetupService(var actorProvider: ActorProvider) {
     @PostConstruct
     fun setup() {
         logger.info("Setting up")
-        actorProvider.createActor("testActor", "test")
+        //actorProvider.createActor("testActor", "test")
         val createActor : ActorRef? = actorProvider.createActor("discordActor", "discord-actor")
         createActor?.tell("start", ActorRef.noSender())
     }

@@ -19,7 +19,7 @@ class HtmlController {
     @GetMapping("/")
     fun blog(model: Model): String {
 
-        actorProvider.getActor("test").tell("test", ActorRef.noSender());
+        actorProvider.getActor("test")?.tell("test", ActorRef.noSender()) ?: throw Exception()
 
         model["title"] = "Blog"
         return "index.html"
