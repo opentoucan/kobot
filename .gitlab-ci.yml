@@ -25,8 +25,9 @@ dockerbuild:
   tags:
     - shell 
     - docker
-  only:
-    - "master"
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "master"'
+      when: always
   before_script:
     - "docker --version"
     - "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
@@ -41,8 +42,9 @@ deploy:
   stage: deploy
   tags:
     - ssh
-  only:
-    - "master"
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "master"'
+      when: always
   variables:
     GIT_STRATEGY: none
   before_script:
