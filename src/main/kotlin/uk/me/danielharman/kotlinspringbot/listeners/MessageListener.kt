@@ -92,10 +92,25 @@ class MessageListener(private val guildService: GuildService, private val comman
             "getvol", "getvolume" -> channel.sendMessage("${getVol(event)}").queue()
             "saved" -> channel.sendMessage(createSavedCommandsEmbed(event.guild.id)).queue()
             "help" -> channel.sendMessage(createHelpEmbed()).queue()
+            "clear", "cleanup", "cls" -> clearLast50(event, false)
+            "clearAll" -> clearLast50(event, true)
             else -> channel.sendMessage(guildService.getCommand(event.guild.id, cmd)).queue()
 
         }
 
+    }
+
+    private fun clearLast50(event: GuildMessageReceivedEvent, allBots: Boolean) {
+
+        event.channel.history.retrievePast(50).complete().forEach { m ->
+            if ((allBots && m.author.isBot) || m.author.id == event.jda.selfUser.id) {
+                try {
+                    m.delete().queue()
+                } catch (e: InsufficientPermissionException) {
+                    logger.warn("Tried to delete message but had insufficient permissions. ${e.message}")
+                }
+            }
+        }
     }
 
     private fun showAvatar(event: GuildMessageReceivedEvent) {
@@ -204,14 +219,14 @@ class MessageListener(private val guildService: GuildService, private val comman
 
         val s = event.message.contentStripped.split(" ")
 
-        if(s.size < 2){
+        if (s.size < 2) {
             event.channel.sendMessage("Number of to delete messages not given.").queue()
             return
         }
 
         val number = s[1].toInt()
 
-        if(number > 50){
+        if (number > 50) {
             event.channel.sendMessage("Careful now!").queue()
             return
         }
@@ -220,8 +235,7 @@ class MessageListener(private val guildService: GuildService, private val comman
 
         try {
             event.channel.purgeMessages(messages)
-        }
-        catch (e: InsufficientPermissionException){
+        } catch (e: InsufficientPermissionException) {
             event.channel.sendMessage("I don't have permissions to delete messages!").queue()
             return
         }
