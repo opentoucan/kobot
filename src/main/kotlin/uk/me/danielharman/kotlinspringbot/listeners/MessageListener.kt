@@ -87,13 +87,13 @@ class MessageListener(private val guildService: GuildService, private val comman
             "pause" -> todoMessage(event)
             "skip" -> skipTrack(event.channel)
             "avatar" -> showAvatar(event)
-            "nowplaying", "trackinfo" -> channel.sendMessage(trackInfo(event.channel)).queue()
+            "nowplaying", "trackinfo", "playing" -> channel.sendMessage(trackInfo(event.channel)).queue()
             "vol", "volume" -> setVol(event)
+            "getvol", "getvolume" -> channel.sendMessage("${getVol(event)}").queue()
             "saved" -> channel.sendMessage(createSavedCommandsEmbed(event.guild.id)).queue()
             "help" -> channel.sendMessage(createHelpEmbed()).queue()
-            else -> {
-                channel.sendMessage(guildService.getCommand(event.guild.id, cmd)).queue()
-            }
+            else -> channel.sendMessage(guildService.getCommand(event.guild.id, cmd)).queue()
+
         }
 
     }
@@ -126,7 +126,8 @@ class MessageListener(private val guildService: GuildService, private val comman
         val player = getGuildAudioPlayer(event.guild).player
         player.isPaused = !player.isPaused
 
-        todoMessage(event)
+        val message = if (player.isPaused) "Paused" else "Playing"
+        event.channel.sendMessage(message).queue()
     }
 
 
@@ -392,6 +393,7 @@ class MessageListener(private val guildService: GuildService, private val comman
     fun play(voiceChannel: VoiceChannel?, guild: Guild, musicManager: GuildMusicManager, track: AudioTrack) {
         joinUserVoiceChannel(voiceChannel, guild.audioManager)
         musicManager.scheduler.queue(track)
+        musicManager.player.volume = guildService.getVol(guild.id)
     }
 
     private fun skipTrack(channel: TextChannel) {
@@ -413,6 +415,8 @@ class MessageListener(private val guildService: GuildService, private val comman
         }
     }
 
+    private fun getVol(event: GuildMessageReceivedEvent) = guildService.getVol(event.guild.id)
+
     private fun vol(channel: TextChannel, vol: Int) {
         val musicManager = getGuildAudioPlayer(channel.guild)
 
@@ -422,6 +426,7 @@ class MessageListener(private val guildService: GuildService, private val comman
             else -> vol
         }
         musicManager.player.volume = newVol
+        guildService.setVol(channel.guild.id, newVol)
         channel.sendMessage("Setting volume to $newVol").queue()
     }
 

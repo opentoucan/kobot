@@ -17,9 +17,9 @@ class NewAudioResultHandler(private val voiceChannel: VoiceChannel?, private val
 
     override fun trackLoaded(track: AudioTrack) {
         parent.play(voiceChannel, channel.guild, musicManager, track)
-            channel.sendMessage("Queued track").queue()
+        channel.sendMessage("Queued track").queue()
 
-        if(musicManager.player.playingTrack != null)
+        if (musicManager.player.playingTrack != null)
             channel.jda.presence.activity = Activity.of(Activity.ActivityType.LISTENING, musicManager.player.playingTrack.info.title)
 
     }

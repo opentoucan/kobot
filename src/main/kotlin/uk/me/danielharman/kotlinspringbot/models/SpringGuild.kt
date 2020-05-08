@@ -13,6 +13,7 @@ class SpringGuild(private val guildId: String) {
     var savedCommands: HashMap<String, String> = hashMapOf()
     var privilegedUsers : List<String> = listOf()
     var logChannelId: String = ""
+    var volume = 50
 
     override fun toString(): String {
         return "ChannelStats(guildId='$guildId', id='$id', wordCounts=$wordCounts, commandCounts=$commandCounts)"

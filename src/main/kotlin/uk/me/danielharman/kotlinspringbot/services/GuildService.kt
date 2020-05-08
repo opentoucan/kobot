@@ -20,23 +20,21 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
         mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)), update, SpringGuild::class.java)
     }
 
-    fun addWord(guildId: String, words: List<String>) {
-        val stats = getGuild(guildId)
+    fun setVol(guildId: String, vol: Int) {
 
-        if (words.isEmpty())
-            return
+        getGuild(guildId) ?: return
 
-        if (stats == null) {
-            createGuild(guildId)
+        val newVol = when {
+            vol > 100 -> 100
+            vol < 0 -> 0
+            else -> vol
         }
 
-        val update = Update()
-        for (word: String in words) {
-            update.inc("wordCounts.$word", 1)
-        }
-        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)), update, SpringGuild::class.java)
-
+        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
+                Update.update("volume", newVol), SpringGuild::class.java )
     }
+
+    fun getVol(guildId: String) = getGuild(guildId)?.volume ?: 50
 
     fun saveCommand(guildId: String, command: String, phrase: String) {
         val guild = getGuild(guildId)
@@ -74,7 +72,7 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
 
     fun removedPrivileged(guildId: String, userId: String) {
 
-        val guild = getGuild(guildId)?: return
+        val guild = getGuild(guildId) ?: return
 
         val filter = guild.privilegedUsers.filter { s -> s != userId }
 
