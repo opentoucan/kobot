@@ -49,7 +49,7 @@ class DiscordActor(val guildService: GuildService) : UntypedAbstractActor() {
                 GUILD_VOICE_STATES,
                 GUILD_EMOJIS,
                 GUILD_MESSAGE_REACTIONS)
-                .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "Doing bot things"))
+                .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "${prefix}help"))
                 .addEventListeners(MessageListener(guildService, prefix, privilegedCommandPrefix, primaryPrivilegedUserId))
 
         jda = builder.build().awaitReady()
