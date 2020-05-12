@@ -24,6 +24,7 @@ repositories {
 }
 
 dependencies {
+    implementation(group="org.kohsuke", name="wordnet-random-name", version= "1.3")
     implementation(group = "joda-time", name = "joda-time", version = "2.10.6")
     implementation("net.dv8tion:JDA:4.1.1_141")
     implementation("com.sedmelluq:lavaplayer:1.3.47")

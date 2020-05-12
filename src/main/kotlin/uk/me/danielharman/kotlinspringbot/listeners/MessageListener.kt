@@ -17,10 +17,12 @@ import uk.me.danielharman.kotlinspringbot.audio.GuildMusicManager
 import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
 import uk.me.danielharman.kotlinspringbot.helpers.Comparators.mapStrIntComparator
 import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.RequestService
 import java.awt.Color
 
 class MessageListener(private val guildService: GuildService, private val commandPrefix: String,
-                      private val privilegedCommandPrefix: String, private val primaryPrivilegedUserId: String) : ListenerAdapter() {
+                      private val privilegedCommandPrefix: String, private val primaryPrivilegedUserId: String,
+                      private val featureRequestService: RequestService) : ListenerAdapter() {
 
     private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
     private val musicManagers: HashMap<Long, GuildMusicManager> = hashMapOf()
@@ -83,6 +85,7 @@ class MessageListener(private val guildService: GuildService, private val comman
             "userstats" -> channel.sendMessage(createUserWordCountsEmbed(event)).queue()
             "info" -> channel.sendMessage(createInfoEmbed()).queue()
             "save" -> savePhrase(event)
+            "feature", "savefeature", "newfeature", "request" -> feature(event)
             "play" -> playMusic(event)
             "pause" -> todoMessage(event)
             "skip" -> skipTrack(event.channel)
@@ -97,6 +100,25 @@ class MessageListener(private val guildService: GuildService, private val comman
             else -> channel.sendMessage(guildService.getCommand(event.guild.id, cmd)).queue()
 
         }
+
+    }
+
+    private fun feature(event: GuildMessageReceivedEvent) {
+
+        val split = event.message.contentStripped.split(" ")
+
+        if (split.size < 2)
+            return
+
+        val createRequest = featureRequestService.createRequest(split.subList(1, split.size).joinToString(" "))
+
+        event.channel.sendMessage(EmbedBuilder()
+                .setTitle("Feature Request")
+                .addField("Id", createRequest.niceId, false)
+                .addField("Text", createRequest.requestText, false)
+                .addField("Created", createRequest.created.toString(), false)
+                .build())
+                .queue()
 
     }
 

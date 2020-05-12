@@ -11,11 +11,12 @@ import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
 import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.RequestService
 
 
 @Component
 @Scope("prototype")
-class DiscordActor(val guildService: GuildService) : UntypedAbstractActor() {
+class DiscordActor(val guildService: GuildService, val requestService: RequestService) : UntypedAbstractActor() {
 
     private lateinit var jda: JDA
 
@@ -50,7 +51,8 @@ class DiscordActor(val guildService: GuildService) : UntypedAbstractActor() {
                 GUILD_EMOJIS,
                 GUILD_MESSAGE_REACTIONS)
                 .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "${prefix}help"))
-                .addEventListeners(MessageListener(guildService, prefix, privilegedCommandPrefix, primaryPrivilegedUserId))
+                .addEventListeners(MessageListener(guildService, prefix, privilegedCommandPrefix,
+                        primaryPrivilegedUserId, requestService))
 
         jda = builder.build().awaitReady()
 
