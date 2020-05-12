@@ -201,7 +201,7 @@ class MessageListener(private val guildService: GuildService, private val comman
             .setColor(colour)
 
     private fun createInfoEmbed(): MessageEmbed =
-            infoEmbedBuilder(title = "Kot Bot")
+            infoEmbedBuilder(title = "KotBot")
                     .appendDescription("This is a Discord bot written in Kotlin using Spring and Akka Actors")
                     .addField("Chumps", "Daniel Harman\nKieran Dennis", false)
                     .addField("Libraries", "https://akka.io, https://spring.io, https://kotlinlang.org", false)
@@ -341,12 +341,12 @@ class MessageListener(private val guildService: GuildService, private val comman
             return
         }
 
-        if(split[1].contains(Regex("[_.!,?$\\\\-]"))){
+        if (split[1].contains(Regex("[_.!,?$\\\\-]"))) {
             message.channel.sendMessage("Cannot save with that phrase").queue()
             return
         }
 
-        guildService.saveCommand(message.guild.id, split[1], split.subList(2, split.size).joinToString(" ") )
+        guildService.saveCommand(message.guild.id, split[1], split.subList(2, split.size).joinToString(" "))
 
         message.channel.sendMessage("Saved!").queue()
     }
