@@ -333,7 +333,7 @@ class MessageListener(private val guildService: GuildService, private val comman
     }
 
     private fun savePhrase(message: GuildMessageReceivedEvent) {
-        val content = message.message.contentStripped
+        val content = message.message.contentRaw
         val split = content.split(" ")
 
         if (split.size < 3) {
@@ -341,7 +341,12 @@ class MessageListener(private val guildService: GuildService, private val comman
             return
         }
 
-        guildService.saveCommand(message.guild.id, split[1], split.subList(2, split.size).joinToString(" "))
+        if(split[1].contains(Regex("[_.!,?$\\\\-]"))){
+            message.channel.sendMessage("Cannot save with that phrase").queue()
+            return
+        }
+
+        guildService.saveCommand(message.guild.id, split[1], split.subList(2, split.size).joinToString(" ") )
 
         message.channel.sendMessage("Saved!").queue()
     }
