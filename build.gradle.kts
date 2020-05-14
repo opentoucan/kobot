@@ -29,6 +29,7 @@ dependencies {
     implementation("net.dv8tion:JDA:4.1.1_141")
     implementation("com.sedmelluq:lavaplayer:1.3.47")
     implementation(group = "com.typesafe.akka", name = "akka-actor_2.13", version = "2.6.5")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-web")
