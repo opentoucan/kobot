@@ -2,6 +2,7 @@ package uk.me.danielharman.kotlinspringbot.security
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -13,9 +14,24 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
+
+@Profile("secdisabled")
 @Configuration
 @EnableWebSecurity
-class SecurityConfiguration(val userDetailsService: MongoUserDetailsService) : WebSecurityConfigurerAdapter() {
+class SecDisabledSecurityConfiguration : WebSecurityConfigurerAdapter(){
+    override fun configure(http: HttpSecurity) {
+        http
+                .csrf().disable()
+                .authorizeRequests()
+                .anyRequest()
+                .permitAll()
+    }
+}
+
+@Profile("default || dev")
+@Configuration
+@EnableWebSecurity
+class DefaultSecurityConfiguration(val userDetailsService: MongoUserDetailsService) : WebSecurityConfigurerAdapter() {
 
     override fun configure(http: HttpSecurity) {
         http
@@ -50,7 +66,7 @@ class SecurityConfiguration(val userDetailsService: MongoUserDetailsService) : W
 
     class AuthFailureHandler : AuthenticationFailureHandler {
         override fun onAuthenticationFailure(request: HttpServletRequest, response: HttpServletResponse, exception: AuthenticationException) {
-            response.status = 302
+            response.status = 401
             response.sendRedirect("login.html?error=failedAuth")
         }
 

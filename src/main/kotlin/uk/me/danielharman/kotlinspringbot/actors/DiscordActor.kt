@@ -34,12 +34,14 @@ class DiscordActor(val guildService: GuildService, val requestService: RequestSe
 
     override fun onReceive(message: Any?) = when (message) {
         "start" -> start()
+        "stop" -> stop()
+        "restart" -> restart()
         else -> println("received unknown message")
     }
 
     fun start() {
 
-        logger.info("Starting discord")
+        logger.info("Starting discord actor")
 
         val builder: JDABuilder = JDABuilder.create(
                 token,
@@ -55,8 +57,18 @@ class DiscordActor(val guildService: GuildService, val requestService: RequestSe
                         primaryPrivilegedUserId, requestService))
 
         jda = builder.build().awaitReady()
+    }
 
-        logger.debug("End")
+    fun stop() {
+        logger.info("Shutting down Discord")
+        jda.shutdown()
+        logger.info("Shutdown complete")
+    }
+
+    fun restart() {
+        logger.info("Attempting to restart discord")
+        stop()
+        start()
     }
 
 }
