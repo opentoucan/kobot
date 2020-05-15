@@ -43,6 +43,10 @@ class MessageListener(private val guildService: GuildService, private val comman
 
         logger.debug("[${guild.name}] #${event.channel.name} <${member?.nickname ?: author.asTag}>: ${message.contentDisplay}")
 
+        //Never parse a bot message
+        if(author.isBot)
+            return
+
         if (event.message.isMentioned(event.jda.selfUser, Message.MentionType.USER)) {
             val emotesByName = guild.getEmotesByName("piing", true)
             if (emotesByName.size >= 1)
@@ -64,6 +68,9 @@ class MessageListener(private val guildService: GuildService, private val comman
                         .replace(Regex("[.!?,$\\\\-]"), "")
                         .split(" ")
                         .filter { s -> s.isNotBlank() }
+
+                if(words.size == 1 && words[0] == "lol")
+                    event.channel.sendMessage("lol").queue()
 
                 guildService.updateUserCount(guild.id, author.id, words.size)
             }
