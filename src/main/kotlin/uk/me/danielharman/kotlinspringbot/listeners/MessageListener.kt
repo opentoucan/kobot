@@ -132,7 +132,10 @@ class MessageListener(private val guildService: GuildService, private val comman
     private fun clearLast50(event: GuildMessageReceivedEvent, allBots: Boolean) {
 
         event.channel.history.retrievePast(50).complete().forEach { m ->
-            if ((allBots && m.author.isBot) || m.author.id == event.jda.selfUser.id) {
+            if ((allBots && m.author.isBot)
+                    || m.author.id == event.jda.selfUser.id
+                    || m.contentStripped.startsWith(commandPrefix)
+                    || m.contentStripped.startsWith(privilegedCommandPrefix)) {
                 try {
                     m.delete().queue()
                 } catch (e: InsufficientPermissionException) {
