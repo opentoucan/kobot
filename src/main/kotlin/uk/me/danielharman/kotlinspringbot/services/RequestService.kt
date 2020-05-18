@@ -11,6 +11,6 @@ class RequestService(private val requestRepository: RequestRepository) {
 
     fun findById(id: String) = requestRepository.findByNiceId(id)
 
-    fun createRequest(request: String) : FeatureRequest = requestRepository.save(FeatureRequest(request))
+    fun createRequest(request: String, userId: String) : FeatureRequest = requestRepository.save(FeatureRequest(request, userId))
 
 }

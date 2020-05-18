@@ -44,7 +44,7 @@ class MessageListener(private val guildService: GuildService, private val comman
         logger.debug("[${guild.name}] #${event.channel.name} <${member?.nickname ?: author.asTag}>: ${message.contentDisplay}")
 
         //Never parse a bot message
-        if(author.isBot)
+        if (author.isBot)
             return
 
         if (event.message.isMentioned(event.jda.selfUser, Message.MentionType.USER)) {
@@ -69,7 +69,7 @@ class MessageListener(private val guildService: GuildService, private val comman
                         .split(" ")
                         .filter { s -> s.isNotBlank() }
 
-                if(words.size == 1 && words[0] == "lol")
+                if (words.size == 1 && words[0] == "lol")
                     event.channel.sendMessage("lol").queue()
 
                 guildService.updateUserCount(guild.id, author.id, words.size)
@@ -93,6 +93,8 @@ class MessageListener(private val guildService: GuildService, private val comman
             "info" -> channel.sendMessage(createInfoEmbed()).queue()
             "save" -> savePhrase(event)
             "feature", "savefeature", "newfeature", "request" -> feature(event)
+            "features", "requests" -> features(event)
+            "getfeature", "getrequest" -> getFeature(event)
             "play" -> playMusic(event)
             "pause" -> todoMessage(event)
             "skip" -> skipTrack(event.channel)
@@ -105,9 +107,7 @@ class MessageListener(private val guildService: GuildService, private val comman
             "clear", "cleanup", "cls" -> clearLast50(event, false)
             "clearAll" -> clearLast50(event, true)
             else -> channel.sendMessage(guildService.getCommand(event.guild.id, cmd)).queue()
-
         }
-
     }
 
     private fun feature(event: GuildMessageReceivedEvent) {
@@ -117,17 +117,62 @@ class MessageListener(private val guildService: GuildService, private val comman
         if (split.size < 2)
             return
 
-        val createRequest = featureRequestService.createRequest(split.subList(1, split.size).joinToString(" "))
+        val createRequest = featureRequestService.createRequest(split.subList(1, split.size).joinToString(" "),
+                event.author.id)
 
-        event.channel.sendMessage(EmbedBuilder()
+
+        val embedBuilder = EmbedBuilder()
+
+        var nickname = "Unknown"
+        if(!createRequest.userId.isBlank())
+            nickname = event.guild.getMemberById(createRequest.userId)?.nickname ?: "Unknown"
+
+        embedBuilder
                 .setTitle("Feature Request")
                 .addField("Id", createRequest.niceId, false)
                 .addField("Text", createRequest.requestText, false)
                 .addField("Created", createRequest.created.toString(), false)
-                .build())
-                .queue()
+                .addField("Status", createRequest.status.name, false)
+                .addField("Requester", nickname , false)
 
+        event.channel.sendMessage(embedBuilder.build()).queue()
     }
+
+    private fun getFeature(event: GuildMessageReceivedEvent) {
+
+        val split = event.message.contentStripped.split(" ")
+
+        if (split.size < 2)
+            return
+
+        val createRequest = featureRequestService.findById(split[1])
+
+        val embedBuilder = EmbedBuilder()
+
+        if (createRequest == null) {
+            embedBuilder.setTitle("Error").setDescription("No such request ${split[1]}")
+        } else {
+
+            var nickname = "Unknown"
+            if(!createRequest.userId.isBlank())
+                nickname = event.guild.getMemberById(createRequest.userId)?.nickname ?: "Unknown"
+
+            embedBuilder
+                    .setTitle("Feature Request")
+                    .addField("Id", createRequest.niceId, false)
+                    .addField("Text", createRequest.requestText, false)
+                    .addField("Created", createRequest.created.toString(), false)
+                    .addField("Status", createRequest.status.name, false)
+                    .addField("Requester", nickname , false)
+
+        }
+        event.channel.sendMessage(embedBuilder.build()).queue()
+    }
+
+    private fun features(event: GuildMessageReceivedEvent) =
+            event.channel.sendMessage(EmbedBuilder().setDescription(
+                    featureRequestService.getRequests().fold("") { acc, s -> "$acc ${s.niceId}," }).build()).queue()
+
 
     private fun clearLast50(event: GuildMessageReceivedEvent, allBots: Boolean) {
 
