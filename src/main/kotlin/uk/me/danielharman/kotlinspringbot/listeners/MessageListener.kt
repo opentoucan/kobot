@@ -16,12 +16,15 @@ import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.audio.GuildMusicManager
 import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
 import uk.me.danielharman.kotlinspringbot.helpers.Comparators.mapStrIntComparator
+import uk.me.danielharman.kotlinspringbot.listeners.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.listeners.helpers.Embeds.createHelpEmbed
+import uk.me.danielharman.kotlinspringbot.listeners.helpers.Embeds.createInfoEmbed
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 import uk.me.danielharman.kotlinspringbot.services.RequestService
 import java.awt.Color
 
 class MessageListener(private val guildService: GuildService, private val commandPrefix: String,
-                      private val privilegedCommandPrefix: String, private val primaryPrivilegedUserId: String,
+                      private val privilegedCommandPrefix: String,
                       private val featureRequestService: RequestService) : ListenerAdapter() {
 
     private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
@@ -31,7 +34,6 @@ class MessageListener(private val guildService: GuildService, private val comman
         AudioSourceManagers.registerRemoteSources(playerManager)
         AudioSourceManagers.registerLocalSource(playerManager)
     }
-
 
     //region text
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
@@ -58,9 +60,6 @@ class MessageListener(private val guildService: GuildService, private val comman
         when {
             message.contentStripped.startsWith(commandPrefix) -> {
                 runCommand(event)
-            }
-            message.contentStripped.startsWith(privilegedCommandPrefix) -> {
-                runPrivilegedCommand(event)
             }
             else -> {
                 val words = message.contentStripped
@@ -103,7 +102,7 @@ class MessageListener(private val guildService: GuildService, private val comman
             "vol", "volume" -> setVol(event)
             "getvol", "getvolume" -> channel.sendMessage("${getVol(event)}").queue()
             "saved" -> channel.sendMessage(createSavedCommandsEmbed(event.guild.id)).queue()
-            "help" -> channel.sendMessage(createHelpEmbed()).queue()
+            "help" -> channel.sendMessage(createHelpEmbed(commandPrefix)).queue()
             "clear", "cleanup", "cls" -> clearLast50(event, false)
             "clearAll" -> clearLast50(event, true)
             else -> channel.sendMessage(guildService.getCommand(event.guild.id, cmd)).queue()
@@ -223,17 +222,9 @@ class MessageListener(private val guildService: GuildService, private val comman
     }
 
 
-    private fun createHelpEmbed(): MessageEmbed = EmbedBuilder()
-            .setColor(Color.green)
-            .setTitle("Commands")
-            .addField("Commands", "ping, userstats, info, save, " +
-                    "play, skip, nowplaying, trackinfo, vol, volume, saved, help", false)
-            .addField("Further help", "${commandPrefix}help <command>", true)
-            .build()
+    fun createSavedCommandsEmbed(guildId: String): MessageEmbed {
 
-    private fun createSavedCommandsEmbed(guildId: String): MessageEmbed {
-
-        val guild = guildService.getGuild(guildId) ?: return createErrorEmbed("Guild not found")
+        val guild = guildService.getGuild(guildId) ?: return Embeds.createErrorEmbed("Guild not found")
 
         val stringBuilder = StringBuilder()
         guild.savedCommands.entries.forEach { (s, _) -> stringBuilder.append("$s ") }
@@ -245,118 +236,10 @@ class MessageListener(private val guildService: GuildService, private val comman
                 .build()
     }
 
-    private fun createErrorEmbed(message: String): MessageEmbed = EmbedBuilder()
-            .setTitle("Error")
-            .setDescription(message)
-            .setColor(Color.RED)
-            .build()
-
-    private fun infoEmbedBuilder(title: String = "Info", colour: Color = Color.blue) = EmbedBuilder()
-            .setTitle(title)
-            .setColor(colour)
-
-    private fun createInfoEmbed(): MessageEmbed =
-            infoEmbedBuilder(title = "KotBot")
-                    .appendDescription("This is a Discord bot written in Kotlin using Spring and Akka Actors")
-                    .addField("Chumps", "Daniel Harman\nKieran Dennis", false)
-                    .addField("Libraries", "https://akka.io, https://spring.io, https://kotlinlang.org", false)
-                    .addField("Source", "https://gitlab.com/update-gitlab.yml/kotlinspringbot", false)
-                    .build()
 
     private fun setVol(message: GuildMessageReceivedEvent) = vol(message.channel, message.message.contentStripped.split(" ")[1].toInt())
 
     private fun todoMessage(message: GuildMessageReceivedEvent) = message.channel.sendMessage("Not implemented").queue()
-
-    private fun runPrivilegedCommand(event: GuildMessageReceivedEvent) {
-        if (event.author.id == event.jda.selfUser.id || event.author.isBot) {
-            logger.info("Not running command as author is me or a bot")
-            return
-        }
-
-        val cmd = event.message.contentStripped.split(" ")[0].removePrefix(privilegedCommandPrefix)
-        val channel = event.channel
-
-        if (event.author.id != primaryPrivilegedUserId
-                && guildService.isPrivileged(event.guild.id, event.author.id)) {
-            channel.sendMessage("You are not a privileged user!").queue()
-        }
-
-        when (cmd) {
-            "ping" -> channel.sendMessage("pong").queue()
-            "addprivileged" -> addPrivileged(event)
-            "removeprivileged" -> removePrivileged(event)
-            "privilegedusers" -> channel.sendMessage(createPrivilegedEmbed(event.guild.id, event)).queue()
-            "purge" -> purgeMessagesPrivileged(event)
-            "disconnect" -> disconnect(event)
-            else -> channel.sendMessage("No such command $cmd").queue()
-        }
-    }
-
-    private fun purgeMessagesPrivileged(event: GuildMessageReceivedEvent) {
-
-        val s = event.message.contentStripped.split(" ")
-
-        if (s.size < 2) {
-            event.channel.sendMessage("Number of to delete messages not given.").queue()
-            return
-        }
-
-        val number = s[1].toInt()
-
-        if (number > 50) {
-            event.channel.sendMessage("Careful now!").queue()
-            return
-        }
-
-        val messages = event.channel.history.retrievePast(number).complete()
-
-        try {
-            event.channel.purgeMessages(messages)
-        } catch (e: InsufficientPermissionException) {
-            event.channel.sendMessage("I don't have permissions to delete messages!").queue()
-            return
-        }
-
-        event.channel.sendMessage("https://cdn.discordapp.com/attachments/554379034750877707/650988065539620874/giphy_1.gif").queue()
-    }
-
-    private fun addPrivileged(message: GuildMessageReceivedEvent) = guildService.addPrivileged(message.guild.id, message.message.contentStripped.split(" ")[1])
-
-    private fun removePrivileged(message: GuildMessageReceivedEvent) = guildService.removedPrivileged(message.guild.id, message.message.contentStripped.split(" ")[1])
-
-    private fun createPrivilegedEmbed(guildId: String, message: GuildMessageReceivedEvent): MessageEmbed {
-
-        val guildName = message.guild.name
-        val guild = guildService.getGuild(guildId)
-
-        return if (guild == null) {
-            createErrorEmbed("Could not find data for $guildName")
-        } else {
-
-            val stringBuilder = StringBuilder()
-
-            val userById = message.jda.getUserById(primaryPrivilegedUserId)
-            if (userById != null) {
-                stringBuilder.append("Bot controller:  ${userById.name} - <$primaryPrivilegedUserId>\n")
-            }
-
-            guild.privilegedUsers.forEach { s ->
-                run {
-                    val name = message.jda.getUserById(s)
-                    if (name != null) {
-                        stringBuilder.append("${name.name} - <$s>\n")
-                    }
-                }
-            }
-
-            EmbedBuilder()
-                    .appendDescription(stringBuilder.toString())
-                    .setColor(0x9d03fc)
-                    .setTitle("Privileged users for $guildName")
-                    .build()
-        }
-
-    }
 
     private fun createUserWordCountsEmbed(message: GuildMessageReceivedEvent): MessageEmbed {
 

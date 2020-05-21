@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
+import uk.me.danielharman.kotlinspringbot.listeners.AdminMessageListener
 import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 import uk.me.danielharman.kotlinspringbot.services.RequestService
@@ -53,8 +54,10 @@ class DiscordActor(val guildService: GuildService, val requestService: RequestSe
                 GUILD_EMOJIS,
                 GUILD_MESSAGE_REACTIONS)
                 .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "${prefix}help"))
-                .addEventListeners(MessageListener(guildService, prefix, privilegedCommandPrefix,
+                .addEventListeners(AdminMessageListener(guildService, privilegedCommandPrefix,
                         primaryPrivilegedUserId, requestService))
+                .addEventListeners(MessageListener(guildService, prefix, privilegedCommandPrefix,
+                        requestService))
 
         jda = builder.build().awaitReady()
     }

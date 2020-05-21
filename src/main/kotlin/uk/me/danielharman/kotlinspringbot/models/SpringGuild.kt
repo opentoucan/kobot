@@ -2,7 +2,7 @@ package uk.me.danielharman.kotlinspringbot.models
 
 import org.springframework.data.annotation.Id
 
-class SpringGuild(private val guildId: String) {
+data class SpringGuild(private val guildId: String) {
 
     @Id
     private lateinit var id: String
