@@ -28,8 +28,9 @@ class AdminMessageListener(private val guildService: GuildService,
             val channel = event.channel
 
             if (event.author.id != primaryAdminUserId
-                    && guildService.isPrivileged(event.guild.id, event.author.id)) {
+                    && !guildService.isPrivileged(event.guild.id, event.author.id)) {
                 channel.sendMessage("You are not an admin!").queue()
+                return
             }
 
             when (cmd) {
