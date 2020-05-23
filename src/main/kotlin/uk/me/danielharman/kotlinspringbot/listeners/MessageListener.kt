@@ -207,9 +207,10 @@ class MessageListener(private val guildService: GuildService, private val comman
 
     private fun playMusic(event: GuildMessageReceivedEvent) {
         val split = event.message.contentStripped.split(" ")
-        if (split.size < 2)
+        if (split.size < 2) {
             togglePaused(event)
-
+            return
+        }
         loadAndPlay(event, event.channel, split[1])
     }
 
