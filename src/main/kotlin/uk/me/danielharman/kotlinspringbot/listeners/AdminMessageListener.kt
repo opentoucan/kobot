@@ -65,7 +65,7 @@ class AdminMessageListener(private val guildService: GuildService,
         val messages = event.channel.history.retrievePast(number).complete()
 
         try {
-            event.channel.purgeMessages(messages)
+           event.channel.purgeMessages(messages)
         } catch (e: InsufficientPermissionException) {
             event.channel.sendMessage("I don't have permissions to delete messages!").queue()
             return
@@ -74,9 +74,15 @@ class AdminMessageListener(private val guildService: GuildService,
         event.channel.sendMessage("https://cdn.discordapp.com/attachments/554379034750877707/650988065539620874/giphy_1.gif").queue()
     }
 
-    private fun addAdmin(message: GuildMessageReceivedEvent) = guildService.addPrivileged(message.guild.id, message.message.contentStripped.split(" ")[1])
+    private fun addAdmin(message: GuildMessageReceivedEvent) {
+        message.message.mentionedUsers.forEach { u -> guildService.addPrivileged(message.guild.id, u.id) }
+        message.channel.sendMessage("Added ${message.message.mentionedUsers}").queue()
+    }
 
-    private fun removeAdmin(message: GuildMessageReceivedEvent) = guildService.removedPrivileged(message.guild.id, message.message.contentStripped.split(" ")[1])
+    private fun removeAdmin(message: GuildMessageReceivedEvent) {
+        message.message.mentionedUsers.forEach { u -> guildService.removedPrivileged(message.guild.id, u.id) }
+        message.channel.sendMessage("Removed ${message.message.mentionedUsers}").queue()
+    }
 
     private fun createAdminUsersEmbed(message: GuildMessageReceivedEvent): MessageEmbed {
 
@@ -89,18 +95,10 @@ class AdminMessageListener(private val guildService: GuildService,
 
             val stringBuilder = StringBuilder()
 
-            val userById = message.jda.getUserById(primaryAdminUserId)
-            if (userById != null) {
-                stringBuilder.append("Bot controller:  ${userById.name} - <$primaryAdminUserId>\n")
-            }
+            stringBuilder.append("Bot controller:  ${message.jda.getUserById(primaryAdminUserId)?.asTag ?: primaryAdminUserId}\n")
 
             guild.privilegedUsers.forEach { s ->
-                run {
-                    val name = message.jda.getUserById(s)
-                    if (name != null) {
-                        stringBuilder.append("${name.name} - <$s>\n")
-                    }
-                }
+                stringBuilder.append(message.jda.getUserById(s)?.asTag ?: s)
             }
 
             EmbedBuilder()
