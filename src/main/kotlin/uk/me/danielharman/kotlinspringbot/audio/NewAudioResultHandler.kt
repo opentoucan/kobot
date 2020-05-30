@@ -4,19 +4,18 @@ import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import com.sedmelluq.discord.lavaplayer.track.AudioTrackState
-import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.VoiceChannel
-import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+import uk.me.danielharman.kotlinspringbot.ApplicationLogger
+import uk.me.danielharman.kotlinspringbot.services.GuildService
 
 //TODO re-write because dumb things because java inline class overrides
 class NewAudioResultHandler(private val voiceChannel: VoiceChannel?, private val musicManager: GuildMusicManager,
-                            private val channel: TextChannel, private val parent: MessageListener) : AudioLoadResultHandler {
-
+                            private val channel: TextChannel, private val guildService: GuildService) : AudioLoadResultHandler {
 
     override fun trackLoaded(track: AudioTrack) {
-        parent.play(voiceChannel, channel.guild, musicManager, track)
+        play(track)
         channel.sendMessage("Queued track").queue()
     }
 
@@ -28,16 +27,30 @@ class NewAudioResultHandler(private val voiceChannel: VoiceChannel?, private val
         }
 
         channel.sendMessage("Adding to queue ${firstTrack.info.title} (first track of playlist ${playlist.name}")
-        parent.play(voiceChannel, channel.guild, musicManager, firstTrack)
+        play(firstTrack)
 
     }
 
     override fun noMatches() {
-        channel.sendMessage("Nothing found by").queue();
+        channel.sendMessage("Nothing found by").queue()
     }
 
     override fun loadFailed(exception: FriendlyException) {
         channel.sendMessage("Could not play: ${exception.message}").queue()
     }
 
+    fun play(track: AudioTrack){
+        if (voiceChannel == null)
+            return
+
+        if (!channel.guild.audioManager.isConnected && !channel.guild.audioManager.isAttemptingToConnect) {
+            try {
+                channel.guild.audioManager.openAudioConnection(voiceChannel)
+            } catch (e: InsufficientPermissionException) {
+                ApplicationLogger.logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
+            }
+        }
+        musicManager.scheduler.queue(track)
+        musicManager.player.volume = guildService.getVol(channel.guild.id)
+    }
 }
