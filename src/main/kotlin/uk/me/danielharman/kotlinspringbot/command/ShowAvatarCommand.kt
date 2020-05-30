@@ -14,7 +14,7 @@ class ShowAvatarCommand: Command {
             event.channel.sendMessage(EmbedBuilder()
                     .setTitle("Avatar")
                     .setAuthor(u.asTag)
-                    .setImage(u.effectiveAvatarUrl)
+                    .setImage("${u.avatarUrl}?size=512")
                     .build()
             ).queue()
         }
