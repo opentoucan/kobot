@@ -15,20 +15,27 @@ import org.joda.time.format.PeriodFormatterBuilder
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.audio.GuildMusicManager
 import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
+import uk.me.danielharman.kotlinspringbot.command.CommandFactory
 import uk.me.danielharman.kotlinspringbot.helpers.Comparators.mapStrIntComparator
 import uk.me.danielharman.kotlinspringbot.listeners.helpers.Embeds
-import uk.me.danielharman.kotlinspringbot.listeners.helpers.Embeds.createHelpEmbed
-import uk.me.danielharman.kotlinspringbot.listeners.helpers.Embeds.createInfoEmbed
+import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 import uk.me.danielharman.kotlinspringbot.services.RequestService
 import java.awt.Color
 
-class MessageListener(private val guildService: GuildService, private val commandPrefix: String,
-                      private val privilegedCommandPrefix: String,
-                      private val featureRequestService: RequestService) : ListenerAdapter() {
+class MessageListener(private val guildService: GuildService,
+                      private val commandPrefix: String,
+                      privilegedCommandPrefix: String,
+                      featureRequestService: RequestService) : ListenerAdapter() {
 
     private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
-    private val musicManagers: HashMap<Long, GuildMusicManager> = hashMapOf()
+    private val guildMusicPlayerProvider: GuildMusicPlayerProvider = GuildMusicPlayerProvider()
+    private val commandFactory: CommandFactory = CommandFactory(
+                                                    guildService,
+                                                    featureRequestService,
+                                                    guildMusicPlayerProvider,
+                                                    commandPrefix,
+                                                    privilegedCommandPrefix)
 
     init {
         AudioSourceManagers.registerRemoteSources(playerManager)
@@ -45,7 +52,6 @@ class MessageListener(private val guildService: GuildService, private val comman
 
         logger.debug("[${guild.name}] #${event.channel.name} <${member?.nickname ?: author.asTag}>: ${message.contentDisplay}")
 
-        //Never parse a bot message
         if (author.isBot)
             return
 
@@ -84,337 +90,7 @@ class MessageListener(private val guildService: GuildService, private val comman
         }
 
         val cmd = event.message.contentStripped.split(" ")[0].removePrefix(commandPrefix)
-        val channel = event.channel
-
-        when (cmd) {
-            "ping" -> channel.sendMessage("pong ${event.author.asMention}").queue()
-            "userstats" -> channel.sendMessage(createUserWordCountsEmbed(event)).queue()
-            "info" -> channel.sendMessage(createInfoEmbed()).queue()
-            "save" -> savePhrase(event)
-            "feature", "savefeature", "newfeature", "request" -> feature(event)
-            "features", "requests" -> features(event)
-            "getfeature", "getrequest" -> getFeature(event)
-            "play" -> playMusic(event)
-            "pause" -> todoMessage(event)
-            "skip" -> skipTrack(event.channel)
-            "avatar" -> showAvatar(event)
-            "nowplaying", "trackinfo", "playing" -> channel.sendMessage(trackInfo(event.channel)).queue()
-            "vol", "volume" -> setVol(event)
-            "getvol", "getvolume" -> channel.sendMessage("${getVol(event)}").queue()
-            "saved" -> channel.sendMessage(createSavedCommandsEmbed(event.guild.id)).queue()
-            "help" -> channel.sendMessage(createHelpEmbed(commandPrefix)).queue()
-            "clear", "cleanup", "cls" -> clearLast50(event, false)
-            "clearAll" -> clearLast50(event, true)
-            else -> channel.sendMessage(guildService.getCommand(event.guild.id, cmd)).queue()
-        }
+        val command = commandFactory.getCommand(cmd)
+        command.execute(event)
     }
-
-    private fun feature(event: GuildMessageReceivedEvent) {
-
-        val split = event.message.contentStripped.split(" ")
-
-        if (split.size < 2)
-            return
-
-        val createRequest = featureRequestService.createRequest(split.subList(1, split.size).joinToString(" "),
-                event.author.id)
-
-
-        val embedBuilder = EmbedBuilder()
-
-        var nickname = "Unknown"
-        if(!createRequest.userId.isBlank())
-            nickname = event.guild.getMemberById(createRequest.userId)?.nickname ?: "Unknown"
-
-        embedBuilder
-                .setTitle("Feature Request")
-                .addField("Id", createRequest.niceId, false)
-                .addField("Text", createRequest.requestText, false)
-                .addField("Created", createRequest.created.toString(), false)
-                .addField("Status", createRequest.status.name, false)
-                .addField("Requester", nickname , false)
-
-        event.channel.sendMessage(embedBuilder.build()).queue()
-    }
-
-    private fun getFeature(event: GuildMessageReceivedEvent) {
-
-        val split = event.message.contentStripped.split(" ")
-
-        if (split.size < 2)
-            return
-
-        val createRequest = featureRequestService.findById(split[1])
-
-        val embedBuilder = EmbedBuilder()
-
-        if (createRequest == null) {
-            embedBuilder.setTitle("Error").setDescription("No such request ${split[1]}")
-        } else {
-
-            var nickname = "Unknown"
-            if(!createRequest.userId.isBlank())
-                nickname = event.guild.getMemberById(createRequest.userId)?.nickname ?: "Unknown"
-
-            embedBuilder
-                    .setTitle("Feature Request")
-                    .addField("Id", createRequest.niceId, false)
-                    .addField("Text", createRequest.requestText, false)
-                    .addField("Created", createRequest.created.toString(), false)
-                    .addField("Status", createRequest.status.name, false)
-                    .addField("Requester", nickname , false)
-
-        }
-        event.channel.sendMessage(embedBuilder.build()).queue()
-    }
-
-    private fun features(event: GuildMessageReceivedEvent) =
-            event.channel.sendMessage(EmbedBuilder().setDescription(
-                    featureRequestService.getRequests().fold("") { acc, s -> "$acc ${s.niceId}," }).build()).queue()
-
-
-    private fun clearLast50(event: GuildMessageReceivedEvent, allBots: Boolean) {
-
-        event.channel.history.retrievePast(50).complete().forEach { m ->
-            if ((allBots && m.author.isBot)
-                    || m.author.id == event.jda.selfUser.id
-                    || m.contentStripped.startsWith(commandPrefix)
-                    || m.contentStripped.startsWith(privilegedCommandPrefix)) {
-                try {
-                    m.delete().queue()
-                } catch (e: InsufficientPermissionException) {
-                    logger.warn("Tried to delete message but had insufficient permissions. ${e.message}")
-                }
-            }
-        }
-    }
-
-    private fun showAvatar(event: GuildMessageReceivedEvent) {
-        val mentionedUsers = event.message.mentionedUsers
-
-        if (mentionedUsers.size < 0) {
-            event.channel.sendMessage("No users specified").queue()
-        }
-        mentionedUsers.forEach { u ->
-            event.channel.sendMessage(EmbedBuilder()
-                    .setTitle("Avatar")
-                    .setAuthor(u.asTag)
-                    .setImage(u.effectiveAvatarUrl)
-                    .build()
-            ).queue()
-        }
-    }
-
-    private fun playMusic(event: GuildMessageReceivedEvent) {
-        val split = event.message.contentStripped.split(" ")
-        if (split.size < 2) {
-            togglePaused(event)
-            return
-        }
-        loadAndPlay(event, event.channel, split[1])
-    }
-
-    private fun togglePaused(event: GuildMessageReceivedEvent) {
-        val player = getGuildAudioPlayer(event.guild).player
-        player.isPaused = !player.isPaused
-
-        val message = if (player.isPaused) "Paused" else "Playing"
-        event.channel.sendMessage(message).queue()
-    }
-
-
-    fun createSavedCommandsEmbed(guildId: String): MessageEmbed {
-
-        val guild = guildService.getGuild(guildId) ?: return Embeds.createErrorEmbed("Guild not found")
-
-        val stringBuilder = StringBuilder()
-        guild.savedCommands.entries.forEach { (s, _) -> stringBuilder.append("$s ") }
-
-        return EmbedBuilder()
-                .setTitle("Saved commands")
-                .setColor(0x9d03fc)
-                .setDescription(stringBuilder.toString())
-                .build()
-    }
-
-
-    private fun setVol(message: GuildMessageReceivedEvent) = vol(message.channel, message.message.contentStripped.split(" ")[1].toInt())
-
-    private fun todoMessage(message: GuildMessageReceivedEvent) = message.channel.sendMessage("Not implemented").queue()
-
-    private fun createUserWordCountsEmbed(message: GuildMessageReceivedEvent): MessageEmbed {
-
-        val guildId = message.guild.id
-        val guildName = message.guild.name
-        val springGuild = guildService.getGuild(guildId)
-
-        return if (springGuild == null) {
-            EmbedBuilder().addField("error", "Could not find stats for server", false).build()
-        } else {
-
-            val stringBuilder = StringBuilder()
-
-            springGuild.userWordCounts.entries
-                    .stream()
-                    .sorted(mapStrIntComparator)
-                    .limit(20)
-                    .forEach { (s, i) ->
-                        stringBuilder.append("${message.jda.getUserById(s)?.name ?: s} - $i words\n")
-                    }
-
-            EmbedBuilder()
-                    .appendDescription(stringBuilder.toString())
-                    .setColor(0x9d03fc)
-                    .setTitle("Word said per user for $guildName")
-                    .build()
-        }
-
-    }
-
-    private fun savePhrase(message: GuildMessageReceivedEvent) {
-        val content = message.message.contentRaw
-        val split = content.split(" ")
-
-        if (split.size < 3) {
-            message.channel.sendMessage("Phrase missing").queue()
-            return
-        }
-
-        if (split[1].contains(Regex("[_.!,?$\\\\-]"))) {
-            message.channel.sendMessage("Cannot save with that phrase").queue()
-            return
-        }
-
-        guildService.saveCommand(message.guild.id, split[1], split.subList(2, split.size).joinToString(" "))
-
-        message.channel.sendMessage("Saved!").queue()
-    }
-
-    //endregion
-
-
-    //region Audio
-    private fun trackInfo(channel: TextChannel): MessageEmbed {
-        val guildAudioPlayer = getGuildAudioPlayer(channel.guild)
-
-        val audioTrack = guildAudioPlayer.player.playingTrack
-                ?: return EmbedBuilder().setTitle("Error").setColor(Color.red)
-                        .setDescription("Not playing anything").build()
-
-        val trackDuration = Period(audioTrack.duration)
-        val playedDuration = Period(audioTrack.position)
-
-        val fmt = PeriodFormatterBuilder()
-                .printZeroAlways()
-                .minimumPrintedDigits(2)
-                .appendHours()
-                .appendSeparator(":")
-                .printZeroAlways()
-                .minimumPrintedDigits(2)
-                .appendMinutes()
-                .appendSeparator(":")
-                .printZeroAlways()
-                .minimumPrintedDigits(2)
-                .appendSeconds()
-                .toFormatter()
-
-        val durationStr = "${fmt.print(playedDuration)}/${fmt.print(trackDuration)}"
-
-        return EmbedBuilder()
-                .setTitle("Music")
-                .setColor(0x2e298f)
-                .addField("Track Title", audioTrack.info.title, false)
-                .addField("Track Author", audioTrack.info.author, false)
-                .addField("Track Length", durationStr, false)
-                .build()
-    }
-
-    @Synchronized
-    private fun getGuildAudioPlayer(guild: Guild): GuildMusicManager {
-        val guildId = guild.idLong
-        var musicManager = musicManagers[guildId]
-
-        if (musicManager == null) {
-            musicManager = GuildMusicManager(playerManager)
-            musicManagers[guildId] = musicManager
-        }
-
-        guild.audioManager.sendingHandler = musicManager.getSendHandler()
-        return musicManager
-    }
-
-    private fun loadAndPlay(message: GuildMessageReceivedEvent, channel: TextChannel, trackUrl: String) {
-        val musicManager = getGuildAudioPlayer(channel.guild)
-
-        val member = message.member
-
-        if (member == null) {
-            channel.sendMessage("Can't find member!!!!").queue()
-            return
-        }
-
-        val voiceState = member.voiceState
-
-        if (voiceState == null) {
-            channel.sendMessage("Can't find member voicestate! Are you in a channel?").queue()
-            return
-        }
-
-        val voiceChannel = voiceState.channel
-
-        if (voiceChannel == null) {
-            channel.sendMessage("Can't find voice channel! Are you in a channel?").queue()
-            return
-        }
-
-        playerManager.loadItemOrdered(musicManager, trackUrl, NewAudioResultHandler(voiceChannel, musicManager, channel, this))
-    }
-
-    fun play(voiceChannel: VoiceChannel?, guild: Guild, musicManager: GuildMusicManager, track: AudioTrack) {
-        joinUserVoiceChannel(voiceChannel, guild.audioManager)
-        musicManager.scheduler.queue(track)
-        musicManager.player.volume = guildService.getVol(guild.id)
-    }
-
-    private fun skipTrack(channel: TextChannel) {
-        val musicManager = getGuildAudioPlayer(channel.guild)
-        musicManager.scheduler.nextTrack()
-        channel.sendMessage("Skipped to next track.").queue()
-    }
-
-    private fun joinUserVoiceChannel(voiceChannel: VoiceChannel?, audioManager: AudioManager) {
-        if (voiceChannel == null)
-            return
-
-        if (!audioManager.isConnected && !audioManager.isAttemptingToConnect) {
-            try {
-                audioManager.openAudioConnection(voiceChannel)
-            } catch (e: InsufficientPermissionException) {
-                logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
-            }
-        }
-    }
-
-    private fun getVol(event: GuildMessageReceivedEvent) = guildService.getVol(event.guild.id)
-
-    private fun vol(channel: TextChannel, vol: Int) {
-        val musicManager = getGuildAudioPlayer(channel.guild)
-
-        val newVol = when {
-            vol > 100 -> 100
-            vol < 0 -> 0
-            else -> vol
-        }
-        musicManager.player.volume = newVol
-        guildService.setVol(channel.guild.id, newVol)
-        channel.sendMessage("Setting volume to $newVol").queue()
-    }
-
-    private fun disconnect(message: GuildMessageReceivedEvent) {
-        val audioManager = message.guild.audioManager
-        if (audioManager.isConnected) audioManager.closeAudioConnection()
-    }
-
-    //endregion
-
 }

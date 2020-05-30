@@ -41,6 +41,9 @@ dependencies {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
     testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo")
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:4.0.5") // for kotest framework
+    testImplementation ("io.kotest:kotest-assertions-core-jvm:4.0.5" )// for kotest core jvm assertions
+    testImplementation ("io.kotest:kotest-property-jvm:4.0.5")// for kotest property test
 }
 
 tasks.withType<Test> {
