@@ -1,6 +1,5 @@
 package uk.me.danielharman.kotlinspringbot.command
 
-import uk.me.danielharman.kotlinspringbot.listeners.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 import uk.me.danielharman.kotlinspringbot.services.RequestService
@@ -28,7 +27,7 @@ class CommandFactory (private val guildService: GuildService,
             "saved" -> FetchSavedCommand(guildService)
             "help" -> HelpCommand(commandPrefix)
             "clear", "cleanup", "cls" -> ClearBotMessagesCommand(commandPrefix, privilegedCommandPrefix)
-            else -> InvalidCommand()
+            else -> DefaultCommand(guildService, command)
         }
     }
 }
