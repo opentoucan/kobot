@@ -28,6 +28,7 @@ class CommandFactory (private val guildService: GuildService,
             "saved" -> FetchSavedCommand(guildService)
             "help" -> HelpCommand(commandPrefix)
             "clear", "cleanup", "cls" -> ClearBotMessagesCommand(commandPrefix, privilegedCommandPrefix)
+            "voicemove" -> VoiceMoveCommand()
             else -> InvalidCommand()
         }
     }

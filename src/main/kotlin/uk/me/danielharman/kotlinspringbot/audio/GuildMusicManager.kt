@@ -3,7 +3,7 @@ package uk.me.danielharman.kotlinspringbot.audio
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 
-class GuildMusicManager(var manager: AudioPlayerManager) {
+class GuildMusicManager(manager: AudioPlayerManager) {
 
     var player: AudioPlayer = manager.createPlayer()
     var scheduler: TrackScheduler
@@ -16,5 +16,4 @@ class GuildMusicManager(var manager: AudioPlayerManager) {
     fun getSendHandler(): AudioPlayerSendHandler {
         return AudioPlayerSendHandler(player)
     }
-
 }
