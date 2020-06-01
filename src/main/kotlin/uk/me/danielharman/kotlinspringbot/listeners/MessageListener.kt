@@ -3,25 +3,14 @@ package uk.me.danielharman.kotlinspringbot.listeners
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.entities.*
+import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
-import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import net.dv8tion.jda.api.managers.AudioManager
-import org.joda.time.Period
-import org.joda.time.format.PeriodFormatterBuilder
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
-import uk.me.danielharman.kotlinspringbot.audio.GuildMusicManager
-import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
 import uk.me.danielharman.kotlinspringbot.command.CommandFactory
-import uk.me.danielharman.kotlinspringbot.helpers.Comparators.mapStrIntComparator
-import uk.me.danielharman.kotlinspringbot.listeners.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 import uk.me.danielharman.kotlinspringbot.services.RequestService
-import java.awt.Color
 
 class MessageListener(private val guildService: GuildService,
                       private val commandPrefix: String,

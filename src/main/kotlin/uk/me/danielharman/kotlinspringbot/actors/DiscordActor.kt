@@ -41,9 +41,7 @@ class DiscordActor(val guildService: GuildService, val requestService: RequestSe
     }
 
     fun start() {
-
         logger.info("Starting discord actor")
-
         val builder: JDABuilder = JDABuilder.create(
                 token,
                 GUILD_MEMBERS,
