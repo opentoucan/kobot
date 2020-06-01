@@ -31,7 +31,6 @@ class MessageListener(private val guildService: GuildService,
         AudioSourceManagers.registerLocalSource(playerManager)
     }
 
-    //region text
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
 
         val author = event.author
@@ -63,8 +62,9 @@ class MessageListener(private val guildService: GuildService,
                         .split(" ")
                         .filter { s -> s.isNotBlank() }
 
-                if (words.size == 1 && words[0] == "lol")
-                    event.channel.sendMessage("lol").queue()
+                if (words.size == 1 && words[0] == "lol") {
+                    event.message.addReaction("U+1F923").queue()
+                }
 
                 guildService.updateUserCount(guild.id, author.id, words.size)
             }
