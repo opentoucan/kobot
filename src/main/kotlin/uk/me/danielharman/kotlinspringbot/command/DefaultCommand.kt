@@ -16,7 +16,7 @@ class DefaultCommand(private val guildService: GuildService, private val attachm
             when (customCommand.type) {
                 STRING -> event.channel.sendMessage(customCommand.value).queue()
                 FILE -> {
-                    val file = attachmentService.getFile(event.guild.id, customCommand.value)
+                    val file = attachmentService.getFile(event.guild.id, customCommand.value, command)
                     event.channel.sendFile(file, customCommand.value).queue()
                 }
             }

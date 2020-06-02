@@ -38,10 +38,16 @@ class SavePhraseCommand(private val guildService: GuildService, private val atta
         val content = event.message.contentRaw
         val split = content.split(" ")
 
+        if(split.size < 2)
+        {
+            event.channel.sendMessage("No name given").queue()
+            return
+        }
+
         val attachment = event.message.attachments[0]
 
         guildService.saveCommand(event.message.guild.id, split[1], attachment.fileName, event.author.id, SpringGuild.CommandType.FILE)
-        attachmentService.saveFile(attachment.retrieveInputStream().get(), event.message.guild.id, attachment.fileName)
+        attachmentService.saveFile(attachment.retrieveInputStream().get(), event.message.guild.id, attachment.fileName, split[1])
         event.message.channel.sendMessage("Saved as ${split[1]}").queue()
     }
 

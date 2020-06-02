@@ -83,4 +83,9 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
                 Update().set("privilegedUsers", filter), SpringGuild::class.java)
     }
 
+    fun deleteCommand(guildId: String, command: String) {
+        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
+                Update().unset("customCommands.${command}"), SpringGuild::class.java)
+    }
+
 }
