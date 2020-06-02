@@ -13,7 +13,7 @@ class FetchSavedCommand(private val guildService: GuildService): Command {
             return
         }
         val stringBuilder = StringBuilder()
-        guild.savedCommands.entries.forEach { (s, _) -> stringBuilder.append("$s ") }
+        guild.customCommands.entries.forEach { (s, _) -> stringBuilder.append("$s ") }
 
         event.channel.sendMessage(EmbedBuilder()
                 .setTitle("Saved commands")

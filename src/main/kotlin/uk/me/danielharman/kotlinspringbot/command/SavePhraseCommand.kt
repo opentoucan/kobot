@@ -18,7 +18,7 @@ class SavePhraseCommand(private val guildService: GuildService): Command {
             return
         }
 
-        guildService.saveCommand(event.message.guild.id, split[1], split.subList(2, split.size).joinToString(" "))
+        guildService.saveCommand(event.message.guild.id, split[1], split.subList(2, split.size).joinToString(" "), event.author.id)
         event.message.channel.sendMessage("Saved!").queue()
     }
 }

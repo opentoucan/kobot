@@ -1,11 +1,14 @@
 package uk.me.danielharman.kotlinspringbot.services
 
+import org.joda.time.DateTime
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria.where
 import org.springframework.data.mongodb.core.query.Query.query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
+import uk.me.danielharman.kotlinspringbot.models.SpringGuild.CommandType.STRING
+import uk.me.danielharman.kotlinspringbot.models.SpringGuild.CustomCommand
 import uk.me.danielharman.kotlinspringbot.repositories.GuildRepository
 
 @Service
@@ -31,28 +34,28 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
         }
 
         mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
-                Update.update("volume", newVol), SpringGuild::class.java )
+                Update.update("volume", newVol), SpringGuild::class.java)
     }
 
     fun getVol(guildId: String) = getGuild(guildId)?.volume ?: 50
 
-    fun saveCommand(guildId: String, command: String, phrase: String) {
+    fun saveCommand(guildId: String, command: String, phrase: String, creatorId: String) {
         val guild = getGuild(guildId)
         if (guild == null) {
             createGuild(guildId)
         }
         val update = Update()
-        update.set("savedCommands.$command", phrase)
+        update.set("customCommands.$command", CustomCommand(phrase, STRING, creatorId, DateTime.now()))
         mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)), update, SpringGuild::class.java)
     }
 
-    fun getCommand(guildId: String, command: String): String {
+    fun getCommand(guildId: String, command: String): CustomCommand? {
         val guild = getGuild(guildId)
 
         return if (guild != null) {
-            guild.savedCommands[command] ?: "No such command"
+            guild.customCommands[command]
         } else
-            "Guild was not found"
+            null
     }
 
     fun setGuildLogChannel(guildId: String, channelId: String) {
