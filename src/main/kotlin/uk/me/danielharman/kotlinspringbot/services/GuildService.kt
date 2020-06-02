@@ -39,13 +39,13 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
 
     fun getVol(guildId: String) = getGuild(guildId)?.volume ?: 50
 
-    fun saveCommand(guildId: String, command: String, phrase: String, creatorId: String) {
+    fun saveCommand(guildId: String, command: String, phrase: String, creatorId: String, type: SpringGuild.CommandType = STRING) {
         val guild = getGuild(guildId)
         if (guild == null) {
             createGuild(guildId)
         }
         val update = Update()
-        update.set("customCommands.$command", CustomCommand(phrase, STRING, creatorId, DateTime.now()))
+        update.set("customCommands.$command", CustomCommand(phrase, type, creatorId, DateTime.now()))
         mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)), update, SpringGuild::class.java)
     }
 

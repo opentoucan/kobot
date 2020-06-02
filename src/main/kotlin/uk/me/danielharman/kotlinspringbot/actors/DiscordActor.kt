@@ -11,13 +11,14 @@ import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.listeners.AdminMessageListener
 import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
+import uk.me.danielharman.kotlinspringbot.services.AttachmentService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 import uk.me.danielharman.kotlinspringbot.services.RequestService
 
 
 @Component
 @Scope("prototype")
-class DiscordActor(val guildService: GuildService, val requestService: RequestService) : UntypedAbstractActor() {
+class DiscordActor(val guildService: GuildService, val requestService: RequestService, val attachmentService: AttachmentService) : UntypedAbstractActor() {
 
     private lateinit var jda: JDA
 
@@ -55,7 +56,7 @@ class DiscordActor(val guildService: GuildService, val requestService: RequestSe
                 .addEventListeners(AdminMessageListener(guildService, privilegedCommandPrefix,
                         primaryPrivilegedUserId, requestService))
                 .addEventListeners(MessageListener(guildService, prefix, privilegedCommandPrefix,
-                        requestService))
+                        requestService, attachmentService))
 
         jda = builder.build().awaitReady()
     }
