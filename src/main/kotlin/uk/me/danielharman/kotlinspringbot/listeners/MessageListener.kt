@@ -9,22 +9,24 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.command.CommandFactory
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
+import uk.me.danielharman.kotlinspringbot.services.AttachmentService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 import uk.me.danielharman.kotlinspringbot.services.RequestService
 
 class MessageListener(private val guildService: GuildService,
                       private val commandPrefix: String,
                       privilegedCommandPrefix: String,
-                      featureRequestService: RequestService) : ListenerAdapter() {
+                      featureRequestService: RequestService, attachmentService: AttachmentService) : ListenerAdapter() {
 
     private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
     private val guildMusicPlayerProvider: GuildMusicPlayerProvider = GuildMusicPlayerProvider()
     private val commandFactory: CommandFactory = CommandFactory(
-                                                    guildService,
-                                                    featureRequestService,
-                                                    guildMusicPlayerProvider,
-                                                    commandPrefix,
-                                                    privilegedCommandPrefix)
+            guildService,
+            featureRequestService,
+            guildMusicPlayerProvider,
+            commandPrefix,
+            privilegedCommandPrefix,
+            attachmentService)
 
     init {
         AudioSourceManagers.registerRemoteSources(playerManager)
