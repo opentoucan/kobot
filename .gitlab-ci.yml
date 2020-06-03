@@ -57,3 +57,5 @@ deploy:
     - "docker service update --with-registry-auth --image ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_SHA} kotlinBot_bot"
   after_script:
     - "docker logout ${CI_REGISTRY}"
+  environment:
+    name: production
