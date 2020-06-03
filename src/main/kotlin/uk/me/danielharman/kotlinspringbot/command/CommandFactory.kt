@@ -33,7 +33,7 @@ class CommandFactory(private val guildService: GuildService,
             "deletecommand" -> DeleteCommand(guildService, attachmentService)
             "summon", "join", "connect" -> SummonCommand()
             "disconnect", "leave", "banish" -> DisconnectCommand()
-            else -> DefaultCommand(guildService, attachmentService, command)
+            else -> CustomCommand(guildService, attachmentService, command)
         }
     }
 }
