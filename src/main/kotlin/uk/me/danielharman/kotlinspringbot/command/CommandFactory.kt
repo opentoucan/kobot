@@ -16,7 +16,7 @@ class CommandFactory(private val guildService: GuildService,
             "ping" -> PingCommand()
             "userstats" -> UserStatsCommand(guildService)
             "info" -> InfoCommand()
-            "save" -> SavePhraseCommand(guildService, attachmentService)
+            "save", "set" -> SavePhraseCommand(guildService, attachmentService)
             "feature", "savefeature", "newfeature", "request" -> FeatureRequestCommand(featureRequestService)
             "features", "requests" -> ListFeaturesCommand(featureRequestService)
             "getfeature", "getrequest" -> FetchFeatureCommand(featureRequestService)
