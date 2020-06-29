@@ -65,6 +65,16 @@ class MessageListener(private val guildService: GuildService,
                 runAdminCommand(event)
             }
             else -> {
+
+                if(event.channel.id == guildService.getMemeChannel(event.guild.id)){
+
+                    if (event.message.attachments.isNotEmpty())
+                    {
+                        event.message.addReaction("U+1F44D").queue()
+                        event.message.addReaction("U+1F44E").queue()
+                    }
+                }
+
                 val words = message.contentStripped
                         .toLowerCase()
                         .replace(Regex("[.!?,$\\\\-]"), "")
