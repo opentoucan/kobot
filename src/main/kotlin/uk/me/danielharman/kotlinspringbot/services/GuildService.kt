@@ -88,4 +88,12 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
                 Update().unset("customCommands.${command}"), SpringGuild::class.java)
     }
 
+    fun setMemeChannel(guildId: String, channelId: String) {
+        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
+                Update().set("memeChannelId", channelId), SpringGuild::class.java)
+
+    }
+
+    fun getMemeChannel(guildId: String): String = getGuild(guildId)?.memeChannelId ?: ""
+
 }
