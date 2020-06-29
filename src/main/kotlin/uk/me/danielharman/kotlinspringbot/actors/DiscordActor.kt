@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
-import uk.me.danielharman.kotlinspringbot.listeners.AdminMessageListener
 import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
+import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
 import uk.me.danielharman.kotlinspringbot.services.AttachmentService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 import uk.me.danielharman.kotlinspringbot.services.RequestService
@@ -18,7 +18,8 @@ import uk.me.danielharman.kotlinspringbot.services.RequestService
 
 @Component
 @Scope("prototype")
-class DiscordActor(val guildService: GuildService, val requestService: RequestService, val attachmentService: AttachmentService) : UntypedAbstractActor() {
+class DiscordActor(val guildService: GuildService, val requestService: RequestService,
+                   val attachmentService: AttachmentService, val adminCommandService: AdminCommandService) : UntypedAbstractActor() {
 
     private lateinit var jda: JDA
 
@@ -26,13 +27,13 @@ class DiscordActor(val guildService: GuildService, val requestService: RequestSe
     private lateinit var token: String
 
     @Value("\${discord.commandPrefix}")
-    private lateinit var prefix: String
+    private lateinit var commandPrefix: String
 
     @Value("\${discord.privilegedCommandPrefix}")
-    private lateinit var privilegedCommandPrefix: String
+    private lateinit var adminCommandPrefix: String
 
     @Value("\${discord.primaryPrivilegedUserId}")
-    private lateinit var primaryPrivilegedUserId: String
+    private lateinit var primaryAdminUserId: String
 
     override fun onReceive(message: Any?) = when (message) {
         "start" -> start()
@@ -52,11 +53,9 @@ class DiscordActor(val guildService: GuildService, val requestService: RequestSe
                 GUILD_VOICE_STATES,
                 GUILD_EMOJIS,
                 GUILD_MESSAGE_REACTIONS)
-                .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "${prefix}help"))
-                .addEventListeners(AdminMessageListener(guildService, privilegedCommandPrefix,
-                        primaryPrivilegedUserId, requestService))
-                .addEventListeners(MessageListener(guildService, prefix, privilegedCommandPrefix,
-                        requestService, attachmentService))
+                .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "${commandPrefix}help"))
+                .addEventListeners(MessageListener(guildService, adminCommandService, commandPrefix, adminCommandPrefix,
+                        primaryAdminUserId, requestService, attachmentService ))
 
         jda = builder.build().awaitReady()
     }

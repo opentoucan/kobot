@@ -9,13 +9,16 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.command.CommandFactory
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
+import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
 import uk.me.danielharman.kotlinspringbot.services.AttachmentService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 import uk.me.danielharman.kotlinspringbot.services.RequestService
 
 class MessageListener(private val guildService: GuildService,
+                      private val adminCommandService: AdminCommandService,
                       private val commandPrefix: String,
-                      privilegedCommandPrefix: String,
+                      private val adminCommandPrefix: String,
+                      private val primaryAdminUserId: String,
                       featureRequestService: RequestService, attachmentService: AttachmentService) : ListenerAdapter() {
 
     private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
@@ -25,7 +28,7 @@ class MessageListener(private val guildService: GuildService,
             featureRequestService,
             guildMusicPlayerProvider,
             commandPrefix,
-            privilegedCommandPrefix,
+            adminCommandPrefix,
             attachmentService)
 
     init {
@@ -57,6 +60,10 @@ class MessageListener(private val guildService: GuildService,
             message.contentStripped.startsWith(commandPrefix) -> {
                 runCommand(event)
             }
+            message.contentStripped.startsWith(adminCommandPrefix) ->
+            {
+                runAdminCommand(event)
+            }
             else -> {
                 val words = message.contentStripped
                         .toLowerCase()
@@ -84,4 +91,21 @@ class MessageListener(private val guildService: GuildService,
         val command = commandFactory.getCommand(cmd)
         command.execute(event)
     }
+
+    private fun runAdminCommand(event: GuildMessageReceivedEvent) {
+
+        val cmd = event.message.contentStripped.split(" ")[0].removePrefix(adminCommandPrefix)
+        val channel = event.channel
+
+        if (event.author.id != primaryAdminUserId
+                && !guildService.isPrivileged(event.guild.id, event.author.id)) {
+            channel.sendMessage("You are not an admin!").queue()
+            return
+        }
+
+        val command = adminCommandService.getCommand(cmd)
+        command.execute(event)
+
+    }
+
 }
