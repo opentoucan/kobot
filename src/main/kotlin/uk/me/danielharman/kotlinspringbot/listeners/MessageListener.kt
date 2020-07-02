@@ -6,8 +6,8 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import org.springframework.beans.factory.annotation.Value
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
+import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.command.CommandProvider
 import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
@@ -16,17 +16,8 @@ import uk.me.danielharman.kotlinspringbot.services.GuildService
 class MessageListener(private val guildService: GuildService,
                       private val adminCommandService: AdminCommandService,
                       private val commandProvider: CommandProvider,
+                      private val properties: KotlinBotProperties,
                       playerManager: AudioPlayerManager = DefaultAudioPlayerManager()) : ListenerAdapter() {
-
-    @Value("\${discord.commandPrefix}")
-    private lateinit var commandPrefix: String
-
-    @Value("\${discord.primaryPrivilegedUserId}")
-    private lateinit var primaryAdminUserId: String
-
-    @Value("\${discord.privilegedCommandPrefix}")
-    private lateinit var adminCommandPrefix: String
-
     init {
         AudioSourceManagers.registerRemoteSources(playerManager)
         AudioSourceManagers.registerLocalSource(playerManager)
@@ -53,10 +44,10 @@ class MessageListener(private val guildService: GuildService,
         }
 
         when {
-            message.contentStripped.startsWith(commandPrefix) -> {
+            message.contentStripped.startsWith(properties.commandPrefix) -> {
                 runCommand(event)
             }
-            message.contentStripped.startsWith(adminCommandPrefix) ->
+            message.contentStripped.startsWith(properties.privilegedCommandPrefix) ->
             {
                 runAdminCommand(event)
             }
@@ -83,17 +74,17 @@ class MessageListener(private val guildService: GuildService,
             return
         }
 
-        val cmd = event.message.contentStripped.split(" ")[0].removePrefix(commandPrefix)
+        val cmd = event.message.contentStripped.split(" ")[0].removePrefix(properties.commandPrefix)
         val command = commandProvider.getCommand(cmd)
         command.execute(event)
     }
 
     private fun runAdminCommand(event: GuildMessageReceivedEvent) {
 
-        val cmd = event.message.contentStripped.split(" ")[0].removePrefix(adminCommandPrefix)
+        val cmd = event.message.contentStripped.split(" ")[0].removePrefix(properties.privilegedCommandPrefix)
         val channel = event.channel
 
-        if (event.author.id != primaryAdminUserId
+        if (event.author.id != properties.primaryPrivilegedUserId
                 && !guildService.isPrivileged(event.guild.id, event.author.id)) {
             channel.sendMessage("You are not an admin!").queue()
             return

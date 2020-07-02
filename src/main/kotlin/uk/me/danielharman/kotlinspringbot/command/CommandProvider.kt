@@ -2,6 +2,7 @@ package uk.me.danielharman.kotlinspringbot.command
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 import uk.me.danielharman.kotlinspringbot.services.AttachmentService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
@@ -11,14 +12,9 @@ import uk.me.danielharman.kotlinspringbot.services.RequestService
 class CommandProvider(private val guildService: GuildService,
                       private val featureRequestService: RequestService,
                       private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
-                      private val attachmentService: AttachmentService)
+                      private val attachmentService: AttachmentService,
+                      private val properties: KotlinBotProperties)
 {
-    @Value("\${discord.commandPrefix}")
-    private lateinit var commandPrefix: String
-
-    @Value("\${discord.privilegedCommandPrefix}")
-    private lateinit var privilegedCommandPrefix: String
-
     fun getCommand(command: String): Command {
         return when (command) {
             "ping" -> PingCommand()
@@ -35,8 +31,8 @@ class CommandProvider(private val guildService: GuildService,
             "vol", "volume" -> SetVolumeCommand(guildMusicPlayerProvider, guildService)
             "getvol", "getvolume" -> GetVolumeCommand(guildService)
             "saved" -> FetchSavedCommand(guildService)
-            "help" -> HelpCommand(commandPrefix)
-            "clear", "cleanup", "cls" -> ClearBotMessagesCommand(commandPrefix, privilegedCommandPrefix)
+            "help" -> HelpCommand(properties.commandPrefix)
+            "clear", "cleanup", "cls" -> ClearBotMessagesCommand(properties.commandPrefix, properties.privilegedCommandPrefix)
             "voicemove" -> VoiceMoveCommand()
             "deletecommand" -> DeleteCommand(guildService, attachmentService)
             "summon", "join", "connect" -> SummonCommand()
