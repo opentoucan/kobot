@@ -6,30 +6,26 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import org.springframework.beans.factory.annotation.Value
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
-import uk.me.danielharman.kotlinspringbot.command.CommandFactory
-import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
+import uk.me.danielharman.kotlinspringbot.command.CommandProvider
 import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
-import uk.me.danielharman.kotlinspringbot.services.AttachmentService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
-import uk.me.danielharman.kotlinspringbot.services.RequestService
+
 
 class MessageListener(private val guildService: GuildService,
                       private val adminCommandService: AdminCommandService,
-                      private val commandPrefix: String,
-                      private val adminCommandPrefix: String,
-                      private val primaryAdminUserId: String,
-                      featureRequestService: RequestService, attachmentService: AttachmentService) : ListenerAdapter() {
+                      private val commandProvider: CommandProvider,
+                      playerManager: AudioPlayerManager = DefaultAudioPlayerManager()) : ListenerAdapter() {
 
-    private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
-    private val guildMusicPlayerProvider: GuildMusicPlayerProvider = GuildMusicPlayerProvider()
-    private val commandFactory: CommandFactory = CommandFactory(
-            guildService,
-            featureRequestService,
-            guildMusicPlayerProvider,
-            commandPrefix,
-            adminCommandPrefix,
-            attachmentService)
+    @Value("\${discord.commandPrefix}")
+    private lateinit var commandPrefix: String
+
+    @Value("\${discord.primaryPrivilegedUserId}")
+    private lateinit var primaryAdminUserId: String
+
+    @Value("\${discord.privilegedCommandPrefix}")
+    private lateinit var adminCommandPrefix: String
 
     init {
         AudioSourceManagers.registerRemoteSources(playerManager)
@@ -88,7 +84,7 @@ class MessageListener(private val guildService: GuildService,
         }
 
         val cmd = event.message.contentStripped.split(" ")[0].removePrefix(commandPrefix)
-        val command = commandFactory.getCommand(cmd)
+        val command = commandProvider.getCommand(cmd)
         command.execute(event)
     }
 

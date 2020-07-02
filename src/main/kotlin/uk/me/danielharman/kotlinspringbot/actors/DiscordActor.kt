@@ -9,17 +9,18 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
+import uk.me.danielharman.kotlinspringbot.command.CommandProvider
 import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
 import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
-import uk.me.danielharman.kotlinspringbot.services.AttachmentService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
-import uk.me.danielharman.kotlinspringbot.services.RequestService
 
 
 @Component
 @Scope("prototype")
-class DiscordActor(val guildService: GuildService, val requestService: RequestService,
-                   val attachmentService: AttachmentService, val adminCommandService: AdminCommandService) : UntypedAbstractActor() {
+class DiscordActor(val guildService: GuildService,
+                   val adminCommandService: AdminCommandService,
+                   val commandProvider: CommandProvider
+) : UntypedAbstractActor() {
 
     private lateinit var jda: JDA
 
@@ -54,8 +55,7 @@ class DiscordActor(val guildService: GuildService, val requestService: RequestSe
                 GUILD_EMOJIS,
                 GUILD_MESSAGE_REACTIONS)
                 .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "${commandPrefix}help"))
-                .addEventListeners(MessageListener(guildService, adminCommandService, commandPrefix, adminCommandPrefix,
-                        primaryAdminUserId, requestService, attachmentService ))
+                .addEventListeners(MessageListener(guildService, adminCommandService, commandProvider))
 
         jda = builder.build().awaitReady()
     }

@@ -1,16 +1,24 @@
 package uk.me.danielharman.kotlinspringbot.command
 
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 import uk.me.danielharman.kotlinspringbot.services.AttachmentService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 import uk.me.danielharman.kotlinspringbot.services.RequestService
 
-class CommandFactory(private val guildService: GuildService,
-                     private val featureRequestService: RequestService,
-                     private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
-                     private val commandPrefix: String,
-                     private val privilegedCommandPrefix: String,
-                     private val attachmentService: AttachmentService) {
+@Service
+class CommandProvider(private val guildService: GuildService,
+                      private val featureRequestService: RequestService,
+                      private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
+                      private val attachmentService: AttachmentService)
+{
+    @Value("\${discord.commandPrefix}")
+    private lateinit var commandPrefix: String
+
+    @Value("\${discord.privilegedCommandPrefix}")
+    private lateinit var privilegedCommandPrefix: String
+
     fun getCommand(command: String): Command {
         return when (command) {
             "ping" -> PingCommand()
