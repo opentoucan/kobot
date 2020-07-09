@@ -4,10 +4,12 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import net.dv8tion.jda.api.entities.Guild
+import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.audio.GuildMusicManager
 
+@Component
 class GuildMusicPlayerProvider {
-    val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
+    final val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
     private val musicManagers: HashMap<Long, GuildMusicManager> = hashMapOf()
 
     init {
