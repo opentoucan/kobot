@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Criteria.where
 import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.models.Meme
@@ -30,6 +31,34 @@ class MemeService(val mongoTemplate: MongoTemplate, val memeRepository: MemeRepo
         val query = Query().addCriteria(where).addCriteria(gte)
 
         return mongoTemplate.find(query, Meme::class.java)
+    }
+
+    fun decUpvotes(messageId: String) {
+
+        val inc = Update().inc("upvotes", -1)
+
+        mongoTemplate.findAndModify(Query(where("postId").`is`(messageId)), inc, Meme::class.java )
+    }
+
+    fun decDownvotes(messageId: String) {
+
+        val inc = Update().inc("downvotes", -1)
+
+        mongoTemplate.findAndModify(Query(where("postId").`is`(messageId)), inc, Meme::class.java )
+    }
+
+    fun incUpvotes(messageId: String) {
+
+        val inc = Update().inc("upvotes", 1)
+
+        mongoTemplate.findAndModify(Query(where("postId").`is`(messageId)), inc, Meme::class.java )
+    }
+
+    fun incDownvotes(messageId: String) {
+
+        val inc = Update().inc("downvotes", 1)
+
+        mongoTemplate.findAndModify(Query(where("postId").`is`(messageId)), inc, Meme::class.java )
     }
 
 

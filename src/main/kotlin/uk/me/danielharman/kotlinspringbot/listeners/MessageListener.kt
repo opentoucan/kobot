@@ -4,7 +4,10 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.events.emote.EmoteAddedEvent
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
+import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.joda.time.DateTime
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
@@ -25,6 +28,58 @@ class MessageListener(private val guildService: GuildService,
     init {
         AudioSourceManagers.registerRemoteSources(playerManager)
         AudioSourceManagers.registerLocalSource(playerManager)
+    }
+
+    override fun onMessageReactionAdd(event: MessageReactionAddEvent) {
+
+        if(event.userId == event.jda.selfUser.id)
+            return
+
+        if (event.reactionEmote.isEmoji) {
+            val emoji = event.reactionEmote.asCodepoints
+            logger.info(emoji)
+            val guild = guildService.getGuild(event.guild.id) ?: return
+
+            if (guild.memeChannelId == event.channel.id) {
+
+                //Thumbs up
+                if (emoji == "U+1f44d") {
+                    memeService.incUpvotes(event.messageId)
+                }
+                //Thumbs down
+                else if (emoji == "U+1f44e") {
+                    memeService.incDownvotes(event.messageId)
+                }
+
+            }
+
+        }
+    }
+
+    override fun onMessageReactionRemove(event: MessageReactionRemoveEvent) {
+
+        if(event.userId == event.jda.selfUser.id)
+            return
+
+        if (event.reactionEmote.isEmoji) {
+            val emoji = event.reactionEmote.asCodepoints
+            logger.info(emoji)
+            val guild = guildService.getGuild(event.guild.id) ?: return
+
+            if (guild.memeChannelId == event.channel.id) {
+
+                //Thumbs up
+                if (emoji == "U+1f44d") {
+                    memeService.decUpvotes(event.messageId)
+                }
+                //Thumbs down
+                else if (emoji == "U+1f44e") {
+                    memeService.decDownvotes(event.messageId)
+                }
+
+            }
+
+        }
     }
 
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
@@ -51,16 +106,14 @@ class MessageListener(private val guildService: GuildService,
             message.contentStripped.startsWith(properties.commandPrefix) -> {
                 runCommand(event)
             }
-            message.contentStripped.startsWith(properties.privilegedCommandPrefix) ->
-            {
+            message.contentStripped.startsWith(properties.privilegedCommandPrefix) -> {
                 runAdminCommand(event)
             }
             else -> {
 
-                if(event.channel.id == guildService.getMemeChannel(event.guild.id)){
+                if (event.channel.id == guildService.getMemeChannel(event.guild.id)) {
 
-                    if (event.message.attachments.isNotEmpty())
-                    {
+                    if (event.message.attachments.isNotEmpty()) {
                         event.message.addReaction("U+1F44D").queue()
                         event.message.addReaction("U+1F44E").queue()
                         memeService.saveMeme(Meme(event.messageId, event.guild.id,
