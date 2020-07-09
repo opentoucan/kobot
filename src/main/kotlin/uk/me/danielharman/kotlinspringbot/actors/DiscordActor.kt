@@ -5,35 +5,25 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent.*
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
+import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.services.CommandService
 import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
 import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
-import uk.me.danielharman.kotlinspringbot.services.AttachmentService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
-import uk.me.danielharman.kotlinspringbot.services.RequestService
 
 
 @Component
 @Scope("prototype")
-class DiscordActor(val guildService: GuildService, val requestService: RequestService,
-                   val attachmentService: AttachmentService, val adminCommandService: AdminCommandService) : UntypedAbstractActor() {
+class DiscordActor(val guildService: GuildService,
+                   val adminCommandService: AdminCommandService,
+                   val commandService: CommandService,
+                   val properties: KotlinBotProperties
+) : UntypedAbstractActor() {
 
     private lateinit var jda: JDA
-
-    @Value("\${discord.token}")
-    private lateinit var token: String
-
-    @Value("\${discord.commandPrefix}")
-    private lateinit var commandPrefix: String
-
-    @Value("\${discord.privilegedCommandPrefix}")
-    private lateinit var adminCommandPrefix: String
-
-    @Value("\${discord.primaryPrivilegedUserId}")
-    private lateinit var primaryAdminUserId: String
 
     override fun onReceive(message: Any?) = when (message) {
         "start" -> start()
@@ -45,7 +35,7 @@ class DiscordActor(val guildService: GuildService, val requestService: RequestSe
     fun start() {
         logger.info("Starting discord actor")
         val builder: JDABuilder = JDABuilder.create(
-                token,
+                properties.token,
                 GUILD_MEMBERS,
                 GUILD_PRESENCES,
                 DIRECT_MESSAGES,
@@ -53,9 +43,8 @@ class DiscordActor(val guildService: GuildService, val requestService: RequestSe
                 GUILD_VOICE_STATES,
                 GUILD_EMOJIS,
                 GUILD_MESSAGE_REACTIONS)
-                .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "${commandPrefix}help"))
-                .addEventListeners(MessageListener(guildService, adminCommandService, commandPrefix, adminCommandPrefix,
-                        primaryAdminUserId, requestService, attachmentService ))
+                .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "${properties.commandPrefix}help"))
+                .addEventListeners(MessageListener(guildService, adminCommandService, commandService, properties))
 
         jda = builder.build().awaitReady()
     }
