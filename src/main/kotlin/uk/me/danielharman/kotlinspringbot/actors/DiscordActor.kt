@@ -15,6 +15,7 @@ import uk.me.danielharman.kotlinspringbot.services.CommandService
 import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
 import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.MemeService
 import uk.me.danielharman.kotlinspringbot.services.XkcdService
 
 import uk.me.danielharman.kotlinspringbot.services.MemeService
