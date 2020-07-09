@@ -5,12 +5,11 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent.*
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
-import uk.me.danielharman.kotlinspringbot.command.CommandProvider
+import uk.me.danielharman.kotlinspringbot.services.CommandService
 import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
 import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
@@ -20,7 +19,7 @@ import uk.me.danielharman.kotlinspringbot.services.GuildService
 @Scope("prototype")
 class DiscordActor(val guildService: GuildService,
                    val adminCommandService: AdminCommandService,
-                   val commandProvider: CommandProvider,
+                   val commandService: CommandService,
                    val properties: KotlinBotProperties
 ) : UntypedAbstractActor() {
 
@@ -45,7 +44,7 @@ class DiscordActor(val guildService: GuildService,
                 GUILD_EMOJIS,
                 GUILD_MESSAGE_REACTIONS)
                 .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "${properties.commandPrefix}help"))
-                .addEventListeners(MessageListener(guildService, adminCommandService, commandProvider, properties))
+                .addEventListeners(MessageListener(guildService, adminCommandService, commandService, properties))
 
         jda = builder.build().awaitReady()
     }

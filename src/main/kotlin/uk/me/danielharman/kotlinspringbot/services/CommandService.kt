@@ -1,20 +1,17 @@
-package uk.me.danielharman.kotlinspringbot.command
+package uk.me.danielharman.kotlinspringbot.services
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.command.*
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
-import uk.me.danielharman.kotlinspringbot.services.AttachmentService
-import uk.me.danielharman.kotlinspringbot.services.GuildService
-import uk.me.danielharman.kotlinspringbot.services.RequestService
 
 @Service
-class CommandProvider(private val guildService: GuildService,
-                      private val featureRequestService: RequestService,
-                      private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
-                      private val attachmentService: AttachmentService,
-                      private val properties: KotlinBotProperties)
-{
+class CommandService(private val guildService: GuildService,
+                     private val featureRequestService: RequestService,
+                     private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
+                     private val attachmentService: AttachmentService,
+                     private val properties: KotlinBotProperties) {
+
     fun getCommand(command: String): Command {
         return when (command) {
             "ping" -> PingCommand()

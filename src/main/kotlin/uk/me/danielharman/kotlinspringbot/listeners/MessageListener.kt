@@ -8,14 +8,14 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
-import uk.me.danielharman.kotlinspringbot.command.CommandProvider
+import uk.me.danielharman.kotlinspringbot.services.CommandService
 import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 
 
 class MessageListener(private val guildService: GuildService,
                       private val adminCommandService: AdminCommandService,
-                      private val commandProvider: CommandProvider,
+                      private val commandService: CommandService,
                       private val properties: KotlinBotProperties,
                       playerManager: AudioPlayerManager = DefaultAudioPlayerManager()) : ListenerAdapter() {
     init {
@@ -75,7 +75,7 @@ class MessageListener(private val guildService: GuildService,
         }
 
         val cmd = event.message.contentStripped.split(" ")[0].removePrefix(properties.commandPrefix)
-        val command = commandProvider.getCommand(cmd)
+        val command = commandService.getCommand(cmd)
         command.execute(event)
     }
 
