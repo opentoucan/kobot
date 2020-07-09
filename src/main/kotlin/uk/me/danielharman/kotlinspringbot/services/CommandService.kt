@@ -10,13 +10,15 @@ class CommandService(private val guildService: GuildService,
                      private val featureRequestService: RequestService,
                      private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
                      private val attachmentService: AttachmentService,
-                     private val properties: KotlinBotProperties) {
+                     private val properties: KotlinBotProperties,
+                     private val memeService: MemeService) {
 
     fun getCommand(command: String): Command {
         return when (command) {
             "ping" -> PingCommand()
             "userstats" -> UserStatsCommand(guildService)
             "info" -> InfoCommand()
+            "memes" -> GetMemesCommand(memeService)
             "save", "set" -> SavePhraseCommand(guildService, attachmentService)
             "feature", "savefeature", "newfeature", "request" -> FeatureRequestCommand(featureRequestService)
             "features", "requests" -> ListFeaturesCommand(featureRequestService)

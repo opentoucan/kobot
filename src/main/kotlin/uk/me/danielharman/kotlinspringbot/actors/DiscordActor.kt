@@ -13,6 +13,7 @@ import uk.me.danielharman.kotlinspringbot.services.CommandService
 import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
 import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.MemeService
 
 
 @Component
@@ -20,7 +21,8 @@ import uk.me.danielharman.kotlinspringbot.services.GuildService
 class DiscordActor(val guildService: GuildService,
                    val adminCommandService: AdminCommandService,
                    val commandService: CommandService,
-                   val properties: KotlinBotProperties
+                   val properties: KotlinBotProperties,
+                   val memeService: MemeService
 ) : UntypedAbstractActor() {
 
     private lateinit var jda: JDA
@@ -44,7 +46,7 @@ class DiscordActor(val guildService: GuildService,
                 GUILD_EMOJIS,
                 GUILD_MESSAGE_REACTIONS)
                 .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "${properties.commandPrefix}help"))
-                .addEventListeners(MessageListener(guildService, adminCommandService, commandService, properties))
+                .addEventListeners(MessageListener(guildService, adminCommandService, commandService, properties, memeService))
 
         jda = builder.build().awaitReady()
     }

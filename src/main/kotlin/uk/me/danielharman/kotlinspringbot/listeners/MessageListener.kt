@@ -6,17 +6,21 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import org.joda.time.DateTime
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.models.Meme
 import uk.me.danielharman.kotlinspringbot.services.CommandService
 import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.MemeService
 
 
 class MessageListener(private val guildService: GuildService,
                       private val adminCommandService: AdminCommandService,
                       private val commandService: CommandService,
                       private val properties: KotlinBotProperties,
+                      private val memeService: MemeService,
                       playerManager: AudioPlayerManager = DefaultAudioPlayerManager()) : ListenerAdapter() {
     init {
         AudioSourceManagers.registerRemoteSources(playerManager)
@@ -59,6 +63,8 @@ class MessageListener(private val guildService: GuildService,
                     {
                         event.message.addReaction("U+1F44D").queue()
                         event.message.addReaction("U+1F44E").queue()
+                        memeService.saveMeme(Meme(event.messageId, event.guild.id,
+                                event.author.id, 0, 0, DateTime.now()))
                     }
                 }
 
