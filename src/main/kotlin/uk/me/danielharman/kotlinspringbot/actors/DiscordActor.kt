@@ -4,6 +4,7 @@ import akka.actor.UntypedAbstractActor
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
+import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.requests.GatewayIntent.*
 import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
@@ -31,6 +32,8 @@ class DiscordActor(val guildService: GuildService,
         "start" -> start()
         "stop" -> stop()
         "restart" -> restart()
+        is DiscordChannelMessage -> sendChannelMessage(message)
+        is DiscordChannelEmbedMessage -> sendChannelMessage(message)
         else -> println("received unknown message")
     }
 
@@ -63,5 +66,17 @@ class DiscordActor(val guildService: GuildService,
         start()
     }
 
+    fun sendChannelMessage(msg : DiscordChannelMessage){
+        logger.info("[Discord Actor] Sending message: $msg")
+        jda.getTextChannelById(msg.channelId)?.sendMessage(msg.msg)?.queue() ?: logger.error("Could not send message $msg")
+    }
+
+    fun sendChannelMessage(msg : DiscordChannelEmbedMessage){
+        logger.info("[Discord Actor] Sending message: $msg")
+        jda.getTextChannelById(msg.channelId)?.sendMessage(msg.msg)?.queue() ?: logger.error("Could not send message $msg")
+    }
+
+    data class DiscordChannelMessage(val msg: String, val guildId: String, val channelId: String)
+    data class DiscordChannelEmbedMessage(val msg: MessageEmbed, val channelId: String)
 }
 
