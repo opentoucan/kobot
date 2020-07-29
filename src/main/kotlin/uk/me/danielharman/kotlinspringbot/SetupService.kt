@@ -11,6 +11,7 @@ import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.actors.ActorProvider
 import uk.me.danielharman.kotlinspringbot.security.DashboardUser
 import uk.me.danielharman.kotlinspringbot.security.DashboardUserRepository
+import java.time.Duration
 import java.util.*
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
@@ -56,11 +57,20 @@ class SetupService(var actorProvider: ActorProvider, val userRepository: Dashboa
 
         if (!activeProfiles.contains("discordDisabled")) {
             logger.info("Creating discord actor")
-            actorProvider.createActor("discordActor", "discord-actor")?.tell("start", ActorRef.noSender())
+            val discordActor = actorProvider.createActor("discordActor", "discord-actor")
+
+            discordActor?.tell("start", ActorRef.noSender())
                     ?: logger.error("Failed to start Discord actor")
+
+            actorSystem.scheduler().schedule(Duration.ofSeconds(10), Duration.ofHours(3), discordActor,
+                    "xkcd", actorSystem.dispatcher(), ActorRef.noSender())
+
         } else {
             logger.info("Running with Discord disabled")
         }
+
+
+
     }
 
     @PreDestroy

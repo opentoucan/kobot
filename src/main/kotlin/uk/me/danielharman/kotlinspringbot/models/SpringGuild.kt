@@ -23,6 +23,7 @@ data class SpringGuild(private val guildId: String) {
     var customCommands: HashMap<String, CustomCommand> = hashMapOf()
     var privilegedUsers : List<String> = listOf()
     var logChannelId: String = ""
+    var xkcdChannelId: String = ""
     var volume = 50
 
     override fun toString(): String {

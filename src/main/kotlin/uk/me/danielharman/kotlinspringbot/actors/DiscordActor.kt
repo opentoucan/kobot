@@ -11,11 +11,13 @@ import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds.createXkcdComicEmbed
 import uk.me.danielharman.kotlinspringbot.services.CommandService
 import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
 import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
-import kotlin.math.log
+import uk.me.danielharman.kotlinspringbot.services.XkcdService
+
 
 
 @Component
@@ -23,6 +25,7 @@ import kotlin.math.log
 class DiscordActor(val guildService: GuildService,
                    val adminCommandService: AdminCommandService,
                    val commandService: CommandService,
+                   val xkcdService: XkcdService,
                    val properties: KotlinBotProperties
 ) : UntypedAbstractActor() {
 
@@ -32,9 +35,10 @@ class DiscordActor(val guildService: GuildService,
         "start" -> start()
         "stop" -> stop()
         "restart" -> restart()
+        "xkcd" -> sendLatestXkcd()
         is DiscordChannelMessage -> sendChannelMessage(message)
         is DiscordChannelEmbedMessage -> sendChannelMessage(message)
-        else -> println("received unknown message")
+        else -> println("[Discord Actor] received unknown message")
     }
 
     fun start() {
@@ -66,13 +70,31 @@ class DiscordActor(val guildService: GuildService,
         start()
     }
 
+    fun sendLatestXkcd(){
+        logger.info("[Discord Actor] Checking for new XKCD comic")
+
+        val xkcdChannels = guildService.getXkcdChannels()
+
+        if(xkcdChannels.isEmpty())
+            return
+
+        val last = xkcdService.getLast()
+        val latestComic = xkcdService.getLatestComic()
+
+        logger.info("[Discord Actor] XKCD last comic recorded #${last}. Current #${latestComic.num}")
+        if(last == null || last.num < latestComic.num) {
+            xkcdService.setLast(latestComic.num)
+            for (channel in xkcdChannels) {
+                self().tell(DiscordChannelEmbedMessage(createXkcdComicEmbed(latestComic, "Latest comic"), channel), self())
+            }
+        }
+    }
+
     fun sendChannelMessage(msg : DiscordChannelMessage){
-        logger.info("[Discord Actor] Sending message: $msg")
         jda.getTextChannelById(msg.channelId)?.sendMessage(msg.msg)?.queue() ?: logger.error("Could not send message $msg")
     }
 
     fun sendChannelMessage(msg : DiscordChannelEmbedMessage){
-        logger.info("[Discord Actor] Sending message: $msg")
         jda.getTextChannelById(msg.channelId)?.sendMessage(msg.msg)?.queue() ?: logger.error("Could not send message $msg")
     }
 

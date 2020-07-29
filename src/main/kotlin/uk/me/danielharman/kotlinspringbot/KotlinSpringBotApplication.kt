@@ -9,5 +9,5 @@ import org.springframework.boot.runApplication
 class KotlinSpringBotApplication
 
 fun main(args: Array<String>) {
-	runApplication<KotlinSpringBotApplication>(*args)
+    runApplication<KotlinSpringBotApplication>(*args)
 }

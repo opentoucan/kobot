@@ -1,7 +1,8 @@
-package uk.me.danielharman.kotlinspringbot.listeners.helpers
+package uk.me.danielharman.kotlinspringbot.helpers
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
+import uk.me.danielharman.kotlinspringbot.models.XkcdComic
 import java.awt.Color
 
 object Embeds {
@@ -32,5 +33,14 @@ object Embeds {
                     .addField("Libraries", "https://akka.io, https://spring.io, https://kotlinlang.org", false)
                     .addField("Source", "https://gitlab.com/update-gitlab.yml/kotlinspringbot", false)
                     .build()
+
+    fun createXkcdComicEmbed(xkcdComic: XkcdComic, title: String = "XKCD: "): MessageEmbed = EmbedBuilder()
+            .setImage(xkcdComic.img)
+            .addField("Title", xkcdComic.title, true)
+            .addField("Published", "${xkcdComic.day}/${xkcdComic.month}/${xkcdComic.year}", true)
+            .addField("Alt Text", xkcdComic.alt, true)
+            .setTitle("$title #${xkcdComic.num}")
+            .setColor(0x9d03fc)
+            .build()
 
 }

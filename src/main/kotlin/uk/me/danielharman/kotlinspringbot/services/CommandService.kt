@@ -3,6 +3,8 @@ package uk.me.danielharman.kotlinspringbot.services
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.command.*
+import uk.me.danielharman.kotlinspringbot.command.xkcd.XkcdComicCommand
+import uk.me.danielharman.kotlinspringbot.command.xkcd.XkcdLatestCommand
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 
 @Service
@@ -10,6 +12,7 @@ class CommandService(private val guildService: GuildService,
                      private val featureRequestService: RequestService,
                      private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
                      private val attachmentService: AttachmentService,
+                     private val xkcdService: XkcdService,
                      private val properties: KotlinBotProperties) {
 
     fun getCommand(command: String): Command {
@@ -34,6 +37,7 @@ class CommandService(private val guildService: GuildService,
             "deletecommand" -> DeleteCommand(guildService, attachmentService)
             "summon", "join", "connect" -> SummonCommand()
             "disconnect", "leave", "banish" -> DisconnectCommand()
+            "xkcd" -> XkcdComicCommand(xkcdService)
             else -> CustomCommand(guildService, attachmentService, command)
         }
     }
