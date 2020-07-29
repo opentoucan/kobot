@@ -71,31 +71,30 @@ class DiscordActor(val guildService: GuildService,
     }
 
     fun sendLatestXkcd(){
-        logger.info("[Discord Actor] Sending latest xkcd")
-
+        logger.info("[Discord Actor] Checking for new XKCD comic")
 
         val xkcdChannels = guildService.getXkcdChannels()
-
-        logger.info("$xkcdChannels")
 
         if(xkcdChannels.isEmpty())
             return
 
+        val last = xkcdService.getLast()
         val latestComic = xkcdService.getLatestComic()
 
-        for(channel in xkcdChannels){
-            self().tell(DiscordChannelEmbedMessage(createXkcdComicEmbed(latestComic, "Latest"), channel), self())
+        logger.info("[Discord Actor] XKCD last comic recorded #${last}. Current #${latestComic.num}")
+        if(last == null || last.num < latestComic.num) {
+            xkcdService.setLast(latestComic.num)
+            for (channel in xkcdChannels) {
+                self().tell(DiscordChannelEmbedMessage(createXkcdComicEmbed(latestComic, "Latest comic"), channel), self())
+            }
         }
-
     }
 
     fun sendChannelMessage(msg : DiscordChannelMessage){
-        logger.info("[Discord Actor] Sending message: $msg")
         jda.getTextChannelById(msg.channelId)?.sendMessage(msg.msg)?.queue() ?: logger.error("Could not send message $msg")
     }
 
     fun sendChannelMessage(msg : DiscordChannelEmbedMessage){
-        logger.info("[Discord Actor] Sending message: $msg")
         jda.getTextChannelById(msg.channelId)?.sendMessage(msg.msg)?.queue() ?: logger.error("Could not send message $msg")
     }
 
