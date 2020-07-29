@@ -11,11 +11,13 @@ import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds.createXkcdComicEmbed
 import uk.me.danielharman.kotlinspringbot.services.CommandService
 import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
 import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
-import kotlin.math.log
+import uk.me.danielharman.kotlinspringbot.services.XkcdService
+
 
 
 @Component
@@ -23,6 +25,7 @@ import kotlin.math.log
 class DiscordActor(val guildService: GuildService,
                    val adminCommandService: AdminCommandService,
                    val commandService: CommandService,
+                   val xkcdService: XkcdService,
                    val properties: KotlinBotProperties
 ) : UntypedAbstractActor() {
 
@@ -32,9 +35,10 @@ class DiscordActor(val guildService: GuildService,
         "start" -> start()
         "stop" -> stop()
         "restart" -> restart()
+        "xkcd" -> sendLatestXkcd()
         is DiscordChannelMessage -> sendChannelMessage(message)
         is DiscordChannelEmbedMessage -> sendChannelMessage(message)
-        else -> println("received unknown message")
+        else -> println("[Discord Actor] received unknown message")
     }
 
     fun start() {
@@ -64,6 +68,25 @@ class DiscordActor(val guildService: GuildService,
         logger.info("Attempting to restart discord")
         stop()
         start()
+    }
+
+    fun sendLatestXkcd(){
+        logger.info("[Discord Actor] Sending latest xkcd")
+
+
+        val xkcdChannels = guildService.getXkcdChannels()
+
+        logger.info("$xkcdChannels")
+
+        if(xkcdChannels.isEmpty())
+            return
+
+        val latestComic = xkcdService.getLatestComic()
+
+        for(channel in xkcdChannels){
+            self().tell(DiscordChannelEmbedMessage(createXkcdComicEmbed(latestComic, "Latest"), channel), self())
+        }
+
     }
 
     fun sendChannelMessage(msg : DiscordChannelMessage){
