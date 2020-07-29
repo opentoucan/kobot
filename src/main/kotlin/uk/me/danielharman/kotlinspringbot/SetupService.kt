@@ -11,6 +11,7 @@ import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.actors.ActorProvider
 import uk.me.danielharman.kotlinspringbot.security.DashboardUser
 import uk.me.danielharman.kotlinspringbot.security.DashboardUserRepository
+import java.time.Duration
 import java.util.*
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
@@ -61,8 +62,8 @@ class SetupService(var actorProvider: ActorProvider, val userRepository: Dashboa
             discordActor?.tell("start", ActorRef.noSender())
                     ?: logger.error("Failed to start Discord actor")
 
-//            actorSystem.scheduler().schedule(Duration.ofSeconds(10), Duration.ofSeconds(20), discordActor,
-//                    "xkcd", actorSystem.dispatcher(), ActorRef.noSender())
+            actorSystem.scheduler().schedule(Duration.ofSeconds(10), Duration.ofHours(3), discordActor,
+                    "xkcd", actorSystem.dispatcher(), ActorRef.noSender())
 
         } else {
             logger.info("Running with Discord disabled")

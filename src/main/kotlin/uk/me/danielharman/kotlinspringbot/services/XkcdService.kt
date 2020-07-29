@@ -13,11 +13,12 @@ import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
+import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.SchemaUpdater
 import uk.me.danielharman.kotlinspringbot.models.XkcdComic
 
 @Service
-class XkcdService(val mongoOperations: MongoOperations) {
+class XkcdService(private val mongoOperations: MongoOperations) {
 
     private val latestUrl = "https://xkcd.com/info.0.json"
     private val comicUrl = "https://xkcd.com/%d/info.0.json"
@@ -25,6 +26,8 @@ class XkcdService(val mongoOperations: MongoOperations) {
     data class XkcdLatest(val num: Int)
 
     fun getLatestComic(): XkcdComic {
+
+        logger.info("[XKCD Service] Getting latest comic")
 
         val client = HttpClient(CIO)
         val response = runBlocking{client.get<String>(latestUrl)}
@@ -36,21 +39,24 @@ class XkcdService(val mongoOperations: MongoOperations) {
         val url = comicUrl.format(number)
         val response = runBlocking{client.get<HttpResponse>(url)}
 
-        if(response.status.value == 404)
+        if(response.status.value == 404){
+            logger.error("[XKCD Service] Got a 404")
             return null
+        }
 
         val s = runBlocking { response.readText() }
         return Json.parse(XkcdComic.serializer(), s )
     }
 
-    private fun setLast(ver: Int): Int {
+    fun setLast(ver: Int): Int {
+        logger.info("[XKCD Service] Setting last comic to $ver ")
         mongoOperations.upsert(Query.query(Criteria.where("_id").`is`("latest")),
-                Update.update("schemaVersion", ver), SchemaUpdater.ApplicationOpts::class.java, "XkcdLatest")
+                Update.update("num", ver), SchemaUpdater.ApplicationOpts::class.java, "XkcdLatest")
 
         return getLast()?.num ?: 0
     }
 
-    private fun getLast(): XkcdLatest? {
+    fun getLast(): XkcdLatest? {
         return mongoOperations.findOne(Query.query(Criteria.where("_id").`is`("latest")),
                 XkcdLatest::class.java, "XkcdLatest")
     }
