@@ -4,7 +4,7 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import uk.me.danielharman.kotlinspringbot.command.Command
-import uk.me.danielharman.kotlinspringbot.listeners.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 
 class AdminsListCommand(val guildService: GuildService, private val primaryAdminUserId: String) : Command {
