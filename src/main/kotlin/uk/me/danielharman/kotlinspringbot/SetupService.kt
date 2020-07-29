@@ -1,6 +1,7 @@
 package uk.me.danielharman.kotlinspringbot
 
 import akka.actor.ActorRef
+import akka.actor.ActorSystem
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.data.mongodb.core.MongoOperations
@@ -17,7 +18,7 @@ import javax.annotation.PreDestroy
 @Component
 @Profile("!test")
 class SetupService(var actorProvider: ActorProvider, val userRepository: DashboardUserRepository,
-                   val env: Environment, val mongoOperations: MongoOperations) {
+                   val env: Environment, val mongoOperations: MongoOperations, val actorSystem: ActorSystem) {
 
     @PostConstruct
     fun setup() {
@@ -39,7 +40,7 @@ class SetupService(var actorProvider: ActorProvider, val userRepository: Dashboa
             logger.info("########################")
         }
 
-        if(activeProfiles.contains("dev")) {
+        if (activeProfiles.contains("dev")) {
             val devUser = userRepository.findByUsername("dev")
             //Setup dashboard user
             if (devUser == null) {
@@ -57,14 +58,13 @@ class SetupService(var actorProvider: ActorProvider, val userRepository: Dashboa
             logger.info("Creating discord actor")
             actorProvider.createActor("discordActor", "discord-actor")?.tell("start", ActorRef.noSender())
                     ?: logger.error("Failed to start Discord actor")
-        }
-        else{
+        } else {
             logger.info("Running with Discord disabled")
         }
     }
 
     @PreDestroy
-    fun destroy(){
+    fun destroy() {
         logger.info("Cleaning up for shutdown")
         actorProvider.getActor("discord-actor")?.tell("stop", ActorRef.noSender())
         logger.info("Cleanup complete")
