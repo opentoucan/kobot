@@ -3,6 +3,7 @@ package uk.me.danielharman.kotlinspringbot.services
 import org.joda.time.DateTime
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria.where
+import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Query.query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
@@ -10,6 +11,7 @@ import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild.CommandType.STRING
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild.CustomCommand
 import uk.me.danielharman.kotlinspringbot.repositories.GuildRepository
+import java.util.stream.Collectors
 
 @Service
 class GuildService(private val guildRepository: GuildRepository, private val mongoTemplate: MongoTemplate) {
@@ -18,14 +20,21 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
     fun createGuild(guildId: String): SpringGuild = guildRepository.save(SpringGuild(guildId))
 
     fun updateUserCount(guildId: String, userId: String, count: Int) {
+        val guild = getGuild(guildId)
+        if (guild == null) {
+            createGuild(guildId)
+        }
+
         val update = Update()
         update.inc("userWordCounts.$userId", count)
         mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)), update, SpringGuild::class.java)
     }
 
     fun setVol(guildId: String, vol: Int) {
-
-        getGuild(guildId) ?: return
+        val guild = getGuild(guildId)
+        if (guild == null) {
+            createGuild(guildId)
+        }
 
         val newVol = when {
             vol > 100 -> 100
@@ -59,6 +68,11 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
     }
 
     fun setGuildLogChannel(guildId: String, channelId: String) {
+        val guild = getGuild(guildId)
+        if (guild == null) {
+            createGuild(guildId)
+        }
+
         mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
                 Update().set("logChannelId", channelId), SpringGuild::class.java)
     }
@@ -69,6 +83,11 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
     }
 
     fun addPrivileged(guildId: String, userId: String) {
+        val guild = getGuild(guildId)
+        if (guild == null) {
+            createGuild(guildId)
+        }
+
         mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
                 Update().addToSet("privilegedUsers", userId), SpringGuild::class.java)
     }
@@ -86,6 +105,27 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
     fun deleteCommand(guildId: String, command: String) {
         mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
                 Update().unset("customCommands.${command}"), SpringGuild::class.java)
+    }
+
+    fun setXkcdChannel(guildId: String, channelId: String) {
+        val guild = getGuild(guildId)
+        if (guild == null) {
+            createGuild(guildId)
+        }
+
+        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
+                Update().set("xkcdChannelId", channelId), SpringGuild::class.java)
+    }
+
+    fun getXkcdChannel(guildId: String): String = getGuild(guildId)?.xkcdChannelId ?: ""
+
+    fun getXkcdChannels(): List<String>{
+
+        val query = Query()
+        query.fields().include("xkcdChannelId").include("guildId")
+
+        val list = mongoTemplate.find(query, SpringGuild::class.java)
+        return list.stream().map { g -> g.xkcdChannelId }.filter { s -> s.isNotEmpty() }.collect(Collectors.toList())
     }
 
     fun setMemeChannel(guildId: String, channelId: String) {

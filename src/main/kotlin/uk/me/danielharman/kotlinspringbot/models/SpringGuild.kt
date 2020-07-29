@@ -24,6 +24,7 @@ data class SpringGuild(private val guildId: String) {
     var privilegedUsers : List<String> = listOf()
     var logChannelId: String = ""
     var memeChannelId: String = ""
+    var xkcdChannelId: String = ""
     var volume = 50
 
     override fun toString(): String {
