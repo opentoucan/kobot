@@ -19,7 +19,7 @@ class CommandService(private val guildService: GuildService,
         return when (command) {
             "ping" -> PingCommand()
             "userstats" -> UserStatsCommand(guildService)
-            "info" -> InfoCommand()
+            "info" -> InfoCommand(guildService)
             "save", "set" -> SavePhraseCommand(guildService, attachmentService)
             "newrequest", "newfeature" -> SaveRequestCommand(featureRequestService)
             "feature", "request" -> FeatureRequestCommand(featureRequestService)
