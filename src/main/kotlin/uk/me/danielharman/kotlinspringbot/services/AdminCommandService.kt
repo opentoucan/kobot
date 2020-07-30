@@ -19,6 +19,7 @@ class AdminCommandService(val guildService: GuildService) {
             "admins" -> AdminsListCommand(guildService, primaryAdminId)
             "purge" -> PurgeMessagesCommand()
             "setXkcdChannel" -> SetXkcdChannelCommand(guildService)
+            "setnick" -> SetNickCommand()
             else -> DefaultCommand(command);
         }
     }
