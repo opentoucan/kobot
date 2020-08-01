@@ -1,13 +1,18 @@
 package uk.me.danielharman.kotlinspringbot.command
 
+import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import uk.me.danielharman.kotlinspringbot.ApplicationLogger
 import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
+import uk.me.danielharman.kotlinspringbot.helpers.BotHelperFunctions.getBotVoiceChannel
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 
-class PlayMusicCommand(private val guildMusicPlayerProvider: GuildMusicPlayerProvider, private val guildService: GuildService): Command {
+class PlayMusicCommand(private val guildMusicPlayerProvider: GuildMusicPlayerProvider, private val guildService: GuildService): VoiceCommand {
+    override var voiceChannel: VoiceChannel? = null
 
     override fun execute(event: GuildMessageReceivedEvent) {
+
         val split = event.message.contentStripped.split(" ")
         if (split.size < 2) {
             val player = guildMusicPlayerProvider.getGuildAudioPlayer(event.guild).player
@@ -17,8 +22,6 @@ class PlayMusicCommand(private val guildMusicPlayerProvider: GuildMusicPlayerPro
             event.channel.sendMessage(message).queue()
             return
         }
-
-        val musicManager = guildMusicPlayerProvider.getGuildAudioPlayer(event.channel.guild)
 
         val member = event.member
 
@@ -34,13 +37,26 @@ class PlayMusicCommand(private val guildMusicPlayerProvider: GuildMusicPlayerPro
             return
         }
 
-        val voiceChannel = voiceState.channel
+        voiceChannel = voiceState.channel
 
         if (voiceChannel == null) {
             event.channel.sendMessage("Can't find voice channel! Are you in a channel?").queue()
             return
         }
-        event.guild.audioManager.openAudioConnection(event.member?.voiceState?.channel)
+        val botVoiceChannel= getBotVoiceChannel(event)
+        if(botVoiceChannel != null)
+        {
+            ApplicationLogger.logger.info("Bot's voice channel: " + botVoiceChannel?.id)
+            event.guild.audioManager.openAudioConnection(botVoiceChannel)
+        }
+        if(voiceChannel != event.guild.audioManager.connectedChannel)
+        {
+            ApplicationLogger.logger.info("My voice channel: " + voiceChannel?.id)
+            event.guild.audioManager.closeAudioConnection()
+            event.guild.audioManager.openAudioConnection(voiceChannel)
+        }
+        ApplicationLogger.logger.info("Connected voice channel from manager: " + event.guild.audioManager.connectedChannel?.id)
+        val musicManager = guildMusicPlayerProvider.getGuildAudioPlayer(voiceChannel!!.guild)
         guildMusicPlayerProvider.playerManager.loadItemOrdered(musicManager, split[1], NewAudioResultHandler(voiceChannel, musicManager, event.channel, guildService))
     }
 }

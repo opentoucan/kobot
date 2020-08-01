@@ -1,14 +1,19 @@
 package uk.me.danielharman.kotlinspringbot.command
 
+import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger
+import uk.me.danielharman.kotlinspringbot.helpers.BotHelperFunctions.getBotVoiceChannel
 
-class VoiceMoveCommand: Command {
+class VoiceMoveCommand : VoiceCommand {
+    override var voiceChannel: VoiceChannel? = null
 
     override fun execute(event: GuildMessageReceivedEvent) {
+        voiceChannel = getBotVoiceChannel(event)
+
         val audioManager = event.guild.audioManager
         val member = event.member
 
@@ -49,7 +54,7 @@ class VoiceMoveCommand: Command {
             if (event.jda.selfUser.id == event.member.id) {
                 event.channelLeft.members.forEach { m -> m.guild.moveVoiceMember(m, event.channelJoined).queue() }
                 event.jda.removeEventListener(this)
-                event.guild.audioManager.openAudioConnection(event.voiceState.channel)
+                event.guild.audioManager.closeAudioConnection()
             }
         }
     }
