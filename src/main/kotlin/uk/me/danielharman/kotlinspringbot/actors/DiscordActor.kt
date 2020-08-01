@@ -1,50 +1,50 @@
 package uk.me.danielharman.kotlinspringbot.actors
 
 import akka.actor.UntypedAbstractActor
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
+import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.requests.GatewayIntent.*
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
-import uk.me.danielharman.kotlinspringbot.listeners.AdminMessageListener
+import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds.createXkcdComicEmbed
+import uk.me.danielharman.kotlinspringbot.services.CommandService
 import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
-import uk.me.danielharman.kotlinspringbot.services.AttachmentService
+import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
-import uk.me.danielharman.kotlinspringbot.services.RequestService
+import uk.me.danielharman.kotlinspringbot.services.XkcdService
+
 
 
 @Component
 @Scope("prototype")
-class DiscordActor(val guildService: GuildService, val requestService: RequestService, val attachmentService: AttachmentService) : UntypedAbstractActor() {
+class DiscordActor(val guildService: GuildService,
+                   val adminCommandService: AdminCommandService,
+                   val commandService: CommandService,
+                   val xkcdService: XkcdService,
+                   val properties: KotlinBotProperties
+) : UntypedAbstractActor() {
 
     private lateinit var jda: JDA
-
-    @Value("\${discord.token}")
-    private lateinit var token: String
-
-    @Value("\${discord.commandPrefix}")
-    private lateinit var prefix: String
-
-    @Value("\${discord.privilegedCommandPrefix}")
-    private lateinit var privilegedCommandPrefix: String
-
-    @Value("\${discord.primaryPrivilegedUserId}")
-    private lateinit var primaryPrivilegedUserId: String
 
     override fun onReceive(message: Any?) = when (message) {
         "start" -> start()
         "stop" -> stop()
         "restart" -> restart()
-        else -> println("received unknown message")
+        "xkcd" -> sendLatestXkcd()
+        is DiscordChannelMessage -> sendChannelMessage(message)
+        is DiscordChannelEmbedMessage -> sendChannelMessage(message)
+        else -> println("[Discord Actor] received unknown message")
     }
 
     fun start() {
         logger.info("Starting discord actor")
         val builder: JDABuilder = JDABuilder.create(
-                token,
+                properties.token,
                 GUILD_MEMBERS,
                 GUILD_PRESENCES,
                 DIRECT_MESSAGES,
@@ -52,11 +52,8 @@ class DiscordActor(val guildService: GuildService, val requestService: RequestSe
                 GUILD_VOICE_STATES,
                 GUILD_EMOJIS,
                 GUILD_MESSAGE_REACTIONS)
-                .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "${prefix}help"))
-                .addEventListeners(AdminMessageListener(guildService, privilegedCommandPrefix,
-                        primaryPrivilegedUserId, requestService))
-                .addEventListeners(MessageListener(guildService, prefix, privilegedCommandPrefix,
-                        requestService, attachmentService))
+                .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "${properties.commandPrefix}help"))
+                .addEventListeners(MessageListener(guildService, adminCommandService, commandService, properties))
 
         jda = builder.build().awaitReady()
     }
@@ -73,5 +70,35 @@ class DiscordActor(val guildService: GuildService, val requestService: RequestSe
         start()
     }
 
+    fun sendLatestXkcd(){
+        logger.info("[Discord Actor] Checking for new XKCD comic")
+
+        val xkcdChannels = guildService.getXkcdChannels()
+
+        if(xkcdChannels.isEmpty())
+            return
+
+        val last = xkcdService.getLast()
+        val latestComic = xkcdService.getLatestComic()
+
+        logger.info("[Discord Actor] XKCD last comic recorded #${last}. Current #${latestComic.num}")
+        if(last == null || last.num < latestComic.num) {
+            xkcdService.setLast(latestComic.num)
+            for (channel in xkcdChannels) {
+                self().tell(DiscordChannelEmbedMessage(createXkcdComicEmbed(latestComic, "Latest comic"), channel), self())
+            }
+        }
+    }
+
+    fun sendChannelMessage(msg : DiscordChannelMessage){
+        jda.getTextChannelById(msg.channelId)?.sendMessage(msg.msg)?.queue() ?: logger.error("Could not send message $msg")
+    }
+
+    fun sendChannelMessage(msg : DiscordChannelEmbedMessage){
+        jda.getTextChannelById(msg.channelId)?.sendMessage(msg.msg)?.queue() ?: logger.error("Could not send message $msg")
+    }
+
+    data class DiscordChannelMessage(val msg: String, val guildId: String, val channelId: String)
+    data class DiscordChannelEmbedMessage(val msg: MessageEmbed, val channelId: String)
 }
 

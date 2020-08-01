@@ -7,27 +7,17 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
-import uk.me.danielharman.kotlinspringbot.command.CommandFactory
-import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
-import uk.me.danielharman.kotlinspringbot.services.AttachmentService
+import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.services.CommandService
+import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
-import uk.me.danielharman.kotlinspringbot.services.RequestService
+
 
 class MessageListener(private val guildService: GuildService,
-                      private val commandPrefix: String,
-                      privilegedCommandPrefix: String,
-                      featureRequestService: RequestService, attachmentService: AttachmentService) : ListenerAdapter() {
-
-    private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
-    private val guildMusicPlayerProvider: GuildMusicPlayerProvider = GuildMusicPlayerProvider()
-    private val commandFactory: CommandFactory = CommandFactory(
-            guildService,
-            featureRequestService,
-            guildMusicPlayerProvider,
-            commandPrefix,
-            privilegedCommandPrefix,
-            attachmentService)
-
+                      private val adminCommandService: AdminCommandService,
+                      private val commandService: CommandService,
+                      private val properties: KotlinBotProperties,
+                      playerManager: AudioPlayerManager = DefaultAudioPlayerManager()) : ListenerAdapter() {
     init {
         AudioSourceManagers.registerRemoteSources(playerManager)
         AudioSourceManagers.registerLocalSource(playerManager)
@@ -54,8 +44,12 @@ class MessageListener(private val guildService: GuildService,
         }
 
         when {
-            message.contentStripped.startsWith(commandPrefix) -> {
+            message.contentStripped.startsWith(properties.commandPrefix) -> {
                 runCommand(event)
+            }
+            message.contentStripped.startsWith(properties.privilegedCommandPrefix) ->
+            {
+                runAdminCommand(event)
             }
             else -> {
                 val words = message.contentStripped
@@ -80,8 +74,25 @@ class MessageListener(private val guildService: GuildService,
             return
         }
 
-        val cmd = event.message.contentStripped.split(" ")[0].removePrefix(commandPrefix)
-        val command = commandFactory.getCommand(cmd)
+        val cmd = event.message.contentStripped.split(" ")[0].removePrefix(properties.commandPrefix)
+        val command = commandService.getCommand(cmd)
         command.execute(event)
     }
+
+    private fun runAdminCommand(event: GuildMessageReceivedEvent) {
+
+        val cmd = event.message.contentStripped.split(" ")[0].removePrefix(properties.privilegedCommandPrefix)
+        val channel = event.channel
+
+        if (event.author.id != properties.primaryPrivilegedUserId
+                && !guildService.isPrivileged(event.guild.id, event.author.id)) {
+            channel.sendMessage("You are not an admin!").queue()
+            return
+        }
+
+        val command = adminCommandService.getCommand(cmd)
+        command.execute(event)
+
+    }
+
 }

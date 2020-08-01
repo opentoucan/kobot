@@ -1,23 +1,28 @@
-package uk.me.danielharman.kotlinspringbot.command
+package uk.me.danielharman.kotlinspringbot.services
 
+import org.springframework.stereotype.Service
+import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.command.*
+import uk.me.danielharman.kotlinspringbot.command.xkcd.XkcdComicCommand
+import uk.me.danielharman.kotlinspringbot.command.xkcd.XkcdLatestCommand
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
-import uk.me.danielharman.kotlinspringbot.services.AttachmentService
-import uk.me.danielharman.kotlinspringbot.services.GuildService
-import uk.me.danielharman.kotlinspringbot.services.RequestService
 
-class CommandFactory(private val guildService: GuildService,
+@Service
+class CommandService(private val guildService: GuildService,
                      private val featureRequestService: RequestService,
                      private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
-                     private val commandPrefix: String,
-                     private val privilegedCommandPrefix: String,
-                     private val attachmentService: AttachmentService) {
+                     private val attachmentService: AttachmentService,
+                     private val xkcdService: XkcdService,
+                     private val properties: KotlinBotProperties) {
+
     fun getCommand(command: String): Command {
         return when (command) {
             "ping" -> PingCommand()
             "userstats" -> UserStatsCommand(guildService)
-            "info" -> InfoCommand()
-            "save" -> SavePhraseCommand(guildService, attachmentService)
-            "feature", "savefeature", "newfeature", "request" -> FeatureRequestCommand(featureRequestService)
+            "info" -> InfoCommand(guildService)
+            "save", "set" -> SavePhraseCommand(guildService, attachmentService)
+            "newrequest", "newfeature" -> SaveRequestCommand(featureRequestService)
+            "feature", "request" -> FeatureRequestCommand(featureRequestService)
             "features", "requests" -> ListFeaturesCommand(featureRequestService)
             "getfeature", "getrequest" -> FetchFeatureCommand(featureRequestService)
             "play" -> PlayMusicCommand(guildMusicPlayerProvider, guildService)
@@ -27,12 +32,13 @@ class CommandFactory(private val guildService: GuildService,
             "vol", "volume" -> SetVolumeCommand(guildMusicPlayerProvider, guildService)
             "getvol", "getvolume" -> GetVolumeCommand(guildService)
             "saved" -> FetchSavedCommand(guildService)
-            "help" -> HelpCommand(commandPrefix)
-            "clear", "cleanup", "cls" -> ClearBotMessagesCommand(commandPrefix, privilegedCommandPrefix)
+            "help" -> HelpCommand(properties.commandPrefix)
+            "clear", "cleanup", "cls" -> ClearBotMessagesCommand(properties.commandPrefix, properties.privilegedCommandPrefix)
             "voicemove" -> VoiceMoveCommand()
             "deletecommand" -> DeleteCommand(guildService, attachmentService)
             "summon", "join", "connect" -> SummonCommand()
             "disconnect", "leave", "banish" -> DisconnectCommand()
+            "xkcd" -> XkcdComicCommand(xkcdService)
             else -> CustomCommand(guildService, attachmentService, command)
         }
     }
