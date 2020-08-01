@@ -16,7 +16,6 @@ class VoiceMoveCommand: Command {
             event.channel.sendMessage("Could not find member.").queue()
             return
         }
-
         val voiceState = member.voiceState
 
         if (voiceState == null) {
@@ -31,16 +30,18 @@ class VoiceMoveCommand: Command {
             return
         }
 
-        if (!audioManager.isConnected && !audioManager.isAttemptingToConnect) {
-            try {
-                audioManager.openAudioConnection(voiceChannel)
-                event.message.channel.sendMessage("Voice move enabled!").queue()
-                event.jda.addEventListener(MoveListener())
-            } catch (e: InsufficientPermissionException) {
-                ApplicationLogger.logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
-                event.channel.sendMessage("I don't have permission to join.").queue()
-            }
+        if (!audioManager.isConnected) {
+            audioManager.openAudioConnection(voiceChannel)
         }
+
+        try {
+            event.message.channel.sendMessage("Voice move enabled!").queue()
+            event.jda.addEventListener(MoveListener())
+        } catch (e: InsufficientPermissionException) {
+            ApplicationLogger.logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
+            event.channel.sendMessage("I don't have permission to join.").queue()
+        }
+
     }
 
     class MoveListener : ListenerAdapter() {
@@ -48,6 +49,7 @@ class VoiceMoveCommand: Command {
             if (event.jda.selfUser.id == event.member.id) {
                 event.channelLeft.members.forEach { m -> m.guild.moveVoiceMember(m, event.channelJoined).queue() }
                 event.jda.removeEventListener(this)
+                event.guild.audioManager.openAudioConnection(event.voiceState.channel)
             }
         }
     }

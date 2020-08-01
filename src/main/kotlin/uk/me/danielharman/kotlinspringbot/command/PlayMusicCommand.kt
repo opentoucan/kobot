@@ -40,7 +40,7 @@ class PlayMusicCommand(private val guildMusicPlayerProvider: GuildMusicPlayerPro
             event.channel.sendMessage("Can't find voice channel! Are you in a channel?").queue()
             return
         }
-
+        event.guild.audioManager.openAudioConnection(event.member?.voiceState?.channel)
         guildMusicPlayerProvider.playerManager.loadItemOrdered(musicManager, split[1], NewAudioResultHandler(voiceChannel, musicManager, event.channel, guildService))
     }
 }

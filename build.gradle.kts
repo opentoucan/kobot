@@ -50,6 +50,7 @@ dependencies {
     testImplementation("io.kotest:kotest-runner-junit5-jvm:4.0.5") // for kotest framework
     testImplementation ("io.kotest:kotest-assertions-core-jvm:4.0.5" )// for kotest core jvm assertions
     testImplementation ("io.kotest:kotest-property-jvm:4.0.5")// for kotest property test
+    testImplementation("io.mockk:mockk:1.10.0")
 }
 
 tasks.withType<Test> {
