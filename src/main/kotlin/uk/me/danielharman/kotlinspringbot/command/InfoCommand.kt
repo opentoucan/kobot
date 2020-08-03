@@ -18,9 +18,15 @@ class InfoCommand(private val guildService: GuildService) : Command {
                 return
             }
 
+            val creatorName : String
+            creatorName = if(command.creatorId.isEmpty())
+                "Unknown"
+            else
+                event.jda.getUserById(command.creatorId)?.asTag ?: "Unknown"
+
             event.channel.sendMessage(Embeds.infoEmbedBuilder(title = "Command: ${split[1]}")
                     .appendDescription(command.value)
-                    .addField("Creator", event.jda.getUserById(command.creatorId)?.asTag ?: "Unknown", false)
+                    .addField("Creator", creatorName, false)
                     .addField("Created", command.created.toString(ISODateTimeFormat.dateTimeNoMillis()), false)
                     .build()).queue()
 
