@@ -18,8 +18,6 @@ import uk.me.danielharman.kotlinspringbot.services.GuildService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
 import uk.me.danielharman.kotlinspringbot.services.XkcdService
 
-import uk.me.danielharman.kotlinspringbot.services.MemeService
-
 
 @Component
 @Scope("prototype")

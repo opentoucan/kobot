@@ -117,7 +117,7 @@ class MessageListener(private val guildService: GuildService,
                         event.message.addReaction("U+1F44D").queue()
                         event.message.addReaction("U+1F44E").queue()
                         memeService.saveMeme(Meme(event.messageId, event.guild.id,
-                                event.author.id, 0, 0, DateTime.now()))
+                                event.author.id, 0, 0, DateTime.now(), event.message.attachments[0].url))
                     }
                 }
 

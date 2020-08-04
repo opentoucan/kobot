@@ -136,12 +136,4 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
         return list.stream().map { g -> g.xkcdChannelId }.filter { s -> s.isNotEmpty() }.collect(Collectors.toList())
     }
 
-    fun setMemeChannel(guildId: String, channelId: String) {
-        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
-                Update().set("memeChannelId", channelId), SpringGuild::class.java)
-
-    }
-
-    fun getMemeChannel(guildId: String): String = getGuild(guildId)?.memeChannelId ?: ""
-
 }

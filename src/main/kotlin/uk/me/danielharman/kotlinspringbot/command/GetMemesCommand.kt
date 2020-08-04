@@ -1,21 +1,44 @@
 package uk.me.danielharman.kotlinspringbot.command
 
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import uk.me.danielharman.kotlinspringbot.services.MemeService
-import java.util.stream.Collectors
 
 class GetMemesCommand(private val memeService: MemeService) : Command {
 
     override fun execute(event: GuildMessageReceivedEvent) {
 
-        var monthsMemes = memeService.getMonthsMemes(event.guild.id)
+        val split = event.message.contentStripped.split(" ")
 
-        monthsMemes = monthsMemes.stream().sorted { o1, o2 -> o1.upvotes - o2.upvotes }.collect(Collectors.toList())
+        val interval: MemeService.MemeInterval
+        if (split.size >= 2){
+            interval = when (split[1].toLowerCase()){
+                "week" -> MemeService.MemeInterval.WEEK
+                "month" -> MemeService.MemeInterval.MONTH
+                else -> {
+                    event.channel.sendMessage("Found no matching interval ${split[1]}").queue()
+                    return
+                }
+            }
+        }
+        else{
+            event.channel.sendMessage("Found no matching interval (month or week)").queue()
+            return
+        }
+        val memes = memeService.getTop3ByInterval(event.guild.id, interval)
 
-        println(monthsMemes)
+        var i = 1
+        for (meme in memes){
 
-        event.channel.sendMessage(monthsMemes.toString()).queue()
+            val description = EmbedBuilder().setImage(meme.url)
+                    .setTitle("#$i")
+                    .setAuthor(event.guild.getMemberById(meme.userId)?.nickname ?: meme.userId)
+                    .setDescription("Upvotes: ${meme.upvotes} Downvotes: ${meme.downvotes}")
 
-    }
+            event.channel.sendMessage(description.build()).complete()
+            i++
+        }
+
+   }
 
 }

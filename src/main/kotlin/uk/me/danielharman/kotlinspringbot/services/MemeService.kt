@@ -1,6 +1,7 @@
 package uk.me.danielharman.kotlinspringbot.services
 
 import org.joda.time.DateTime
+import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Criteria.where
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.models.Meme
 import uk.me.danielharman.kotlinspringbot.repositories.MemeRepository
+import java.util.stream.Collectors
 
 @Service
 class MemeService(val mongoTemplate: MongoTemplate, val memeRepository: MemeRepository, val guildService: GuildService) {
@@ -19,18 +21,42 @@ class MemeService(val mongoTemplate: MongoTemplate, val memeRepository: MemeRepo
         return memeRepository.save(meme)
     }
 
-    fun getMonthsMemes(guildId: String): List<Meme> {
+    enum class MemeInterval {
+        WEEK,
+        MONTH
+    }
+
+    fun getTop3ByInterval(guildId: String, interval: MemeInterval ): List<Meme> {
 
         val now = DateTime.now()
 
-        val lte = Criteria("created").lte(now.toDate())
-        val gte = lte.gte(DateTime(now.year, now.monthOfYear, 1, 0, 0))
+        val lte :Criteria
+        val gte :Criteria
+        when (interval) {
+            MemeInterval.WEEK -> {
+                lte = Criteria("created").lte(now.toDate())
+                gte = lte.gte(DateTime.now().minusDays(7))
+            }
+            MemeInterval.MONTH -> {
+                lte = Criteria("created").lte(now.toDate())
+                gte = lte.gte(DateTime.now().minusMonths(1))
+            }
+        }
 
         val where = where("guildId").`is`(guildId)
 
         val query = Query().addCriteria(where).addCriteria(gte)
 
-        return mongoTemplate.find(query, Meme::class.java)
+        var memes = mongoTemplate.find(query, Meme::class.java)
+
+        memes = memes.stream()
+                .sorted { o1, o2 -> o2.upvotes - o1.upvotes }
+                .collect(Collectors.toList())
+
+        if(memes.size <= 3)
+            return memes
+
+        return memes.subList(0,3)
     }
 
     fun decUpvotes(messageId: String) {
