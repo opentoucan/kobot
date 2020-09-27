@@ -38,3 +38,16 @@ spec:
             - mountPath: /data/db
               name: kotbot-persistent-storage
 
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kotbot-pv-claim
+  labels:
+    app: kotbot
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
