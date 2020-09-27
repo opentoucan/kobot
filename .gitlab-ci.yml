@@ -74,4 +74,4 @@ deploy:
   script:
     - kubectl apply -f kotlin-bot-deployment.yaml
     environment:
-     name: production
+      name: production
