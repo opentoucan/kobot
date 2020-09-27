@@ -62,6 +62,8 @@ dockerbuild:
 
 deploy:
   stage: deploy
+  tags:
+    - kubernetes
   rules:
     - if: '$CI_COMMIT_REF_NAME == "master"'
       when: always
