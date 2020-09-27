@@ -35,7 +35,9 @@ class MessageListener(private val guildService: GuildService,
         if (author.isBot)
             return
 
-        if (event.message.isMentioned(event.jda.selfUser, Message.MentionType.USER)) {
+        val isDeafened = guildService.getDeafenedChannels(guild.id).contains(event.channel.id)
+
+        if (!isDeafened && event.message.isMentioned(event.jda.selfUser, Message.MentionType.USER)) {
             val emotesByName = guild.getEmotesByName("piing", true)
             if (emotesByName.size >= 1)
                 message.addReaction(emotesByName[0]).queue()
@@ -45,7 +47,8 @@ class MessageListener(private val guildService: GuildService,
 
         when {
             message.contentStripped.startsWith(properties.commandPrefix) -> {
-                runCommand(event)
+                if(!isDeafened)
+                    runCommand(event)
             }
             message.contentStripped.startsWith(properties.privilegedCommandPrefix) ->
             {
@@ -58,7 +61,7 @@ class MessageListener(private val guildService: GuildService,
                         .split(" ")
                         .filter { s -> s.isNotBlank() }
 
-                if (words.size == 1 && words[0] == "lol") {
+                if (!isDeafened && words.size == 1 && words[0] == "lol") {
                     event.message.addReaction("U+1F923").queue()
                 }
 
