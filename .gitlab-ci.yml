@@ -73,3 +73,5 @@ deploy:
     - kubectl get nodes
   script:
     - kubectl apply -f kotlin-bot-deployment.yaml
+  environment:
+    name: production
