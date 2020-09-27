@@ -69,3 +69,5 @@ deploy:
     GIT_STRATEGY: none
   before_script:
     - kubectl get nodes
+  script:
+    - kubectl apply -f kotlin-bot-deployment.yaml
