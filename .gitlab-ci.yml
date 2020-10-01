@@ -10,7 +10,7 @@ build:
   tags:
     - kubernetes
   script:
-    - ./gradlew --build-cache assemble
+    - gradle --build-cache assemble
   artifacts:
     paths:
       - build/libs
@@ -20,11 +20,11 @@ test:
   image: gradle:jdk14
   tags:
     - kubernetes
-  script: ./gradlew check --info
+  script: gradle check --info
 
 dockerbuild:
   stage: dockerbuild
-  image: docker:dind
+  image: docker
   tags: 
     - kubernetes
   rules:
