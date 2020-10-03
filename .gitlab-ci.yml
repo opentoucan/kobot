@@ -24,9 +24,8 @@ test:
 
 dockerbuild:
   stage: dockerbuild
-  image: docker
   tags: 
-    - kubernetes
+    - docker
   rules:
     - if: '$CI_COMMIT_REF_NAME == "dev"'
       when: always
