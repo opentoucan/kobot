@@ -4,23 +4,82 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.events.emote.EmoteAddedEvent
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
+import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import org.joda.time.DateTime
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.models.Meme
 import uk.me.danielharman.kotlinspringbot.services.CommandService
 import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.MemeService
 
 
 class MessageListener(private val guildService: GuildService,
                       private val adminCommandService: AdminCommandService,
                       private val commandService: CommandService,
                       private val properties: KotlinBotProperties,
+                      private val memeService: MemeService,
                       playerManager: AudioPlayerManager = DefaultAudioPlayerManager()) : ListenerAdapter() {
     init {
         AudioSourceManagers.registerRemoteSources(playerManager)
         AudioSourceManagers.registerLocalSource(playerManager)
+    }
+
+    override fun onMessageReactionAdd(event: MessageReactionAddEvent) {
+
+        if(event.userId == event.jda.selfUser.id)
+            return
+
+        if (event.reactionEmote.isEmoji) {
+            val emoji = event.reactionEmote.asCodepoints
+            val guild = guildService.getGuild(event.guild.id) ?: return
+
+            if (guild.memeChannelId == event.channel.id) {
+
+                if (event.userId == event.reaction.textChannel?.retrieveMessageById(event.messageId)?.complete()?.author?.id ?: "")
+                    return
+
+                //Thumbs up
+                if (emoji == "U+1f44d") {
+                    memeService.incUpvotes(event.messageId)
+                }
+                //Thumbs down
+                else if (emoji == "U+1f44e") {
+                    memeService.incDownvotes(event.messageId)
+                }
+            }
+        }
+    }
+
+    override fun onMessageReactionRemove(event: MessageReactionRemoveEvent) {
+
+        if(event.userId == event.jda.selfUser.id)
+            return
+
+        if (event.reactionEmote.isEmoji) {
+            val emoji = event.reactionEmote.asCodepoints
+            val guild = guildService.getGuild(event.guild.id) ?: return
+
+            if (guild.memeChannelId == event.channel.id) {
+
+                if (event.userId == event.reaction.textChannel?.retrieveMessageById(event.messageId)?.complete()?.author?.id ?: "")
+                    return
+
+                //Thumbs up
+                if (emoji == "U+1f44d") {
+                    memeService.decUpvotes(event.messageId)
+                }
+                //Thumbs down
+                else if (emoji == "U+1f44e") {
+                    memeService.decDownvotes(event.messageId)
+                }
+            }
+        }
     }
 
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
@@ -50,11 +109,21 @@ class MessageListener(private val guildService: GuildService,
                 if(!isDeafened)
                     runCommand(event)
             }
-            message.contentStripped.startsWith(properties.privilegedCommandPrefix) ->
-            {
+            message.contentStripped.startsWith(properties.privilegedCommandPrefix) -> {
                 runAdminCommand(event)
             }
             else -> {
+
+                if (event.channel.id == guildService.getMemeChannel(event.guild.id)) {
+
+                    if (event.message.attachments.isNotEmpty()) {
+                        event.message.addReaction("U+1F44D").queue()
+                        event.message.addReaction("U+1F44E").queue()
+                        memeService.saveMeme(Meme(event.messageId, event.guild.id,
+                                event.author.id, 0, 0, DateTime.now(), event.message.attachments[0].url))
+                    }
+                }
+
                 val words = message.contentStripped
                         .toLowerCase()
                         .replace(Regex("[.!?,$\\\\-]"), "")
