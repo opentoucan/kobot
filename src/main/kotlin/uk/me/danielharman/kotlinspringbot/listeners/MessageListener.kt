@@ -40,6 +40,10 @@ class MessageListener(private val guildService: GuildService,
             val guild = guildService.getGuild(event.guild.id) ?: return
 
             if (guild.memeChannelId == event.channel.id) {
+
+                if (event.userId == event.reaction.textChannel?.retrieveMessageById(event.messageId)?.complete()?.author?.id ?: "")
+                    return
+
                 //Thumbs up
                 if (emoji == "U+1f44d") {
                     memeService.incUpvotes(event.messageId)
@@ -62,6 +66,10 @@ class MessageListener(private val guildService: GuildService,
             val guild = guildService.getGuild(event.guild.id) ?: return
 
             if (guild.memeChannelId == event.channel.id) {
+
+                if (event.userId == event.reaction.textChannel?.retrieveMessageById(event.messageId)?.complete()?.author?.id ?: "")
+                    return
+
                 //Thumbs up
                 if (emoji == "U+1f44d") {
                     memeService.decUpvotes(event.messageId)
