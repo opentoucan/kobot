@@ -1,6 +1,7 @@
 package uk.me.danielharman.kotlinspringbot.actors
 
 import akka.actor.UntypedAbstractActor
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
@@ -17,6 +18,7 @@ import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
 import uk.me.danielharman.kotlinspringbot.services.XkcdService
+
 
 
 @Component

@@ -7,8 +7,15 @@ import uk.me.danielharman.kotlinspringbot.services.GuildService
 class RemoveAdminCommand(val guildService: GuildService) : Command {
     override fun execute(event: GuildMessageReceivedEvent) {
 
-        event.message.mentionedUsers.forEach { u -> guildService.removedPrivileged(event.guild.id, u.id) }
-        event.channel.sendMessage("Removed ${event.message.mentionedUsers}").queue()
+        val mentionedUsers = event.message.mentionedUsers
+
+        if (mentionedUsers.size <= 0) {
+            event.channel.sendMessage("No users were provided").queue()
+            return
+        }
+
+        mentionedUsers.forEach { u -> guildService.removedPrivileged(event.guild.id, u.id) }
+        event.channel.sendMessage("Removed $mentionedUsers").queue()
 
     }
 }

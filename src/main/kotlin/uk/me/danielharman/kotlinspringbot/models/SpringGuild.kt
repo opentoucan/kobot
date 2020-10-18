@@ -26,6 +26,7 @@ data class SpringGuild(private val guildId: String) {
     var memeChannelId: String = ""
     var xkcdChannelId: String = ""
     var volume = 50
+    var deafenedChannels: List<String> = listOf()
 
     override fun toString(): String {
         return "ChannelStats(guildId='$guildId', id='$id', wordCounts=$wordCounts, commandCounts=$commandCounts)"

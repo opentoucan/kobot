@@ -136,4 +136,25 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
         return list.stream().map { g -> g.xkcdChannelId }.filter { s -> s.isNotEmpty() }.collect(Collectors.toList())
     }
 
+    fun deafenChannel(guildId: String, channelId: String): Boolean {
+        val guild = getGuild(guildId)
+        if (guild == null) {
+            createGuild(guildId)
+        }
+
+        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
+                Update().addToSet("deafenedChannels", channelId), SpringGuild::class.java)
+        return true
+    }
+
+    fun unDeafenChannel(guildId: String, channelId: String): Boolean {
+        getGuild(guildId) ?: return false
+
+        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
+                Update().pull("deafenedChannels", channelId), SpringGuild::class.java)
+        return true
+    }
+
+    fun getDeafenedChannels(guildId: String): List<String> = getGuild(guildId)?.deafenedChannels ?: listOf()
+
 }

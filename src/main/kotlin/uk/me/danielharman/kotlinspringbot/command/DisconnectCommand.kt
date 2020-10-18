@@ -1,10 +1,19 @@
 package uk.me.danielharman.kotlinspringbot.command
 
+import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import uk.me.danielharman.kotlinspringbot.helpers.BotHelperFunctions.getBotVoiceChannel
 
-class DisconnectCommand : Command {
+class DisconnectCommand : VoiceCommand {
+    override var voiceChannel: VoiceChannel? = null
     override fun execute(event: GuildMessageReceivedEvent) {
-        if (event.channel.guild.audioManager.isConnected && !event.channel.guild.audioManager.isAttemptingToConnect) {
+
+        voiceChannel = getBotVoiceChannel(event)
+        if(voiceChannel != null) {
+            event.guild.audioManager.openAudioConnection(voiceChannel)
+        }
+
+        if (event.guild.audioManager.isConnected || event.guild.audioManager.queuedAudioConnection != null) {
             event.channel.guild.audioManager.closeAudioConnection()
         }
         else{
