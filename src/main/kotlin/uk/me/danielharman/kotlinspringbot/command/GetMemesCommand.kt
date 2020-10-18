@@ -16,16 +16,21 @@ class GetMemesCommand(private val memeService: MemeService) : Command {
                 "week" -> MemeService.MemeInterval.WEEK
                 "month" -> MemeService.MemeInterval.MONTH
                 else -> {
-                    event.channel.sendMessage("Found no matching interval ${split[1]}").queue()
+                    event.channel.sendMessage("Please give an interval (month/week)").queue()
                     return
                 }
             }
         }
         else{
-            event.channel.sendMessage("Found no matching interval (month or week)").queue()
+            event.channel.sendMessage("Please give an interval (month/week)").queue()
             return
         }
         val memes = memeService.getTop3ByInterval(event.guild.id, interval)
+
+        if (memes.isEmpty()){
+            event.channel.sendMessage("No memes found").queue()
+            return
+        }
 
         var i = 1
         for (meme in memes){
@@ -35,7 +40,7 @@ class GetMemesCommand(private val memeService: MemeService) : Command {
                     .setAuthor(event.guild.getMemberById(meme.userId)?.nickname ?: meme.userId)
                     .setDescription("Upvotes: ${meme.upvotes} Downvotes: ${meme.downvotes}")
 
-            event.channel.sendMessage(description.build()).complete()
+            event.channel.sendMessage(description.build()).queue()
             i++
         }
 

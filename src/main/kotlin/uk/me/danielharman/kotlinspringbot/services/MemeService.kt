@@ -17,7 +17,7 @@ import java.util.stream.Collectors
 class MemeService(val mongoTemplate: MongoTemplate, val memeRepository: MemeRepository, val guildService: GuildService) {
 
     fun saveMeme(meme: Meme): Meme {
-        logger.info("Saving meme $meme")
+        logger.debug("Saving meme")
         return memeRepository.save(meme)
     }
 
@@ -50,6 +50,7 @@ class MemeService(val mongoTemplate: MongoTemplate, val memeRepository: MemeRepo
         var memes = mongoTemplate.find(query, Meme::class.java)
 
         memes = memes.stream()
+                .filter { m -> !(m.downvotes == 0 && m.upvotes == 0)}
                 .sorted { o1, o2 -> o2.upvotes - o1.upvotes }
                 .collect(Collectors.toList())
 

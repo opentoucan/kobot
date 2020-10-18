@@ -37,11 +37,9 @@ class MessageListener(private val guildService: GuildService,
 
         if (event.reactionEmote.isEmoji) {
             val emoji = event.reactionEmote.asCodepoints
-            logger.info(emoji)
             val guild = guildService.getGuild(event.guild.id) ?: return
 
             if (guild.memeChannelId == event.channel.id) {
-
                 //Thumbs up
                 if (emoji == "U+1f44d") {
                     memeService.incUpvotes(event.messageId)
@@ -50,9 +48,7 @@ class MessageListener(private val guildService: GuildService,
                 else if (emoji == "U+1f44e") {
                     memeService.incDownvotes(event.messageId)
                 }
-
             }
-
         }
     }
 
@@ -63,11 +59,9 @@ class MessageListener(private val guildService: GuildService,
 
         if (event.reactionEmote.isEmoji) {
             val emoji = event.reactionEmote.asCodepoints
-            logger.info(emoji)
             val guild = guildService.getGuild(event.guild.id) ?: return
 
             if (guild.memeChannelId == event.channel.id) {
-
                 //Thumbs up
                 if (emoji == "U+1f44d") {
                     memeService.decUpvotes(event.messageId)
@@ -76,9 +70,7 @@ class MessageListener(private val guildService: GuildService,
                 else if (emoji == "U+1f44e") {
                     memeService.decDownvotes(event.messageId)
                 }
-
             }
-
         }
     }
 
