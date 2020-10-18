@@ -14,7 +14,8 @@ import uk.me.danielharman.kotlinspringbot.repositories.MemeRepository
 import java.util.stream.Collectors
 
 @Service
-class MemeService(val mongoTemplate: MongoTemplate, val memeRepository: MemeRepository, val guildService: GuildService) {
+class MemeService(private val mongoTemplate: MongoTemplate,
+                  private val memeRepository: MemeRepository, private val guildService: GuildService) {
 
     fun saveMeme(meme: Meme): Meme {
         logger.debug("Saving meme")
@@ -26,12 +27,45 @@ class MemeService(val mongoTemplate: MongoTemplate, val memeRepository: MemeRepo
         MONTH
     }
 
-    fun getTop3ByInterval(guildId: String, interval: MemeInterval ): List<Meme> {
+    //This could probably be implemented using a mongodb aggregation function
+    fun getMemerIds(guildId: String, asc: Boolean = false): List<Pair<String, Int>> {
+        guildService.getGuild(guildId) ?: return listOf()
+
+        val idMap = HashMap<String, Int>()
+
+        memeRepository.findAll().forEach { meme ->
+            idMap[meme.userId] = (idMap[meme.userId]?.plus(meme.upvotes)?.minus(meme.downvotes)
+                    ?: (meme.upvotes - meme.downvotes))
+        }
+
+        return if (asc){
+            val filtered = idMap
+                    .toList()
+                    .sortedBy { (_, value) -> value }
+            if(filtered.size > 4){
+                filtered.subList(0, 4)
+            }else{
+                filtered
+            }
+        }else {
+            val filtered = idMap
+                    .toList()
+                    .sortedByDescending { (_, value) -> value }
+                    .filter { (_, value) -> value > 0 }
+            if(filtered.size > 4){
+                filtered.subList(0, 4)
+            }else{
+                filtered
+            }
+        }
+    }
+
+    fun getTop3ByInterval(guildId: String, interval: MemeInterval): List<Meme> {
 
         val now = DateTime.now()
 
-        val lte :Criteria
-        val gte :Criteria
+        val lte: Criteria
+        val gte: Criteria
         when (interval) {
             MemeInterval.WEEK -> {
                 lte = Criteria("created").lte(now.toDate())
@@ -50,42 +84,42 @@ class MemeService(val mongoTemplate: MongoTemplate, val memeRepository: MemeRepo
         var memes = mongoTemplate.find(query, Meme::class.java)
 
         memes = memes.stream()
-                .filter { m -> !(m.downvotes == 0 && m.upvotes == 0)}
+                .filter { m -> !(m.downvotes == 0 && m.upvotes == 0) }
                 .sorted { o1, o2 -> o2.upvotes - o1.upvotes }
                 .collect(Collectors.toList())
 
-        if(memes.size <= 3)
+        if (memes.size <= 3)
             return memes
 
-        return memes.subList(0,3)
+        return memes.subList(0, 3)
     }
 
     fun decUpvotes(messageId: String) {
 
         val inc = Update().inc("upvotes", -1)
 
-        mongoTemplate.findAndModify(Query(where("postId").`is`(messageId)), inc, Meme::class.java )
+        mongoTemplate.findAndModify(Query(where("postId").`is`(messageId)), inc, Meme::class.java)
     }
 
     fun decDownvotes(messageId: String) {
 
         val inc = Update().inc("downvotes", -1)
 
-        mongoTemplate.findAndModify(Query(where("postId").`is`(messageId)), inc, Meme::class.java )
+        mongoTemplate.findAndModify(Query(where("postId").`is`(messageId)), inc, Meme::class.java)
     }
 
     fun incUpvotes(messageId: String) {
 
         val inc = Update().inc("upvotes", 1)
 
-        mongoTemplate.findAndModify(Query(where("postId").`is`(messageId)), inc, Meme::class.java )
+        mongoTemplate.findAndModify(Query(where("postId").`is`(messageId)), inc, Meme::class.java)
     }
 
     fun incDownvotes(messageId: String) {
 
         val inc = Update().inc("downvotes", 1)
 
-        mongoTemplate.findAndModify(Query(where("postId").`is`(messageId)), inc, Meme::class.java )
+        mongoTemplate.findAndModify(Query(where("postId").`is`(messageId)), inc, Meme::class.java)
     }
 
 

@@ -21,6 +21,7 @@ class CommandService(private val guildService: GuildService,
             "userstats" -> UserStatsCommand(guildService)
             "info" -> InfoCommand(guildService)
             "memes" -> GetMemesCommand(memeService)
+            "memeranking" -> GetMemeRank(memeService)
             "save", "set" -> SavePhraseCommand(guildService, attachmentService)
             "newrequest", "newfeature" -> SaveRequestCommand(featureRequestService)
             "feature", "request" -> FeatureRequestCommand(featureRequestService)
