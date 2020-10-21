@@ -9,7 +9,7 @@ test:
   image: gradle:jdk14
   tags:
     - docker
-  script: ./gradlew check --info
+  script: gradle check --info
 
 dockerbuild:
   stage: dockerbuild
