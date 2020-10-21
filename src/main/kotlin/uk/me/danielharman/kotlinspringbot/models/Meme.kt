@@ -15,4 +15,6 @@ data class Meme(var postId: String, var guildId: String, var userId: String,
     }
 
 
+    fun getScore(): Int = upvotes - downvotes
+
 }

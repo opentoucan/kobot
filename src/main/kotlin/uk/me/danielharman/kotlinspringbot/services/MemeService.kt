@@ -32,7 +32,7 @@ class MemeService(private val mongoTemplate: MongoTemplate,
 
         val idMap = HashMap<String, Int>()
 
-        memeRepository.findAll().forEach { meme ->
+        mongoTemplate.find(Query(where("guildId").`is`(guildId)), Meme::class.java).forEach { meme ->
             idMap[meme.userId] = (idMap[meme.userId]?.plus(meme.upvotes)?.minus(meme.downvotes)
                     ?: (meme.upvotes - meme.downvotes))
         }
@@ -84,7 +84,7 @@ class MemeService(private val mongoTemplate: MongoTemplate,
 
         memes = memes.stream()
                 .filter { m -> !(m.downvotes == 0 && m.upvotes == 0) }
-                .sorted { o1, o2 -> o2.upvotes - o1.upvotes }
+                .sorted { o1, o2 -> o2.getScore() - o1.getScore() }
                 .collect(Collectors.toList())
 
         if (memes.size <= 3)
