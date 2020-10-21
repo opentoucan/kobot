@@ -6,8 +6,9 @@ stages:
   
 build:
   stage: build
+  image: gradle:jdk14
   tags:
-    - shell
+    - docker
   script:
     - ./gradlew --build-cache assemble
   artifacts:
@@ -16,15 +17,15 @@ build:
 
 test:
   stage: test
+  image: gradle:jdk14
   tags:
-    - shell
+    - docker
   script: ./gradlew check --info
 
 dockerbuild:
   stage: dockerbuild
   tags:
     - shell 
-    - docker
   rules:
     - if: '$CI_COMMIT_REF_NAME == "master"'
       when: always
@@ -41,7 +42,7 @@ dockerbuild:
 deploy:
   stage: deploy
   tags:
-    - ssh
+    - shell
   rules:
     - if: '$CI_COMMIT_REF_NAME == "master"'
       when: always
