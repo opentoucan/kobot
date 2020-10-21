@@ -1,7 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.services
 
 import org.joda.time.DateTime
-import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Criteria.where
@@ -120,6 +119,15 @@ class MemeService(private val mongoTemplate: MongoTemplate,
         val inc = Update().inc("downvotes", 1)
 
         mongoTemplate.findAndModify(Query(where("postId").`is`(messageId)), inc, Meme::class.java)
+    }
+
+    fun deleteMeme(guildId: String, messageId: String) {
+        logger.info("[MemeService] Deleting meme")
+        memeRepository.deleteByGuildIdAndPostId(guildId, messageId)
+    }
+
+    fun getMeme(guildId: String, postId: String): Meme? {
+        return memeRepository.findByGuildIdAndPostId(guildId, postId)
     }
 
 
