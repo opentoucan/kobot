@@ -1,6 +1,6 @@
 FROM gradle:jdk14 AS build
 COPY . /app/
-CD /app && gradle --build-cache assemble
+RUN cd /app && gradle --build-cache assemble
 
 FROM openjdk:14-slim
 RUN mkdir /app
