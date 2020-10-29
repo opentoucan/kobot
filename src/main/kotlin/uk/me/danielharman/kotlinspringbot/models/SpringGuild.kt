@@ -2,7 +2,9 @@ package uk.me.danielharman.kotlinspringbot.models
 
 import org.joda.time.DateTime
 import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.mapping.Document
 
+@Document(collection="springGuild")
 data class SpringGuild(private val guildId: String) {
 
     enum class CommandType {
