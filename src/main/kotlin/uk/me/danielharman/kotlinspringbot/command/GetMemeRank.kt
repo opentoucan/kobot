@@ -13,12 +13,13 @@ class GetMemeRank(val memeService: MemeService) : Command {
         val memerIds = memeService.getMemerIds(event.guild.id, asc)
         val des = StringBuilder()
 
+        var counter = 1
         memerIds.forEach {
             pair ->
             val name = event.guild.getMemberById(pair.first)?.nickname
                     ?: event.jda.getUserById(pair.first)?.asTag
                     ?: pair.first
-            des.append("$name: ${pair.second} \n")
+            des.append("#${counter++} $name: S:${pair.second.score}   U:${pair.second.upvotes}   D:${pair.second.downvotes} \n")
         }
 
         event.channel.sendMessage(EmbedBuilder()

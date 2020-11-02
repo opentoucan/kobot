@@ -33,21 +33,37 @@ class MemeService(private val mongoTemplate: MongoTemplate,
 
     fun getMeme(guildId: String, messageId: String): Meme? = memeRepository.findByGuildIdAndMessageId(guildId, messageId)
 
-    //This could probably be implemented using a mongodb aggregation function
-    fun getMemerIds(guildId: String, asc: Boolean = false): List<Pair<String, Int>> {
+    data class MemeRanking(val userId: String, var upvotes: Int, var downvotes: Int) {
+        val score: Int
+            get() = upvotes - downvotes
+    }
+
+    fun getMemerIds(guildId: String, asc: Boolean = false): List<Pair<String, MemeRanking>> {
         guildService.getGuild(guildId) ?: return listOf()
 
-        val idMap = HashMap<String, Int>()
+        val idMap = HashMap<String, MemeRanking>()
 
         mongoTemplate.find(Query(where("guildId").`is`(guildId)), Meme::class.java).forEach { meme ->
-            idMap[meme.userId] = (idMap[meme.userId]?.plus(meme.upvotes)?.minus(meme.downvotes)
-                    ?: (meme.upvotes - meme.downvotes))
+            run {
+
+                if (idMap.containsKey(meme.userId))
+                {
+                    idMap[meme.userId]!!.upvotes += meme.upvotes
+                    idMap[meme.userId]!!.downvotes += meme.downvotes
+                }
+                else
+                {
+                    idMap[meme.userId] = MemeRanking(meme.userId, meme.upvotes, meme.downvotes)
+                }
+
+            }
+
         }
 
         return if (asc) {
             val filtered = idMap
                     .toList()
-                    .sortedBy { (_, value) -> value }
+                    .sortedBy { (_, value) -> value.score }
             if (filtered.size > 10) {
                 filtered.subList(0, 10)
             } else {
@@ -56,8 +72,8 @@ class MemeService(private val mongoTemplate: MongoTemplate,
         } else {
             val filtered = idMap
                     .toList()
-                    .sortedByDescending { (_, value) -> value }
-                    .filter { (_, value) -> value > 0 }
+                    .sortedByDescending { (_, value) -> value.score }
+                    .filter { (_, value) -> value.score > 0 }
             if (filtered.size > 10) {
                 filtered.subList(0, 10)
             } else {
