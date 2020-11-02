@@ -3,7 +3,7 @@ package uk.me.danielharman.kotlinspringbot.models
 import org.joda.time.DateTime
 import org.springframework.data.annotation.Id
 
-data class SpringGuild(private val guildId: String) {
+data class SpringGuild(val guildId: String) {
 
     enum class CommandType {
         STRING,

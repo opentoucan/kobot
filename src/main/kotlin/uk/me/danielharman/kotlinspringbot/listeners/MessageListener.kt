@@ -54,11 +54,11 @@ class MessageListener(private val guildService: GuildService,
 
                 //Thumbs up
                 if (emoji == EmojiCodes.ThumbsUp) {
-                    memeService.incUpvotes(event.messageId)
+                    if (!memeService.addUpvote(guild.guildId, event.messageId, event.userId)) logger.error("[MessageListener] Failed to upvote")
                 }
                 //Thumbs down
                 else if (emoji == EmojiCodes.ThumbsDown) {
-                    memeService.incDownvotes(event.messageId)
+                    if (!memeService.addDownvote(guild.guildId, event.messageId, event.userId)) logger.error("[MessageListener] Failed to downvote")
                 }
             }
         }
@@ -80,11 +80,12 @@ class MessageListener(private val guildService: GuildService,
 
                 //Thumbs up
                 if (emoji == EmojiCodes.ThumbsUp) {
-                    memeService.decUpvotes(event.messageId)
+                    memeService.removeUpvote(guild.guildId, event.messageId, event.userId)
                 }
                 //Thumbs down
                 else if (emoji == EmojiCodes.ThumbsDown) {
-                    memeService.decDownvotes(event.messageId)
+                    memeService.removeDownvote(guild.guildId, event.messageId, event.userId)
+
                 }
             }
         }
@@ -95,7 +96,7 @@ class MessageListener(private val guildService: GuildService,
         val guild = guildService.getGuild(event.guild.id) ?: return
 
         if (guild.memeChannelId == event.channel.id) {
-            memeService.deleteMeme(guild.id, event.messageId)
+            memeService.deleteMeme(guild.guildId, event.messageId)
         }
     }
 
@@ -137,7 +138,7 @@ class MessageListener(private val guildService: GuildService,
                         event.message.addReaction(EmojiCodes.ThumbsUp).queue()
                         event.message.addReaction(EmojiCodes.ThumbsDown).queue()
                         memeService.saveMeme(Meme(event.messageId, event.guild.id,
-                                event.author.id, 0, 0, DateTime.now(), event.message.attachments[0].url))
+                                event.author.id,  event.message.attachments[0].url))
                     }
                 }
 

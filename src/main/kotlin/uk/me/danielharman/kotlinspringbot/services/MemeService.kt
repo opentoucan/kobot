@@ -16,15 +16,22 @@ import java.util.stream.Collectors
 class MemeService(private val mongoTemplate: MongoTemplate,
                   private val memeRepository: MemeRepository, private val guildService: GuildService) {
 
-    fun saveMeme(meme: Meme): Meme {
-        logger.debug("Saving meme")
-        return memeRepository.save(meme)
-    }
-
     enum class MemeInterval {
         WEEK,
         MONTH
     }
+
+    fun saveMeme(meme: Meme): Meme {
+        logger.info("[MemeService] Saving meme")
+        return memeRepository.save(meme)
+    }
+
+    fun deleteMeme(guildId: String, messageId: String) {
+        logger.info("[MemeService] Deleting meme")
+        memeRepository.deleteByGuildIdAndMessageId(guildId, messageId)
+    }
+
+    fun getMeme(guildId: String, messageId: String): Meme? = memeRepository.findByGuildIdAndMessageId(guildId, messageId)
 
     //This could probably be implemented using a mongodb aggregation function
     fun getMemerIds(guildId: String, asc: Boolean = false): List<Pair<String, Int>> {
@@ -37,23 +44,23 @@ class MemeService(private val mongoTemplate: MongoTemplate,
                     ?: (meme.upvotes - meme.downvotes))
         }
 
-        return if (asc){
+        return if (asc) {
             val filtered = idMap
                     .toList()
                     .sortedBy { (_, value) -> value }
-            if(filtered.size > 4){
-                filtered.subList(0, 4)
-            }else{
+            if (filtered.size > 10) {
+                filtered.subList(0, 10)
+            } else {
                 filtered
             }
-        }else {
+        } else {
             val filtered = idMap
                     .toList()
                     .sortedByDescending { (_, value) -> value }
                     .filter { (_, value) -> value > 0 }
-            if(filtered.size > 4){
-                filtered.subList(0, 4)
-            }else{
+            if (filtered.size > 10) {
+                filtered.subList(0, 10)
+            } else {
                 filtered
             }
         }
@@ -84,7 +91,7 @@ class MemeService(private val mongoTemplate: MongoTemplate,
 
         memes = memes.stream()
                 .filter { m -> !(m.downvotes == 0 && m.upvotes == 0) }
-                .sorted { o1, o2 -> o2.getScore() - o1.getScore() }
+                .sorted { o1, o2 -> o2.score - o1.score }
                 .collect(Collectors.toList())
 
         if (memes.size <= 3)
@@ -93,42 +100,35 @@ class MemeService(private val mongoTemplate: MongoTemplate,
         return memes.subList(0, 3)
     }
 
-    fun decUpvotes(messageId: String) {
+    fun addDownvote(guildId: String, messageId: String, userId: String): Boolean {
+        val meme = getMeme(guildId, messageId) ?: return false
 
-        val inc = Update().inc("upvotes", -1)
-
-        mongoTemplate.findAndModify(Query(where("postId").`is`(messageId)), inc, Meme::class.java)
+        val push = Update().push("downvoters", userId)
+        mongoTemplate.findAndModify(Query(where("id").`is`(meme.id)), push, Meme::class.java)
+        return true
     }
 
-    fun decDownvotes(messageId: String) {
+    fun removeUpvote(guildId: String, messageId: String, userId: String): Boolean {
+        val meme = getMeme(guildId, messageId) ?: return false
 
-        val inc = Update().inc("downvotes", -1)
-
-        mongoTemplate.findAndModify(Query(where("postId").`is`(messageId)), inc, Meme::class.java)
+        val pull = Update().pull("upvoters", userId)
+        mongoTemplate.findAndModify(Query(where("id").`is`(meme.id)), pull, Meme::class.java)
+        return true
     }
 
-    fun incUpvotes(messageId: String) {
+    fun addUpvote(guildId: String, messageId: String, userId: String): Boolean {
+        val meme = getMeme(guildId, messageId) ?: return false
 
-        val inc = Update().inc("upvotes", 1)
-
-        mongoTemplate.findAndModify(Query(where("postId").`is`(messageId)), inc, Meme::class.java)
+        val push = Update().push("upvoters", userId)
+        mongoTemplate.findAndModify(Query(where("id").`is`(meme.id)), push, Meme::class.java)
+        return true
     }
 
-    fun incDownvotes(messageId: String) {
+    fun removeDownvote(guildId: String, messageId: String, userId: String): Boolean {
+        val meme = getMeme(guildId, messageId) ?: return false
 
-        val inc = Update().inc("downvotes", 1)
-
-        mongoTemplate.findAndModify(Query(where("postId").`is`(messageId)), inc, Meme::class.java)
+        val pull = Update().pull("downvoters", userId)
+        mongoTemplate.findAndModify(Query(where("id").`is`(meme.id)), pull, Meme::class.java)
+        return true
     }
-
-    fun deleteMeme(guildId: String, messageId: String) {
-        logger.info("[MemeService] Deleting meme")
-        memeRepository.deleteByGuildIdAndPostId(guildId, messageId)
-    }
-
-    fun getMeme(guildId: String, postId: String): Meme? {
-        return memeRepository.findByGuildIdAndPostId(guildId, postId)
-    }
-
-
 }
