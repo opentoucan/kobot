@@ -23,7 +23,7 @@ data class SpringGuild(val guildId: String) {
     var customCommands: HashMap<String, CustomCommand> = hashMapOf()
     var privilegedUsers : List<String> = listOf()
     var logChannelId: String = ""
-    var memeChannelId: String = ""
+    var memeChannels: List<String> = listOf()
     var xkcdChannelId: String = ""
     var volume = 50
     var deafenedChannels: List<String> = listOf()

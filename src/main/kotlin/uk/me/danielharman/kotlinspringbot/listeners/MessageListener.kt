@@ -9,7 +9,6 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import org.joda.time.DateTime
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.helpers.EmojiCodes
@@ -41,7 +40,7 @@ class MessageListener(private val guildService: GuildService,
             val emoji = event.reactionEmote.asCodepoints
             val guild = guildService.getGuild(event.guild.id) ?: return
 
-            if (guild.memeChannelId == event.channel.id) {
+            if (guild.memeChannels.contains(event.channel.id)) {
 
                 if (event.userId == getAuthorIdFromMessageId(event.reaction.textChannel, event.messageId)) {
                     if (emoji == EmojiCodes.ThumbsDown || emoji == EmojiCodes.ThumbsUp) {
@@ -73,7 +72,7 @@ class MessageListener(private val guildService: GuildService,
             val emoji = event.reactionEmote.asCodepoints
             val guild = guildService.getGuild(event.guild.id) ?: return
 
-            if (guild.memeChannelId == event.channel.id) {
+            if (guild.memeChannels.contains(event.channel.id)) {
 
                 if (event.userId == getAuthorIdFromMessageId(event.reaction.textChannel, event.messageId))
                     return
@@ -95,7 +94,7 @@ class MessageListener(private val guildService: GuildService,
 
         val guild = guildService.getGuild(event.guild.id) ?: return
 
-        if (guild.memeChannelId == event.channel.id) {
+        if (guild.memeChannels.contains(event.channel.id)) {
             memeService.deleteMeme(guild.guildId, event.messageId)
         }
     }
@@ -132,13 +131,14 @@ class MessageListener(private val guildService: GuildService,
             }
             else -> {
 
-                if (event.channel.id == guildService.getMemeChannel(event.guild.id)) {
+                if (guildService.getMemeChannels(event.guild.id).contains(event.channel.id)) {
 
                     if (event.message.attachments.isNotEmpty()) {
                         event.message.addReaction(EmojiCodes.ThumbsUp).queue()
                         event.message.addReaction(EmojiCodes.ThumbsDown).queue()
                         memeService.saveMeme(Meme(event.messageId, event.guild.id,
-                                event.author.id,  event.message.attachments[0].url))
+                                event.author.id,  event.message.attachments[0].url,
+                                event.channel.id))
                     }
                 }
 
