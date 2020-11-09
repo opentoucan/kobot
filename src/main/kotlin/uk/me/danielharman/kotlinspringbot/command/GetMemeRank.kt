@@ -13,16 +13,16 @@ class GetMemeRank(val memeService: MemeService) : Command {
         val memerIds = memeService.getMemerIds(event.guild.id, asc)
         val des = StringBuilder()
 
+        var counter = 1
         memerIds.forEach {
             pair ->
             val name = event.guild.getMemberById(pair.first)?.nickname
                     ?: event.jda.getUserById(pair.first)?.asTag
                     ?: pair.first
-            des.append("$name: ${pair.second} \n")
+            des.append("${if(!asc) "#" else ""}${if (!asc) counter++.toString() else ""} $name: S:${pair.second.score}   U:${pair.second.upvotes}   D:${pair.second.downvotes} \n")
         }
-
         event.channel.sendMessage(EmbedBuilder()
-                .setTitle("Meme ranking for ${event.guild.name}")
+                .setTitle(if (asc) "Losers in ${event.guild.name}" else "Meme ranking for ${event.guild.name}")
                 .setColor(Color.GRAY)
                 .appendDescription(des.toString()).build()).queue()
     }

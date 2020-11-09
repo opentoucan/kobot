@@ -5,7 +5,7 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document(collection="springGuild")
-data class SpringGuild(private val guildId: String) {
+data class SpringGuild(val guildId: String) {
 
     enum class CommandType {
         STRING,
@@ -25,7 +25,7 @@ data class SpringGuild(private val guildId: String) {
     var customCommands: HashMap<String, CustomCommand> = hashMapOf()
     var privilegedUsers : List<String> = listOf()
     var logChannelId: String = ""
-    var memeChannelId: String = ""
+    var memeChannels: List<String> = listOf()
     var xkcdChannelId: String = ""
     var volume = 50
     var deafenedChannels: List<String> = listOf()
