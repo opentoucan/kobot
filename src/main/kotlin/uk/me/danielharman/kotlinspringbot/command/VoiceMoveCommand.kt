@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger
-import uk.me.danielharman.kotlinspringbot.helpers.BotHelperFunctions.getBotVoiceChannel
+import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getBotVoiceChannel
 
 class VoiceMoveCommand : VoiceCommand {
     override var voiceChannel: VoiceChannel? = null

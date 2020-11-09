@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.command.*
 import uk.me.danielharman.kotlinspringbot.command.xkcd.XkcdComicCommand
-import uk.me.danielharman.kotlinspringbot.command.xkcd.XkcdLatestCommand
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 
 @Service
@@ -12,6 +11,7 @@ class CommandService(private val guildService: GuildService,
                      private val featureRequestService: RequestService,
                      private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
                      private val attachmentService: AttachmentService,
+                     private val memeService: MemeService,
                      private val xkcdService: XkcdService,
                      private val properties: KotlinBotProperties) {
 
@@ -20,6 +20,8 @@ class CommandService(private val guildService: GuildService,
             "ping" -> PingCommand()
             "userstats" -> UserStatsCommand(guildService)
             "info" -> InfoCommand(guildService)
+            "memes" -> GetMemesCommand(memeService)
+            "memeranking" -> GetMemeRank(memeService)
             "save", "set" -> SavePhraseCommand(guildService, attachmentService)
             "newrequest", "newfeature" -> SaveRequestCommand(featureRequestService)
             "feature", "request" -> FeatureRequestCommand(featureRequestService)

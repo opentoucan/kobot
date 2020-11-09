@@ -2,8 +2,10 @@ package uk.me.danielharman.kotlinspringbot.models
 
 import org.joda.time.DateTime
 import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.mapping.Document
 
-data class SpringGuild(private val guildId: String) {
+@Document(collection="springGuild")
+data class SpringGuild(val guildId: String) {
 
     enum class CommandType {
         STRING,
@@ -23,6 +25,7 @@ data class SpringGuild(private val guildId: String) {
     var customCommands: HashMap<String, CustomCommand> = hashMapOf()
     var privilegedUsers : List<String> = listOf()
     var logChannelId: String = ""
+    var memeChannels: List<String> = listOf()
     var xkcdChannelId: String = ""
     var volume = 50
     var deafenedChannels: List<String> = listOf()

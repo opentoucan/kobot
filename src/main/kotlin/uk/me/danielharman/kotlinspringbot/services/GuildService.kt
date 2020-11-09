@@ -107,6 +107,18 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
                 Update().unset("customCommands.${command}"), SpringGuild::class.java)
     }
 
+    fun addMemeChannel(guildId: String, channelId: String) {
+        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
+                Update().addToSet("memeChannels", channelId), SpringGuild::class.java)
+    }
+
+    fun removeMemeChannel(guildId: String, channelId: String) {
+        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
+                Update().pull("memeChannels", channelId), SpringGuild::class.java)
+    }
+
+    fun getMemeChannels(guildId: String): List<String> = getGuild(guildId)?.memeChannels ?: listOf()
+
     fun setXkcdChannel(guildId: String, channelId: String) {
         val guild = getGuild(guildId)
         if (guild == null) {
@@ -119,7 +131,7 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
 
     fun getXkcdChannel(guildId: String): String = getGuild(guildId)?.xkcdChannelId ?: ""
 
-    fun getXkcdChannels(): List<String> {
+    fun getXkcdChannels(): List<String>{
 
         val query = Query()
         query.fields().include("xkcdChannelId").include("guildId")
