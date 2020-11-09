@@ -5,7 +5,7 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document(collection="springGuild")
-data class SpringGuild(private val guildId: String) {
+data class SpringGuild(val guildId: String) {
 
     enum class CommandType {
         STRING,
