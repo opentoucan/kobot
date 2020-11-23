@@ -3,12 +3,13 @@ package uk.me.danielharman.kotlinspringbot.command
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
-import kotlin.math.min
+import kotlin.math.ceil
 
-class FetchSavedCommand(private val guildService: GuildService) : Command {
+class FetchSavedCommand(private val guildService: GuildService, private val commandService: DiscordCommandService) : Command {
 
-    private val MAXPAGE = 20
+    private val MAX_PAGE_SIZE = 20
 
     override fun execute(event: GuildMessageReceivedEvent) {
         val guild = guildService.getGuild(event.guild.id)
@@ -18,32 +19,31 @@ class FetchSavedCommand(private val guildService: GuildService) : Command {
         }
 
         val split = event.message.contentStripped.split(" ")
+        val page = if (split.size < 2) 1 else split[1].toIntOrNull() ?: 1
 
-        var commandList  = guild.customCommands.entries.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it.key }))
-        val noOfPages = commandList.size / MAXPAGE + 1
-        val pageSelector = min(if(split.size < 2) 1 else split[1].toIntOrNull() ?: 1, noOfPages)
-        val listSize = commandList.size
+        val commandCount = commandService.commandCount(guild.guildId)
 
-        if (commandList.size > 20) {
-            val (i, j) = getPageRange(commandList.size, MAXPAGE, pageSelector)
-            commandList = commandList.subList(i, j)
+        val pages = ceil((commandCount.toDouble() / MAX_PAGE_SIZE)).toInt()
+
+        if (page < 1 || page > pages) {
+            event.channel.sendMessage(Embeds.createErrorEmbed("$page is not a valid page number, choose between 1 and $pages")).queue()
+            return
         }
+
+        val commandList = commandService.getCommands(guild.guildId, page - 1, MAX_PAGE_SIZE)
 
         val builder = EmbedBuilder()
                 .setTitle("Saved commands")
-                .setDescription("Page $pageSelector of $noOfPages ($listSize saved commands)")
+                .setDescription("Page $page of $pages ($commandCount saved commands)")
                 .setColor(0x9d03fc)
 
-        commandList.forEach { (k, v) -> builder.addField(k, truncate(v.value, 30), true) }
+        commandList.forEach { cmd ->
+            builder.addField(cmd.key, truncate(cmd.content ?: cmd.fileName ?: "No Content", 30), true)
+        }
 
         event.channel.sendMessage(builder.build()).queue()
     }
 
-    private fun getPageRange(maxSize: Int, pageSize: Int, page: Int ): Pair<Int, Int> {
-        val startIndex = pageSize * (page - 1)
-        val endIndex = min(startIndex + pageSize, maxSize)
-        return Pair(startIndex, endIndex)
-    }
 
     private fun truncate(str: String, limit: Int): String =
             if (str.length <= limit) str else str.slice(IntRange(0, limit))

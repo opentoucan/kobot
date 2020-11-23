@@ -48,25 +48,6 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
 
     fun getVol(guildId: String) = getGuild(guildId)?.volume ?: 50
 
-    fun saveCommand(guildId: String, command: String, phrase: String, creatorId: String, type: SpringGuild.CommandType = STRING) {
-        val guild = getGuild(guildId)
-        if (guild == null) {
-            createGuild(guildId)
-        }
-        val update = Update()
-        update.set("customCommands.$command", CustomCommand(phrase, type, creatorId, DateTime.now()))
-        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)), update, SpringGuild::class.java)
-    }
-
-    fun getCommand(guildId: String, command: String): CustomCommand? {
-        val guild = getGuild(guildId)
-
-        return if (guild != null) {
-            guild.customCommands[command]
-        } else
-            null
-    }
-
     fun setGuildLogChannel(guildId: String, channelId: String) {
         val guild = getGuild(guildId)
         if (guild == null) {
@@ -100,11 +81,6 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
 
         mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
                 Update().set("privilegedUsers", filter), SpringGuild::class.java)
-    }
-
-    fun deleteCommand(guildId: String, command: String) {
-        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
-                Update().unset("customCommands.${command}"), SpringGuild::class.java)
     }
 
     fun addMemeChannel(guildId: String, channelId: String) {
