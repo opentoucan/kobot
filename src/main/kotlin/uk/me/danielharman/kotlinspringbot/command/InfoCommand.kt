@@ -3,18 +3,19 @@ package uk.me.danielharman.kotlinspringbot.command
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.joda.time.format.ISODateTimeFormat
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
 
-class InfoCommand(private val guildService: GuildService) : Command {
+
+class InfoCommand(private val commandService: DiscordCommandService) : Command {
     override fun execute(event: GuildMessageReceivedEvent) {
         val split = event.message.contentStripped.split(" ")
 
         if (split.size > 1){
 
-            val command = guildService.getCommand(event.guild.id, split[1])
+            val command = commandService.getCommand(event.guild.id, split[1])
 
             if (command == null){
-                event.channel.sendMessage("Command not found").queue()
+                event.channel.sendMessage(Embeds.createErrorEmbed("Command not found")).queue()
                 return
             }
 
@@ -25,7 +26,7 @@ class InfoCommand(private val guildService: GuildService) : Command {
                 event.jda.getUserById(command.creatorId)?.asTag ?: "Unknown"
 
             event.channel.sendMessage(Embeds.infoEmbedBuilder(title = "Command: ${split[1]}")
-                    .appendDescription(command.value)
+                    .appendDescription(command.content ?: command.fileName ?: "No Content")
                     .addField("Creator", creatorName, false)
                     .addField("Created", command.created.toString(ISODateTimeFormat.dateTimeNoMillis()), false)
                     .build()).queue()
