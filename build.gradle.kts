@@ -40,6 +40,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0") // JVM dependency
     implementation(group="io.ktor", name="ktor-client-cio", version="1.3.1")
+    implementation("me.xdrop:fuzzywuzzy:1.3.1")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
