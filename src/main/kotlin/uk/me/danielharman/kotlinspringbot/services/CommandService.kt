@@ -42,6 +42,7 @@ class CommandService(private val guildService: GuildService,
             "summon", "join", "connect" -> SummonCommand()
             "disconnect", "leave", "banish" -> DisconnectCommand()
             "xkcd" -> XkcdComicCommand(xkcdService)
+            "search" -> SearchCommand(discordCommandService)
             else -> SendCustomCommand(guildService, attachmentService, discordCommandService, command)
         }
     }
