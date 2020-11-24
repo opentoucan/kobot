@@ -4,6 +4,7 @@ import me.xdrop.fuzzywuzzy.FuzzySearch
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.domain.Sort.Order
+import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Service
@@ -14,7 +15,7 @@ import java.lang.Integer.min
 import kotlin.math.ceil
 
 @Service
-class DiscordCommandService(private val repository: DiscordCommandRepository, private val guildService: GuildService, private val attachmentService: AttachmentService) {
+class DiscordCommandService(private val repository: DiscordCommandRepository, private val guildService: GuildService, private val attachmentService: AttachmentService, private val mongoTemplate: MongoTemplate) {
 
     fun commandCount(guildId: String): Long {
         guildService.getGuild(guildId) ?: return 0
