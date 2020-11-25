@@ -123,7 +123,7 @@ class MessageListener(private val guildService: GuildService,
         val author = event.author
         val message = event.message
         val guild = event.guild
-        val member = guild.getMember(author)
+        val member = guild.retrieveMember(author).complete()
 
         logger.debug("[${guild.name}] #${event.channel.name} <${member?.nickname ?: author.asTag}>: ${message.contentDisplay}")
 

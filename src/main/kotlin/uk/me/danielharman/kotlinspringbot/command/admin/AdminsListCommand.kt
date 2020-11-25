@@ -22,11 +22,16 @@ class AdminsListCommand(val guildService: GuildService, private val primaryAdmin
         } else {
 
             val stringBuilder = StringBuilder()
+            val primaryAdmin = message.guild.retrieveMemberById(primaryAdminUserId).complete()
 
-            stringBuilder.append("Bot controller:  ${message.jda.getUserById(primaryAdminUserId)?.asTag ?: primaryAdminUserId}\n")
+
+            stringBuilder.append("Bot controller:  ${primaryAdmin.nickname ?: primaryAdmin.user.asTag ?: primaryAdminUserId}\n")
 
             guild.privilegedUsers.forEach { s ->
-                stringBuilder.append(message.jda.getUserById(s)?.asTag ?: s)
+                run {
+                    val member = message.guild.retrieveMemberById(s).complete()
+                    stringBuilder.append(member?.nickname ?: member.user.asTag ?: s)
+                }
             }
 
             EmbedBuilder()

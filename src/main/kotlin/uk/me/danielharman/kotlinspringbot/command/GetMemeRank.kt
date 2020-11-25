@@ -16,8 +16,8 @@ class GetMemeRank(val memeService: MemeService) : Command {
         var counter = 1
         memerIds.forEach {
             pair ->
-            val name = event.guild.getMemberById(pair.first)?.nickname
-                    ?: event.jda.getUserById(pair.first)?.asTag
+            val name = event.guild.retrieveMemberById(pair.first).complete()?.nickname
+                    ?: event.jda.retrieveUserById(pair.first).complete()?.asTag
                     ?: pair.first
             des.append("${if(!asc) "#" else ""}${if (!asc) counter++.toString() else ""} $name: S:${pair.second.score}   U:${pair.second.upvotes}   D:${pair.second.downvotes} \n")
         }

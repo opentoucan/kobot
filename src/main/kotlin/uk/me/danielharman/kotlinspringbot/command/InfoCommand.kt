@@ -23,7 +23,7 @@ class InfoCommand(private val commandService: DiscordCommandService) : Command {
             creatorName = if(command.creatorId.isEmpty())
                 "Unknown"
             else
-                event.jda.getUserById(command.creatorId)?.asTag ?: "Unknown"
+                event.jda.retrieveUserById(command.creatorId).complete()?.asTag ?: "Unknown"
 
             event.channel.sendMessage(Embeds.infoEmbedBuilder(title = "Command: ${split[1]}")
                     .appendDescription(command.content ?: command.fileName ?: "No Content")

@@ -23,13 +23,13 @@ class UserStatsCommand (private val guildService: GuildService): Command{
                     .sorted(Comparators.mapStrIntComparator)
                     .limit(20)
                     .forEach { (s, i) ->
-                        stringBuilder.append("${event.message.jda.getUserById(s)?.name ?: s} - $i words\n")
+                        stringBuilder.append("${event.message.guild.retrieveMemberById(s).complete()?.nickname ?: s} - $i words\n")
                     }
 
             EmbedBuilder()
                     .appendDescription(stringBuilder.toString())
                     .setColor(0x9d03fc)
-                    .setTitle("Word said per user for $guildName")
+                    .setTitle("Words said per user for $guildName")
                     .build()
         }
 

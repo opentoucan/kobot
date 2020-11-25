@@ -31,7 +31,7 @@ class GetMemesCommand(private val memeService: MemeService) : Command {
 
             val description = EmbedBuilder().setImage(meme.url)
                     .setTitle("#$i")
-                    .setAuthor(event.guild.getMemberById(meme.userId)?.nickname ?: meme.userId)
+                    .setAuthor(event.guild.retrieveMemberById(meme.userId).complete()?.nickname ?: meme.userId)
                     .setDescription("Channel: ${getChannelName(event.jda, meme.channelId)}\nUpvotes: ${meme.upvotes} Downvotes: ${meme.downvotes}")
 
             event.channel.sendMessage(description.build()).queue()

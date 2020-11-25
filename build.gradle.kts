@@ -28,7 +28,7 @@ repositories {
 dependencies {
     implementation(group="org.kohsuke", name="wordnet-random-name", version= "1.3")
     implementation(group = "joda-time", name = "joda-time", version = "2.10.6")
-    implementation("net.dv8tion:JDA:4.1.1_141")
+    implementation("net.dv8tion:JDA:4.2.0_222")
     implementation("com.sedmelluq:lavaplayer:1.3.49")
     implementation(group = "com.typesafe.akka", name = "akka-actor_2.13", version = "2.6.5")
     implementation("org.springframework.boot:spring-boot-starter-security")
