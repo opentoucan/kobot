@@ -1,7 +1,6 @@
-package uk.me.danielharman.kotlinspringbot.actors
+package uk.me.danielharman.kotlinspringbot.actors.discord
 
 import akka.actor.UntypedAbstractActor
-import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
@@ -11,6 +10,8 @@ import org.springframework.context.annotation.Scope
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.actors.discord.messages.DiscordChannelEmbedMessage
+import uk.me.danielharman.kotlinspringbot.actors.discord.messages.DiscordChannelMessage
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds.createXkcdComicEmbed
 import uk.me.danielharman.kotlinspringbot.services.CommandService
 import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
@@ -18,7 +19,6 @@ import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
 import uk.me.danielharman.kotlinspringbot.services.XkcdService
-
 
 
 @Component
@@ -32,6 +32,7 @@ class DiscordActor(val guildService: GuildService,
 ) : UntypedAbstractActor() {
 
     private lateinit var jda: JDA
+    private var running = false
 
     override fun onReceive(message: Any?) = when (message) {
         "start" -> start()
@@ -44,6 +45,7 @@ class DiscordActor(val guildService: GuildService,
     }
 
     fun start() {
+        running = true
         logger.info("Starting discord actor")
         val builder: JDABuilder = JDABuilder.create(
                 properties.token,
@@ -63,6 +65,7 @@ class DiscordActor(val guildService: GuildService,
     fun stop() {
         logger.info("Shutting down Discord")
         jda.shutdown()
+        running = false
         logger.info("Shutdown complete")
     }
 
@@ -72,19 +75,19 @@ class DiscordActor(val guildService: GuildService,
         start()
     }
 
-    fun sendLatestXkcd(){
+    fun sendLatestXkcd() {
         logger.info("[Discord Actor] Checking for new XKCD comic")
 
         val xkcdChannels = guildService.getXkcdChannels()
 
-        if(xkcdChannels.isEmpty())
+        if (xkcdChannels.isEmpty())
             return
 
         val last = xkcdService.getLast()
         val latestComic = xkcdService.getLatestComic()
 
         logger.info("[Discord Actor] XKCD last comic recorded #${last}. Current #${latestComic.num}")
-        if(last == null || last.num < latestComic.num) {
+        if (last == null || last.num < latestComic.num) {
             xkcdService.setLast(latestComic.num)
             for (channel in xkcdChannels) {
                 self().tell(DiscordChannelEmbedMessage(createXkcdComicEmbed(latestComic, "Latest comic"), channel), self())
@@ -92,15 +95,15 @@ class DiscordActor(val guildService: GuildService,
         }
     }
 
-    fun sendChannelMessage(msg : DiscordChannelMessage){
-        jda.getTextChannelById(msg.channelId)?.sendMessage(msg.msg)?.queue() ?: logger.error("Could not send message $msg")
+    fun sendChannelMessage(msg: DiscordChannelMessage) {
+        jda.getTextChannelById(msg.channelId)?.sendMessage(msg.msg)?.queue()
+                ?: logger.error("Could not send message $msg")
     }
 
-    fun sendChannelMessage(msg : DiscordChannelEmbedMessage){
-        jda.getTextChannelById(msg.channelId)?.sendMessage(msg.msg)?.queue() ?: logger.error("Could not send message $msg")
+    fun sendChannelMessage(msg: DiscordChannelEmbedMessage) {
+        jda.getTextChannelById(msg.channelId)?.sendMessage(msg.msg)?.queue()
+                ?: logger.error("Could not send message $msg")
     }
 
-    data class DiscordChannelMessage(val msg: String, val guildId: String, val channelId: String)
-    data class DiscordChannelEmbedMessage(val msg: MessageEmbed, val channelId: String)
 }
 

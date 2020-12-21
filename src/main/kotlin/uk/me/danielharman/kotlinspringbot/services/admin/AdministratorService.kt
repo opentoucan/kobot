@@ -1,5 +1,7 @@
 package uk.me.danielharman.kotlinspringbot.services.admin
 
+import org.springframework.data.mongodb.core.MongoOperations
+import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.models.admin.Administrator
@@ -11,7 +13,7 @@ import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResu
 import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
 
 @Service
-class AdministratorService (private val repository: AdministratorRepository, private val props: KotlinBotProperties) {
+class AdministratorService (private val repository: AdministratorRepository, private val props: KotlinBotProperties, private val mongoOperations: MongoOperations) {
 
     fun getAdminById(id: String): OperationResult<Administrator?>{
         val administrator = repository.findById(id)
@@ -41,9 +43,15 @@ class AdministratorService (private val repository: AdministratorRepository, pri
         return successResult("Deleted")
     }
 
-    fun addRoles(roles: Set<Role>){
-        TODO()
-    }
+//    fun addRoles(roles: Set<Role>): OperationResult<String?> {
+//        if (roles.isEmpty())
+//            return successResult("")
+//
+//        val update = Update().AddToSetBuilder("roles").each(roles)
+//
+//        mongoOperations.updateFirst()
+//
+//    }
 
     fun removeRoles(roles: Set<Role>){
         TODO()
