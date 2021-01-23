@@ -7,7 +7,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
-import uk.me.danielharman.kotlinspringbot.ApplicationLogger
+import uk.me.danielharman.kotlinspringbot.objects.ApplicationLogger
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 
 //TODO re-write because dumb things because java inline class overrides

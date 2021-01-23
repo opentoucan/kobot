@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.query.Criteria.where
 import org.springframework.data.mongodb.core.query.Query.query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.data.mongodb.core.query.Update.update
-import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
+import uk.me.danielharman.kotlinspringbot.objects.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 

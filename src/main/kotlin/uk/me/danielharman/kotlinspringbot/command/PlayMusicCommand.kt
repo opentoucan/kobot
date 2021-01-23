@@ -2,7 +2,7 @@ package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
-import uk.me.danielharman.kotlinspringbot.ApplicationLogger
+import uk.me.danielharman.kotlinspringbot.objects.ApplicationLogger
 import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
 import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getBotVoiceChannel
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider

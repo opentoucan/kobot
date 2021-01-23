@@ -1,4 +1,4 @@
-package uk.me.danielharman.kotlinspringbot.actors.discord.messages
+package uk.me.danielharman.kotlinspringbot.models
 
 import net.dv8tion.jda.api.entities.MessageEmbed
 

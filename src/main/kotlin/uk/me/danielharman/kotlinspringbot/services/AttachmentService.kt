@@ -4,7 +4,7 @@ import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.gridfs.GridFsTemplate
 import org.springframework.stereotype.Service
-import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
+import uk.me.danielharman.kotlinspringbot.objects.ApplicationLogger.logger
 import java.io.InputStream
 
 @Service

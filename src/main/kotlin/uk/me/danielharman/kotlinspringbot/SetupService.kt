@@ -1,25 +1,31 @@
 package uk.me.danielharman.kotlinspringbot
 
-import akka.actor.ActorRef
-import akka.actor.ActorSystem
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.data.mongodb.core.MongoOperations
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
-import uk.me.danielharman.kotlinspringbot.actors.ActorProvider
+import uk.me.danielharman.kotlinspringbot.objects.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.security.DashboardUser
 import uk.me.danielharman.kotlinspringbot.security.DashboardUserRepository
-import java.time.Duration
+import uk.me.danielharman.kotlinspringbot.services.*
+import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 import java.util.*
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
 
 @Component
 @Profile("!test")
-class SetupService(var actorProvider: ActorProvider, val userRepository: DashboardUserRepository,
-                   val env: Environment, val mongoOperations: MongoOperations, val actorSystem: ActorSystem) {
+class SetupService(
+    val userRepository: DashboardUserRepository,
+    val env: Environment, val mongoOperations: MongoOperations,
+    val guildService: GuildService,
+    val adminCommandService: AdminCommandService,
+    val commandService: CommandService,
+    val memeService: MemeService,
+    val properties: KotlinBotProperties,
+    val discordService: DiscordService
+) {
 
     @PostConstruct
     fun setup() {
@@ -56,27 +62,32 @@ class SetupService(var actorProvider: ActorProvider, val userRepository: Dashboa
         }
 
         if (!activeProfiles.contains("discordDisabled")) {
-            logger.info("Creating discord actor")
-            val discordActor = actorProvider.createActor("discordActor", "discord-actor")
+            if (!DiscordObject.initialised) {
+                DiscordObject.init(
+                    guildService,
+                    adminCommandService,
+                    commandService,
+                    memeService,
+                    properties
+                )
+            }
 
-            discordActor?.tell("start", ActorRef.noSender())
-                    ?: logger.error("Failed to start Discord actor")
-
-            actorSystem.scheduler().schedule(Duration.ofSeconds(10), Duration.ofHours(3), discordActor,
-                    "xkcd", actorSystem.dispatcher(), ActorRef.noSender())
+            Timer().scheduleAtFixedRate(object : TimerTask() {
+                override fun run() {
+                    discordService.sendLatestXkcd()
+                }
+            }, 3000, 10800000) // Start after 3 seconds, check every 3hrs
 
         } else {
             logger.info("Running with Discord disabled")
         }
-
-
 
     }
 
     @PreDestroy
     fun destroy() {
         logger.info("Cleaning up for shutdown")
-        actorProvider.getActor("discord-actor")?.tell("stop", ActorRef.noSender())
+        DiscordObject.destroy()
         logger.info("Cleanup complete")
     }
 

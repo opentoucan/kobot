@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
-import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
+import uk.me.danielharman.kotlinspringbot.objects.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.SchemaUpdater
 import uk.me.danielharman.kotlinspringbot.models.XkcdComic
 

@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import uk.me.danielharman.kotlinspringbot.ApplicationLogger
+import uk.me.danielharman.kotlinspringbot.objects.ApplicationLogger
 import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getBotVoiceChannel
 
 class VoiceMoveCommand : VoiceCommand {
