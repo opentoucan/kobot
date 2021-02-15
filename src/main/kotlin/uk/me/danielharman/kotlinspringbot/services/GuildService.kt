@@ -1,6 +1,5 @@
 package uk.me.danielharman.kotlinspringbot.services
 
-import org.joda.time.DateTime
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria.where
 import org.springframework.data.mongodb.core.query.Query
@@ -8,8 +7,6 @@ import org.springframework.data.mongodb.core.query.Query.query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
-import uk.me.danielharman.kotlinspringbot.models.SpringGuild.CommandType.STRING
-import uk.me.danielharman.kotlinspringbot.models.SpringGuild.CustomCommand
 import uk.me.danielharman.kotlinspringbot.repositories.GuildRepository
 import java.util.stream.Collectors
 
@@ -136,5 +133,9 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
     }
 
     fun getDeafenedChannels(guildId: String): List<String> = getGuild(guildId)?.deafenedChannels ?: listOf()
+
+    fun getGuildsWithoutAdmins(): List<SpringGuild> {
+        return mongoTemplate.find(Query(where("privilegedUsers").size(0)), SpringGuild::class.java);
+    }
 
 }

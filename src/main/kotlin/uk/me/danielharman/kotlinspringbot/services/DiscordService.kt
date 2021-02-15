@@ -1,5 +1,8 @@
 package uk.me.danielharman.kotlinspringbot.services
 
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.PrivateChannel
+import net.dv8tion.jda.api.entities.TextChannel
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
@@ -40,14 +43,27 @@ class DiscordService(
         }
     }
 
-    fun sendChannelMessage(msg: DiscordChannelMessage) {
-        DiscordObject.jda.getTextChannelById(msg.channelId)?.sendMessage(msg.msg)?.queue()
-            ?: logger.error("Could not send message $msg")
+    fun sendUserMessage(msg: String, userId: String) :PrivateChannel?  {
+        val user = DiscordObject.jda.retrieveUserById(userId).complete()
+        val privateChannel = user.openPrivateChannel().complete()
+        privateChannel.sendMessage(msg).queue()
+        return privateChannel
     }
 
-    fun sendChannelMessage(msg: DiscordChannelEmbedMessage) {
-        DiscordObject.jda.getTextChannelById(msg.channelId)?.sendMessage(msg.msg)?.queue()
-            ?: logger.error("Could not send message $msg")
+    fun sendChannelMessage(msg: DiscordChannelMessage): TextChannel? {
+        val channel = DiscordObject.jda.getTextChannelById(msg.channelId)
+        channel?.sendMessage(msg.msg)?.queue() ?: logger.error("Could not send message $msg")
+        return channel
     }
+
+    fun sendChannelMessage(msg: DiscordChannelEmbedMessage): TextChannel? {
+        val channel = DiscordObject.jda.getTextChannelById(msg.channelId)
+        channel?.sendMessage(msg.msg)?.queue() ?: logger.error("Could not send message $msg")
+        return channel
+    }
+
+    fun getGuild(id: String): Guild? = DiscordObject.jda.getGuildById(id)
+
+    fun getBotName(): String = DiscordObject.jda.selfUser.name
 
 }
