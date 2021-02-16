@@ -1,5 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.services
 
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria.where
 import org.springframework.data.mongodb.core.query.Query
@@ -10,12 +11,16 @@ import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResu
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.repositories.GuildRepository
 import java.util.stream.Collectors
+import kotlin.math.max
 
 @Service
 class GuildService(private val guildRepository: GuildRepository, private val mongoTemplate: MongoTemplate) {
 
     fun getGuild(serverId: String): SpringGuild? = guildRepository.findByGuildId(serverId)
     fun createGuild(guildId: String): SpringGuild = guildRepository.save(SpringGuild(guildId))
+    fun getGuilds(pageSize: Int = 10, page: Int = 0): List<SpringGuild> =
+        guildRepository.findAll(PageRequest.of(max(page, 0),  max(pageSize, 1))).toList()
+
 
     fun updateUserCount(guildId: String, userId: String, count: Int) {
         val guild = getGuild(guildId)

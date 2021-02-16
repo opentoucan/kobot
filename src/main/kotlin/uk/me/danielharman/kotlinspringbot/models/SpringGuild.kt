@@ -1,10 +1,11 @@
 package uk.me.danielharman.kotlinspringbot.models
 
+import org.bson.types.ObjectId
 import org.joda.time.DateTime
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 
-@Document(collection="springGuild")
+@Document(collection = "springGuild")
 data class SpringGuild(val guildId: String) {
 
     enum class CommandType {
@@ -12,8 +13,11 @@ data class SpringGuild(val guildId: String) {
         FILE
     }
 
-    data class CustomCommand(val value: String, val type: CommandType,
-                             val creatorId: String, val created: DateTime)
+    data class CustomCommand(
+        val value: String, val type: CommandType,
+        val creatorId: String, val created: DateTime,
+        var keyword: String = "", var id: String = ObjectId.get().toHexString()
+    )
 
     @Id
     lateinit var id: String
@@ -23,7 +27,7 @@ data class SpringGuild(val guildId: String) {
     var userWordCounts: HashMap<String, Int> = hashMapOf()
     var savedCommands: HashMap<String, String> = hashMapOf()
     var customCommands: HashMap<String, CustomCommand> = hashMapOf()
-    var privilegedUsers : List<String> = listOf()
+    var privilegedUsers: List<String> = listOf()
     var logChannelId: String = ""
     var memeChannels: List<String> = listOf()
     var xkcdChannelId: String = ""
