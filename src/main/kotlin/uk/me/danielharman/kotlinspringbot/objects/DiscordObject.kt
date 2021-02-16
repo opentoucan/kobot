@@ -4,6 +4,9 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
+import org.joda.time.DateTime
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
 import uk.me.danielharman.kotlinspringbot.services.*
@@ -12,6 +15,8 @@ object DiscordObject {
 
     lateinit var jda: JDA
     var initialised : Boolean = false
+    var startTime: DateTime? = null
+    val logger : Logger = LoggerFactory.getLogger(this::class.java)
 
     fun init(guildService: GuildService,
              adminCommandService: AdminCommandService,
@@ -20,7 +25,7 @@ object DiscordObject {
              properties: KotlinBotProperties
     ) {
 
-        ApplicationLogger.logger.info("Starting discord")
+        logger.info("Starting discord")
 
         val builder: JDABuilder = JDABuilder.create(
             properties.token,
@@ -36,12 +41,16 @@ object DiscordObject {
             .addEventListeners(MessageListener(guildService, adminCommandService, commandService, properties, memeService))
 
         initialised = true
+        startTime = DateTime.now()
         jda = builder.build().awaitReady()
     }
 
-    fun destroy(){
+    fun teardown(){
+        logger.info("Discord teardown")
         if (initialised){
             jda.shutdown()
         }
+        initialised = false
+        startTime = null
     }
 }

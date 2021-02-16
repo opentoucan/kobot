@@ -1,5 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.services.admin
 
+import org.joda.time.DateTime
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.mongodb.core.MongoOperations
@@ -11,6 +12,7 @@ import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResu
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.models.admin.Administrator
 import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
+import uk.me.danielharman.kotlinspringbot.objects.ApplicationInfo
 import uk.me.danielharman.kotlinspringbot.repositories.admin.AdministratorRepository
 import uk.me.danielharman.kotlinspringbot.services.DiscordService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
@@ -23,6 +25,37 @@ class AdministratorService (private val repository: AdministratorRepository,
                             private val mongoOperations: MongoOperations) {
 
     private val logger : Logger = LoggerFactory.getLogger(this::class.java)
+
+    fun getBotVersion(): OperationResult<String?> = successResult(ApplicationInfo.version)
+
+    fun getBotStartTime(): OperationResult<DateTime?> = successResult(ApplicationInfo.startTime)
+
+    fun getDiscordStartTime(): OperationResult<DateTime?> = discordService.getDiscordStartTime()
+
+    fun getBotDiscordName(): OperationResult<String?> = successResult(discordService.getBotName())
+
+    fun closeDiscordConnection(userId: String): OperationResult<String?>{
+        val admin = getBotAdministratorById(userId)
+        if(admin.failure)
+            return failResult(admin.message)
+        return discordService.closeDiscordConnection()
+    }
+
+    fun startDiscordConnection(userId: String): OperationResult<String?>{
+        val admin = getBotAdministratorById(userId)
+        if(admin.failure)
+            return failResult(admin.message)
+        return discordService.startDiscordConnection()
+    }
+
+    fun restartDiscordConnection(userId: String): OperationResult<String?>{
+        val closeDiscordConnection = closeDiscordConnection(userId)
+        if(closeDiscordConnection.failure)
+        {
+            return closeDiscordConnection
+        }
+        return startDiscordConnection(userId)
+    }
 
     fun getBotAdministratorById(id: String): OperationResult<Administrator?>{
         val administrator = repository.findById(id)
@@ -38,8 +71,12 @@ class AdministratorService (private val repository: AdministratorRepository,
         return successResult(administrator)
     }
 
-    fun createBotAdministrator(id: String, roles: Set<Role>): OperationResult<Administrator?>{
-        val administrator = repository.save(Administrator(id, roles))
+    fun createBotAdministrator(userId: String, discordId: String, roles: Set<Role>): OperationResult<Administrator?>{
+        val admin = getBotAdministratorById(userId)
+        if(admin.failure)
+            return admin
+
+        val administrator = repository.save(Administrator(discordId, roles))
 
         return successResult(administrator)
     }

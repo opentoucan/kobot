@@ -1,15 +1,15 @@
 package uk.me.danielharman.kotlinspringbot
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.data.mongodb.core.MongoOperations
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.objects.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.security.DashboardUser
 import uk.me.danielharman.kotlinspringbot.security.DashboardUserRepository
 import uk.me.danielharman.kotlinspringbot.services.*
-import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 import java.util.*
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
@@ -17,15 +17,12 @@ import javax.annotation.PreDestroy
 @Component
 @Profile("!test")
 class SetupService(
-    val userRepository: DashboardUserRepository,
-    val env: Environment, val mongoOperations: MongoOperations,
-    val guildService: GuildService,
-    val adminCommandService: AdminCommandService,
-    val commandService: CommandService,
-    val memeService: MemeService,
-    val properties: KotlinBotProperties,
-    val discordService: DiscordService
+    private val userRepository: DashboardUserRepository,
+    private val env: Environment, val mongoOperations: MongoOperations,
+    private val discordService: DiscordService
 ) {
+
+    private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     @PostConstruct
     fun setup() {
@@ -62,16 +59,7 @@ class SetupService(
         }
 
         if (!activeProfiles.contains("discordDisabled")) {
-            if (!DiscordObject.initialised) {
-                DiscordObject.init(
-                    guildService,
-                    adminCommandService,
-                    commandService,
-                    memeService,
-                    properties
-                )
-            }
-
+            logger.info(discordService.startDiscordConnection().value)
             Timer().scheduleAtFixedRate(object : TimerTask() {
                 override fun run() {
                     discordService.sendLatestXkcd()
@@ -87,7 +75,7 @@ class SetupService(
     @PreDestroy
     fun destroy() {
         logger.info("Cleaning up for shutdown")
-        DiscordObject.destroy()
+        logger.info(discordService.closeDiscordConnection().message)
         logger.info("Cleanup complete")
     }
 

@@ -23,6 +23,7 @@ import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
 import uk.me.danielharman.kotlinspringbot.repositories.admin.AdministratorRepository
 import uk.me.danielharman.kotlinspringbot.services.DiscordService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
+import java.util.*
 
 @SpringBootTest
 @EnableConfigurationProperties(value = [KotlinBotProperties::class])
@@ -51,9 +52,11 @@ internal class AdministratorServiceTest {
     @Test
     fun shouldCreateAdmin() {
         val stubAdministrator = Administrator("123", setOf())
+        val stubAdmin2 = Administrator("abc")
+        Mockito.`when`(repository.findById("abc")).thenReturn(Optional.of(stubAdmin2))
         Mockito.`when`(repository.save(Mockito.any(Administrator::class.java))).thenReturn(stubAdministrator)
 
-        val sut = administratorService.createBotAdministrator("123", setOf())
+        val sut = administratorService.createBotAdministrator("abc", "123", setOf())
 
         assertTrue(sut.success)
         assertThat(
