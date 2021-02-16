@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Query.query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
+import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.repositories.GuildRepository
 import java.util.stream.Collectors
@@ -60,7 +61,7 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
         return guild.privilegedUsers.contains(userId)
     }
 
-    fun addPrivileged(guildId: String, userId: String) {
+    fun addPrivileged(guildId: String, userId: String): OperationResult<String?> {
         val guild = getGuild(guildId)
         if (guild == null) {
             createGuild(guildId)
@@ -68,16 +69,19 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
 
         mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
                 Update().addToSet("privilegedUsers", userId), SpringGuild::class.java)
+
+        return OperationResult.successResult("Added $userId")
     }
 
-    fun removedPrivileged(guildId: String, userId: String) {
+    fun removedPrivileged(guildId: String, userId: String): OperationResult<String?> {
 
-        val guild = getGuild(guildId) ?: return
+        val guild = getGuild(guildId) ?: return OperationResult.failResult("Could not find guild")
 
         val filter = guild.privilegedUsers.filter { s -> s != userId }
 
         mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
                 Update().set("privilegedUsers", filter), SpringGuild::class.java)
+        return OperationResult.successResult("Removed $userId")
     }
 
     fun addMemeChannel(guildId: String, channelId: String) {
@@ -136,6 +140,11 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
 
     fun getGuildsWithoutAdmins(): List<SpringGuild> {
         return mongoTemplate.find(Query(where("privilegedUsers").size(0)), SpringGuild::class.java);
+    }
+
+    fun deleteSpringGuild(guildId: String): OperationResult<String?> {
+        guildRepository.deleteByGuildId(guildId)
+        return OperationResult.successResult("Deleted")
     }
 
 }

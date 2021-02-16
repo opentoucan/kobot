@@ -17,7 +17,6 @@ import uk.me.danielharman.kotlinspringbot.services.GuildService
 
 @Service
 class AdministratorService (private val repository: AdministratorRepository,
-                            private val props: KotlinBotProperties,
                             private val guildService: GuildService,
                             private val discordService: DiscordService,
                             private val properties: KotlinBotProperties,
@@ -25,7 +24,7 @@ class AdministratorService (private val repository: AdministratorRepository,
 
     private val logger : Logger = LoggerFactory.getLogger(this::class.java)
 
-    fun getAdminById(id: String): OperationResult<Administrator?>{
+    fun getBotAdministratorById(id: String): OperationResult<Administrator?>{
         val administrator = repository.findById(id)
 
         if(administrator.isEmpty)
@@ -34,23 +33,70 @@ class AdministratorService (private val repository: AdministratorRepository,
         return successResult(administrator.get())
     }
 
-    fun getAdminByDiscordId(id: String): OperationResult<Administrator?>{
+    fun getBotAdministratorByDiscordId(id: String): OperationResult<Administrator?>{
         val administrator = repository.getByDiscordId(id) ?: return failResult("Administrator not found")
         return successResult(administrator)
     }
 
-    fun createAdmin(id: String, roles: Set<Role>): OperationResult<Administrator?>{
+    fun createBotAdministrator(id: String, roles: Set<Role>): OperationResult<Administrator?>{
         val administrator = repository.save(Administrator(id, roles))
 
         return successResult(administrator)
     }
 
-    fun removeAdmin(id: String) : OperationResult<String?>{
-        if (id == props.primaryPrivilegedUserId){
+    fun removeBotAdministrator(id: String) : OperationResult<String?>{
+        if (id == properties.primaryPrivilegedUserId){
             return failResult("Cannot remove primary admin")
         }
         repository.deleteByDiscordId(id)
         return successResult("Deleted")
+    }
+
+    fun addSpringGuildAdministrator(userId: String, guildId: String, newAdminId: String): OperationResult<String?>{
+        //TODO: Permissions
+        val guild = guildService.getGuild(guildId) ?: return failResult("No such guild.")
+
+        if(!guild.privilegedUsers.contains(userId))
+        {
+            return failResult("Insufficient permissions.")
+        }
+
+        return guildService.addPrivileged(guildId, newAdminId)
+    }
+
+    fun removeSpringGuildAdministrator(userId: String, guildId: String, adminId: String): OperationResult<String?>{
+        //TODO: Permissions
+        val guild = guildService.getGuild(guildId) ?: return failResult("No such guild.")
+
+        if(!guild.privilegedUsers.contains(userId))
+        {
+            return failResult("Insufficient permissions.")
+        }
+
+        return guildService.removedPrivileged(guildId, adminId)
+    }
+
+    fun deleteSpringGuild(userId: String, guildId: String): OperationResult<String?>{
+        //TODO: Permissions
+        val guild = guildService.getGuild(guildId) ?: return failResult("No such guild.")
+
+        if(!guild.privilegedUsers.contains(userId))
+        {
+            return failResult("Insufficient permissions.")
+        }
+
+        return guildService.deleteSpringGuild(guildId)
+    }
+
+    fun getSpringGuild(userId: String, guildId: String): OperationResult<SpringGuild?>{
+        //TODO: Permissions
+        val guild = guildService.getGuild(guildId) ?: return failResult("No such guild")
+
+        if(!guild.privilegedUsers.contains(userId))
+        {
+            return failResult("Insufficient permissions.")
+        }
+        return successResult(guild)
     }
 
     fun syncGuildAdmins() : OperationResult<String?>{
