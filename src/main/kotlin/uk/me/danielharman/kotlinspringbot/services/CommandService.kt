@@ -12,6 +12,7 @@ class CommandService(private val guildService: GuildService,
                      private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
                      private val attachmentService: AttachmentService,
                      private val memeService: MemeService,
+                     private val discordCommandService: DiscordCommandService,
                      private val xkcdService: XkcdService,
                      private val properties: KotlinBotProperties) {
 
@@ -19,10 +20,10 @@ class CommandService(private val guildService: GuildService,
         return when (command) {
             "ping" -> PingCommand()
             "userstats" -> UserStatsCommand(guildService)
-            "info" -> InfoCommand(guildService)
+            "info" -> InfoCommand(discordCommandService)
             "memes" -> GetMemesCommand(memeService)
             "memeranking" -> GetMemeRank(memeService)
-            "save", "set" -> SavePhraseCommand(guildService, attachmentService)
+            "save", "set" -> SavePhraseCommand(discordCommandService)
             "newrequest", "newfeature" -> SaveRequestCommand(featureRequestService)
             "feature", "request" -> FeatureRequestCommand(featureRequestService)
             "features", "requests" -> ListFeaturesCommand(featureRequestService)
@@ -33,15 +34,16 @@ class CommandService(private val guildService: GuildService,
             "nowplaying", "trackinfo", "playing" -> TrackInfoCommand(guildMusicPlayerProvider)
             "vol", "volume" -> SetVolumeCommand(guildMusicPlayerProvider, guildService)
             "getvol", "getvolume" -> GetVolumeCommand(guildService)
-            "saved" -> FetchSavedCommand(guildService)
+            "saved" -> FetchSavedCommand(guildService, discordCommandService)
             "help" -> HelpCommand(properties.commandPrefix)
             "clear", "cleanup", "cls" -> ClearBotMessagesCommand(properties.commandPrefix, properties.privilegedCommandPrefix)
             "voicemove" -> VoiceMoveCommand()
-            "deletecommand" -> DeleteCommand(guildService, attachmentService)
+            "deletecommand" -> DeleteCommand(discordCommandService)
             "summon", "join", "connect" -> SummonCommand()
             "disconnect", "leave", "banish" -> DisconnectCommand()
             "xkcd" -> XkcdComicCommand(xkcdService)
-            else -> CustomCommand(guildService, attachmentService, command)
+            "search" -> SearchCommand(discordCommandService)
+            else -> SendCustomCommand(guildService, attachmentService, discordCommandService, command)
         }
     }
 }

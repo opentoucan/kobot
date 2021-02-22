@@ -8,7 +8,6 @@ import io.ktor.client.statement.readText
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.springframework.data.mongodb.core.MongoOperations
-import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
@@ -31,7 +30,7 @@ class XkcdService(private val mongoOperations: MongoOperations) {
 
         val client = HttpClient(CIO)
         val response = runBlocking{client.get<String>(latestUrl)}
-        return Json.parse(XkcdComic.serializer(), response)
+        return Json.decodeFromString(XkcdComic.serializer(), response)
     }
 
     fun getComic(number: Int) : XkcdComic?{
@@ -45,7 +44,7 @@ class XkcdService(private val mongoOperations: MongoOperations) {
         }
 
         val s = runBlocking { response.readText() }
-        return Json.parse(XkcdComic.serializer(), s )
+        return Json.decodeFromString(XkcdComic.serializer(), s )
     }
 
     fun setLast(ver: Int): Int {

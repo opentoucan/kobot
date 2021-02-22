@@ -15,7 +15,9 @@ class AddAdminCommand(private val guildService: GuildService) : Command {
             return
         }
         
-        mentionedUsers.forEach { u -> guildService.addPrivileged(event.guild.id, u.id) }
-        event.channel.sendMessage("Added $mentionedUsers").queue()
+        mentionedUsers.forEach { u ->
+                guildService.addPrivileged(event.guild.id, u.id)
+                event.channel.sendMessage("Added ${u.asTag}").queue()
+        }
     }
 }

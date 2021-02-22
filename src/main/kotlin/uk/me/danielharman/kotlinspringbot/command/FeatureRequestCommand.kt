@@ -21,7 +21,7 @@ class FeatureRequestCommand(private val featureRequestService: RequestService): 
 
             var nickname = "Unknown"
             if(!createRequest.userId.isBlank())
-                nickname = event.guild.getMemberById(createRequest.userId)?.nickname ?: "Unknown"
+                nickname = event.guild.retrieveMemberById(createRequest.userId).complete()?.nickname ?: "Unknown"
 
             embedBuilder
                     .setTitle("Feature Request")

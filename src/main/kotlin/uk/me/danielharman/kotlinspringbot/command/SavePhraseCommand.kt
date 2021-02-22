@@ -1,54 +1,33 @@
 package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
-import uk.me.danielharman.kotlinspringbot.models.SpringGuild
-import uk.me.danielharman.kotlinspringbot.services.AttachmentService
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds.infoEmbedBuilder
+import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
 
-class SavePhraseCommand(private val guildService: GuildService, private val attachmentService: AttachmentService) : Command {
+class SavePhraseCommand(private val commandService: DiscordCommandService) : Command {
+
     override fun execute(event: GuildMessageReceivedEvent) {
 
+        val content = event.message.contentRaw
+        val split = content.split(" ")
+
+        if (split.size < 3 && event.message.attachments.size <= 0) {
+            event.message.channel.sendMessage(Embeds.createErrorEmbed("Content missing")).queue()
+            return
+        }
+
         if (event.message.attachments.size > 0) {
-            saveAttachment(event)
+            val attachment = event.message.attachments[0]
+            commandService.createFileCommand(event.message.guild.id, split[1], attachment.fileName, event.author.id, attachment.retrieveInputStream().get())
         } else {
-            savePhrase(event)
+            if (split[1].contains(Regex("[_.!,?$\\\\-]"))) {
+                event.message.channel.sendMessage(Embeds.createErrorEmbed("Cannot save with that phrase")).queue()
+                return
+            }
+            commandService.createStringCommand(event.message.guild.id, split[1], split.subList(2, split.size).joinToString(" "), event.author.id, true)
         }
-
-
-    }
-
-    private fun savePhrase(event: GuildMessageReceivedEvent) {
-        val content = event.message.contentRaw
-        val split = content.split(" ")
-        if (split.size < 3) {
-            event.message.channel.sendMessage("Phrase missing").queue()
-            return
-        }
-
-        if (split[1].contains(Regex("[_.!,?$\\\\-]"))) {
-            event.message.channel.sendMessage("Cannot save with that phrase").queue()
-            return
-        }
-
-        guildService.saveCommand(event.message.guild.id, split[1], split.subList(2, split.size).joinToString(" "), event.author.id)
-        event.message.channel.sendMessage("Saved as ${split[1]}").queue()
-    }
-
-    private fun saveAttachment(event: GuildMessageReceivedEvent) {
-        val content = event.message.contentRaw
-        val split = content.split(" ")
-
-        if(split.size < 2)
-        {
-            event.channel.sendMessage("No name given").queue()
-            return
-        }
-
-        val attachment = event.message.attachments[0]
-
-        guildService.saveCommand(event.message.guild.id, split[1], attachment.fileName, event.author.id, SpringGuild.CommandType.FILE)
-        attachmentService.saveFile(attachment.retrieveInputStream().get(), event.message.guild.id, attachment.fileName, split[1])
-        event.message.channel.sendMessage("Saved as ${split[1]}").queue()
+        event.message.channel.sendMessage(infoEmbedBuilder().setDescription("Saved command as ${split[1]}").build()).queue()
     }
 
 }

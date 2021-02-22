@@ -3,10 +3,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("org.springframework.boot") version "2.2.6.RELEASE"
     id("io.spring.dependency-management") version "1.0.9.RELEASE"
-    kotlin("jvm") version "1.3.71"
-    kotlin("plugin.spring") version "1.3.71"
-    kotlin("kapt") version "1.3.61"
-    kotlin("plugin.serialization") version "1.3.70"
+    kotlin("jvm") version "1.4.20"
+    kotlin("plugin.spring") version "1.4.20"
+    kotlin("kapt") version "1.4.20"
+    kotlin("plugin.serialization") version "1.4.20"
 }
 
 group = "uk.me.danielharman"
@@ -28,18 +28,18 @@ repositories {
 dependencies {
     implementation(group="org.kohsuke", name="wordnet-random-name", version= "1.3")
     implementation(group = "joda-time", name = "joda-time", version = "2.10.6")
-    implementation("net.dv8tion:JDA:4.1.1_141")
-    implementation("com.sedmelluq:lavaplayer:1.3.53")
-    implementation(group = "com.typesafe.akka", name = "akka-actor_2.13", version = "2.6.5")
+    implementation("net.dv8tion:JDA:4.2.0_222")
+    implementation("com.sedmelluq:lavaplayer:1.3.61")
+    implementation(group = "com.typesafe.akka", name = "akka-actor_2.13", version = "2.6.10")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
-    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0") // JVM dependency
-    implementation(group="io.ktor", name="ktor-client-cio", version="1.3.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:1.0-M1-1.4.0-rc") // JVM dependency
+    implementation(group="io.ktor", name="ktor-client-cio", version="1.4.0")
+    implementation("me.xdrop:fuzzywuzzy:1.3.1")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")

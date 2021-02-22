@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.events.guild.GuildJoinEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
@@ -29,6 +30,24 @@ class MessageListener(private val guildService: GuildService,
     init {
         AudioSourceManagers.registerRemoteSources(playerManager)
         AudioSourceManagers.registerLocalSource(playerManager)
+    }
+
+    override fun onGuildJoin(event: GuildJoinEvent) {
+        logger.info("Joined guild ${event.guild.name}")
+
+        val guild = guildService.getGuild(event.guild.id)
+        if (guild == null || guild.privilegedUsers.isEmpty()) {
+            val owner = event.guild.retrieveOwner().complete()
+            logger.info("Adding ${owner.nickname} as admin of guild")
+            guildService.addPrivileged(event.guild.id, owner.id)
+        }
+
+        val defaultChannel = event.guild.defaultChannel ?: return
+
+        if (defaultChannel.canTalk()) {
+            defaultChannel.sendTyping().queue()
+            defaultChannel.sendMessage(":wave:").queue()
+        }
     }
 
     override fun onMessageReactionAdd(event: MessageReactionAddEvent) {
@@ -104,7 +123,7 @@ class MessageListener(private val guildService: GuildService,
         val author = event.author
         val message = event.message
         val guild = event.guild
-        val member = guild.getMember(author)
+        val member = guild.retrieveMember(author).complete()
 
         logger.debug("[${guild.name}] #${event.channel.name} <${member?.nickname ?: author.asTag}>: ${message.contentDisplay}")
 
