@@ -1,13 +1,14 @@
 package uk.me.danielharman.kotlinspringbot.services
 
 import org.joda.time.DateTime
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Criteria.where
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
-import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.models.Meme
 import uk.me.danielharman.kotlinspringbot.repositories.MemeRepository
 import java.util.stream.Collectors
@@ -21,19 +22,21 @@ class MemeService(private val mongoTemplate: MongoTemplate,
         MONTH
     }
 
+    private val logger: Logger = LoggerFactory.getLogger(this::class.java)
+
     fun saveMeme(meme: Meme): Meme {
-        logger.info("[MemeService] Saving meme")
+        logger.info("Saving meme")
         return memeRepository.save(meme)
     }
 
     fun deleteMeme(guildId: String, messageId: String) {
-        logger.info("[MemeService] Deleting meme")
+        logger.info("Deleting meme")
         memeRepository.deleteByGuildIdAndMessageId(guildId, messageId)
     }
 
     fun getMeme(guildId: String, messageId: String): Meme? = memeRepository.findByGuildIdAndMessageId(guildId, messageId)
 
-    data class MemeRanking(val userId: String, var upvotes: Int, var downvotes: Int) {
+    data class MemeRanking(val userId: String, var upvotes: Int, var downvotes: Int, var count: Int) {
         val score: Int
             get() = upvotes - downvotes
     }
@@ -46,14 +49,12 @@ class MemeService(private val mongoTemplate: MongoTemplate,
         mongoTemplate.find(Query(where("guildId").`is`(guildId)), Meme::class.java).forEach { meme ->
             run {
 
-                if (idMap.containsKey(meme.userId))
-                {
+                if (idMap.containsKey(meme.userId)) {
                     idMap[meme.userId]!!.upvotes += meme.upvotes
                     idMap[meme.userId]!!.downvotes += meme.downvotes
-                }
-                else
-                {
-                    idMap[meme.userId] = MemeRanking(meme.userId, meme.upvotes, meme.downvotes)
+                    idMap[meme.userId]!!.count++
+                } else {
+                    idMap[meme.userId] = MemeRanking(meme.userId, meme.upvotes, meme.downvotes, 1)
                 }
 
             }
