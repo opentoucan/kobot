@@ -3,12 +3,14 @@ package uk.me.danielharman.kotlinspringbot.listeners
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent
+import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -145,7 +147,13 @@ class MessageListener(private val guildService: GuildService,
         val author = event.author
         val message = event.message
         val guild = event.guild
-        val member = guild.retrieveMember(author).complete()
+        val member : Member?
+        try {
+            member = guild.retrieveMember(author).complete()
+        }catch (e: ErrorResponseException){
+            logger.error("Failed to retrieve $author while handling message $message")
+            return
+        }
 
         logger.debug("[${guild.name}] #${event.channel.name} <${member?.nickname ?: author.asTag}>: ${message.contentDisplay}")
 
