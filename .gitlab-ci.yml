@@ -13,8 +13,11 @@ test:
 
 dockerbuild:
   stage: dockerbuild
+  image: docker:latest
+  services:
+    - docker:dind
   tags:
-    - shell 
+    - docker 
   rules:
     - if: '$CI_COMMIT_REF_NAME == "master"'
       when: always

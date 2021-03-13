@@ -5,7 +5,12 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document(collection = "memes")
-data class Meme(var messageId: String, var guildId: String, var userId: String, var url: String, var channelId: String) {
+data class Meme(var messageId: String, var guildId: String, var userId: String, var url: String, var channelId: String, var urlType: UrlType = UrlType.Image) {
+
+    enum class UrlType{
+        Image,
+        Link
+    }
 
     @Id
     lateinit var id: String
