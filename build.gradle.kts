@@ -1,24 +1,17 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "2.2.6.RELEASE"
-    id("io.spring.dependency-management") version "1.0.9.RELEASE"
-    kotlin("jvm") version "1.4.20"
-    kotlin("plugin.spring") version "1.4.20"
-    kotlin("kapt") version "1.4.20"
-    kotlin("plugin.serialization") version "1.4.20"
+    id("org.springframework.boot") version "2.4.3"
+    id("io.spring.dependency-management") version "1.0.11.RELEASE"
+    kotlin("jvm") version "1.4.30"
+    kotlin("plugin.spring") version "1.4.30"
+    kotlin("kapt") version "1.4.30"
+    kotlin("plugin.serialization") version "1.4.30"
 }
 
 group = "uk.me.danielharman"
 version = "0.0.1-SNAPSHOT"
-java.sourceCompatibility = JavaVersion.VERSION_11
-
-val developmentOnly by configurations.creating
-configurations {
-    runtimeClasspath {
-        extendsFrom(developmentOnly)
-    }
-}
+java.sourceCompatibility = JavaVersion.VERSION_15
 
 repositories {
     mavenCentral()
@@ -29,8 +22,8 @@ dependencies {
     implementation(group="org.kohsuke", name="wordnet-random-name", version= "1.3")
     implementation(group = "joda-time", name = "joda-time", version = "2.10.6")
     implementation(group="com.fasterxml.jackson.datatype", name="jackson-datatype-joda", version="2.11.3")
-    implementation("net.dv8tion:JDA:4.2.0_222")
-    implementation("com.sedmelluq:lavaplayer:1.3.61")
+    implementation("net.dv8tion:JDA:4.2.0_241")
+    implementation("com.sedmelluq:lavaplayer:1.3.73")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -38,7 +31,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:1.0-M1-1.4.0-rc") // JVM dependency
-    implementation(group="io.ktor", name="ktor-client-cio", version="1.4.0")
+    implementation(group="io.ktor", name="ktor-client-cio", version="1.5.2")
     implementation("me.xdrop:fuzzywuzzy:1.3.1")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
@@ -62,6 +55,6 @@ tasks.withType<Test> {
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "1.8"
+        jvmTarget = "15"
     }
 }
