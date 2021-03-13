@@ -8,11 +8,7 @@ import org.joda.time.DateTime
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
-import uk.me.danielharman.kotlinspringbot.factories.AdminCommandFactory
-import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
-import uk.me.danielharman.kotlinspringbot.factories.VoiceCommandFactory
 import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
-import uk.me.danielharman.kotlinspringbot.services.*
 
 object DiscordObject {
 
@@ -22,11 +18,7 @@ object DiscordObject {
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     fun init(
-        guildService: GuildService,
-        adminCommandFactory: AdminCommandFactory,
-        commandFactory: CommandFactory,
-        voiceCommandFactory: VoiceCommandFactory,
-        memeService: MemeService,
+        messageListener: MessageListener,
         properties: KotlinBotProperties
     ) {
 
@@ -43,16 +35,7 @@ object DiscordObject {
             GatewayIntent.GUILD_MESSAGE_REACTIONS
         )
             .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "${properties.commandPrefix}help"))
-            .addEventListeners(
-                MessageListener(
-                    guildService,
-                    adminCommandFactory,
-                    commandFactory,
-                    voiceCommandFactory,
-                    properties,
-                    memeService
-                )
-            )
+            .addEventListeners(messageListener)
 
         initialised = true
         startTime = DateTime.now()

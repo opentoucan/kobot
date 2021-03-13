@@ -15,6 +15,7 @@ import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult.Companion.failResult
 import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult.Companion.successResult
+import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelEmbedMessage
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelMessage
 
@@ -22,10 +23,7 @@ import uk.me.danielharman.kotlinspringbot.models.DiscordChannelMessage
 class DiscordService(
     private val guildService: GuildService,
     private val xkcdService: XkcdService,
-    private val adminCommandFactory: AdminCommandFactory,
-    private val commandFactory: CommandFactory,
-    private val voiceCommandFactory: VoiceCommandFactory,
-    private val memeService: MemeService,
+    private val messageListener: MessageListener,
     private val properties: KotlinBotProperties
 ) {
 
@@ -86,14 +84,7 @@ class DiscordService(
 
     fun startDiscordConnection(): OperationResult<String?> {
         if (!DiscordObject.initialised) {
-            DiscordObject.init(
-                guildService,
-                adminCommandFactory,
-                commandFactory,
-                voiceCommandFactory,
-                memeService,
-                properties
-            )
+            DiscordObject.init(messageListener, properties)
             return successResult("Discord connection up at ${DiscordObject.startTime?.toString() ?: "????"}")
         }
         return failResult("Discord connection is already up. Started at ${DiscordObject.startTime?.toString()}")

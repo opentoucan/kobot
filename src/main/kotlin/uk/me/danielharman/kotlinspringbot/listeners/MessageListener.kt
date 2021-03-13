@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.helpers.EmojiCodes
 import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getAuthorIdFromMessageId
@@ -25,15 +26,17 @@ import uk.me.danielharman.kotlinspringbot.services.GuildService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
 import java.util.regex.Pattern
 
+@Component
+class MessageListener(
+    private val guildService: GuildService,
+    private val adminCommandFactory: AdminCommandFactory,
+    private val commandFactory: CommandFactory,
+    private val voiceCommandFactory: VoiceCommandFactory,
+    private val properties: KotlinBotProperties,
+    private val memeService: MemeService,
+) : ListenerAdapter() {
 
-class MessageListener(private val guildService: GuildService,
-                      private val adminCommandFactory: AdminCommandFactory,
-                      private val commandFactory: CommandFactory,
-                      private val voiceCommandFactory: VoiceCommandFactory,
-                      private val properties: KotlinBotProperties,
-                      private val memeService: MemeService,
-                      playerManager: AudioPlayerManager = DefaultAudioPlayerManager()) : ListenerAdapter() {
-
+    private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     init {
@@ -91,18 +94,27 @@ class MessageListener(private val guildService: GuildService,
                         }
                     }
                     return
-                }
-                else if(emoji == EmojiCodes.Cross){
+                } else if (emoji == EmojiCodes.Cross) {
                     event.reaction.removeReaction().queue()
                 }
 
                 //Thumbs up
                 if (emoji == EmojiCodes.ThumbsUp) {
-                    if (!memeService.addUpvote(guild.guildId, event.messageId, event.userId)) logger.error("[MessageListener] Failed to upvote")
+                    if (!memeService.addUpvote(
+                            guild.guildId,
+                            event.messageId,
+                            event.userId
+                        )
+                    ) logger.error("[MessageListener] Failed to upvote")
                 }
                 //Thumbs down
                 else if (emoji == EmojiCodes.ThumbsDown) {
-                    if (!memeService.addDownvote(guild.guildId, event.messageId, event.userId)) logger.error("[MessageListener] Failed to downvote")
+                    if (!memeService.addDownvote(
+                            guild.guildId,
+                            event.messageId,
+                            event.userId
+                        )
+                    ) logger.error("[MessageListener] Failed to downvote")
                 }
             }
         }
@@ -149,10 +161,10 @@ class MessageListener(private val guildService: GuildService,
         val author = event.author
         val message = event.message
         val guild = event.guild
-        val member : Member?
+        val member: Member?
         try {
             member = guild.retrieveMember(author).complete()
-        }catch (e: ErrorResponseException){
+        } catch (e: ErrorResponseException) {
             logger.error("Failed to retrieve $author while handling message $message")
             return
         }
@@ -191,10 +203,10 @@ class MessageListener(private val guildService: GuildService,
                 }
 
                 val words = message.contentStripped
-                        .toLowerCase()
-                        .replace(Regex("[.!?,$\\\\-]"), "")
-                        .split(" ")
-                        .filter { s -> s.isNotBlank() }
+                    .toLowerCase()
+                    .replace(Regex("[.!?,$\\\\-]"), "")
+                    .split(" ")
+                    .filter { s -> s.isNotBlank() }
 
                 if (!isDeafened && words.size == 1 && words[0] == "lol") {
                     event.message.addReaction(EmojiCodes.Rofl).queue()
@@ -206,17 +218,33 @@ class MessageListener(private val guildService: GuildService,
     }
 
     private var urlPattern: Pattern = Pattern.compile(
-            "(?:^|[\\W])((ht|f)tp(s?):\\/\\/|www\\.)"
-                    + "(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*"
-                    + "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",
-            Pattern.CASE_INSENSITIVE or Pattern.MULTILINE or Pattern.DOTALL)
+        "(?:^|[\\W])((ht|f)tp(s?):\\/\\/|www\\.)"
+                + "(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*"
+                + "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",
+        Pattern.CASE_INSENSITIVE or Pattern.MULTILINE or Pattern.DOTALL
+    )
 
-    private fun createMeme(message: Message, guildId: String, authorId: String, channelId: String, force: Boolean = false) {
+    private fun createMeme(
+        message: Message,
+        guildId: String,
+        authorId: String,
+        channelId: String,
+        force: Boolean = false
+    ) {
         if (message.attachments.isNotEmpty()) {
             message.addReaction(EmojiCodes.ThumbsUp).queue()
             message.addReaction(EmojiCodes.ThumbsDown).queue()
             message.addReaction(EmojiCodes.Cross).queue()
-            memeService.saveMeme(Meme(message.id, guildId, authorId, message.attachments[0].url, channelId, Meme.UrlType.Image))
+            memeService.saveMeme(
+                Meme(
+                    message.id,
+                    guildId,
+                    authorId,
+                    message.attachments[0].url,
+                    channelId,
+                    Meme.UrlType.Image
+                )
+            )
         } else if (force) {
             message.addReaction(EmojiCodes.ThumbsUp).queue()
             message.addReaction(EmojiCodes.ThumbsDown).queue()
@@ -230,10 +258,10 @@ class MessageListener(private val guildService: GuildService,
                 break
             }
             if (url != null && (url.contains("youtube.com/watch?")
-                            || url.contains("youtu.be")
-                            || url.contains("i.reddit")
-                            || url.contains("twitter.com")
-                            || url.contains("facebook.com"))
+                        || url.contains("youtu.be")
+                        || url.contains("i.reddit")
+                        || url.contains("twitter.com")
+                        || url.contains("facebook.com"))
             ) {
                 message.addReaction(EmojiCodes.ThumbsUp).queue()
                 message.addReaction(EmojiCodes.ThumbsDown).queue()
@@ -255,7 +283,7 @@ class MessageListener(private val guildService: GuildService,
         command.execute(event)
     }
 
-    private fun runVoiceCommand(event: GuildMessageReceivedEvent){
+    private fun runVoiceCommand(event: GuildMessageReceivedEvent) {
         if (event.author.id == event.jda.selfUser.id || event.author.isBot) {
             logger.info("Not running command as author is me or a bot")
             return
@@ -277,7 +305,8 @@ class MessageListener(private val guildService: GuildService,
         val channel = event.channel
 
         if (event.author.id != properties.primaryPrivilegedUserId
-                && !guildService.isPrivileged(event.guild.id, event.author.id)) {
+            && !guildService.isPrivileged(event.guild.id, event.author.id)
+        ) {
             channel.sendMessage("You are not an admin!").queue()
             return
         }
