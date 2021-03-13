@@ -1,19 +1,27 @@
-package uk.me.danielharman.kotlinspringbot.command
+package uk.me.danielharman.kotlinspringbot.command.voice
 
-import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import uk.me.danielharman.kotlinspringbot.objects.ApplicationLogger
-import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getBotVoiceChannel
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.command.interfaces.IVoiceCommand
 
-class VoiceMoveCommand : VoiceCommand {
-    override var voiceChannel: VoiceChannel? = null
+@Component
+class VoiceMoveCommand : IVoiceCommand {
+
+    private val logger = LoggerFactory.getLogger(this::class.java)
+    private val commandString = "voicemove"
+    private val description = "Enable mass moving of members to different voice channels"
+
+    override fun matchCommandString(str: String): Boolean = str == commandString
+
+    override fun getCommandString(): String = commandString
+
+    override fun getCommandDescription(): String = description
 
     override fun execute(event: GuildMessageReceivedEvent) {
-        voiceChannel = getBotVoiceChannel(event)
-
         val audioManager = event.guild.audioManager
         val member = event.member
 
@@ -43,7 +51,7 @@ class VoiceMoveCommand : VoiceCommand {
             event.message.channel.sendMessage("Voice move enabled!").queue()
             event.jda.addEventListener(MoveListener())
         } catch (e: InsufficientPermissionException) {
-            ApplicationLogger.logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
+            logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
             event.channel.sendMessage("I don't have permission to join.").queue()
         }
 

@@ -1,9 +1,18 @@
 package uk.me.danielharman.kotlinspringbot.command.admin
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
-import uk.me.danielharman.kotlinspringbot.command.Command
+import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
 
-class SetNickCommand : Command {
+@Component
+class SetNickCommand : IAdminCommand {
+
+    private val commandString: String = "setnick"
+
+    override fun matchCommandString(str: String): Boolean = commandString == str
+
+    override fun getCommandString(): String = commandString
+
     override fun execute(event: GuildMessageReceivedEvent) {
 
         val split = event.message.contentStripped.split('"')
@@ -19,5 +28,6 @@ class SetNickCommand : Command {
             }
         }
     }
+
 }
 

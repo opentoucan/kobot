@@ -18,16 +18,18 @@ import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.helpers.EmojiCodes
 import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getAuthorIdFromMessageId
 import uk.me.danielharman.kotlinspringbot.models.Meme
-import uk.me.danielharman.kotlinspringbot.services.AdminCommandService
-import uk.me.danielharman.kotlinspringbot.services.CommandService
+import uk.me.danielharman.kotlinspringbot.factories.AdminCommandFactory
+import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
+import uk.me.danielharman.kotlinspringbot.factories.VoiceCommandFactory
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
 import java.util.regex.Pattern
 
 
 class MessageListener(private val guildService: GuildService,
-                      private val adminCommandService: AdminCommandService,
-                      private val commandService: CommandService,
+                      private val adminCommandFactory: AdminCommandFactory,
+                      private val commandFactory: CommandFactory,
+                      private val voiceCommandFactory: VoiceCommandFactory,
                       private val properties: KotlinBotProperties,
                       private val memeService: MemeService,
                       playerManager: AudioPlayerManager = DefaultAudioPlayerManager()) : ListenerAdapter() {
@@ -175,6 +177,10 @@ class MessageListener(private val guildService: GuildService,
                 if (!isDeafened)
                     runCommand(event)
             }
+            message.contentStripped.startsWith(properties.voiceCommandPrefix) -> {
+                if (!isDeafened)
+                    runVoiceCommand(event)
+            }
             message.contentStripped.startsWith(properties.privilegedCommandPrefix) -> {
                 runAdminCommand(event)
             }
@@ -245,11 +251,27 @@ class MessageListener(private val guildService: GuildService,
         }
 
         val cmd = event.message.contentStripped.split(" ")[0].removePrefix(properties.commandPrefix)
-        val command = commandService.getCommand(cmd)
+        val command = commandFactory.getCommand(cmd)
+        command.execute(event)
+    }
+
+    private fun runVoiceCommand(event: GuildMessageReceivedEvent){
+        if (event.author.id == event.jda.selfUser.id || event.author.isBot) {
+            logger.info("Not running command as author is me or a bot")
+            return
+        }
+
+        val cmd = event.message.contentStripped.split(" ")[0].removePrefix(properties.voiceCommandPrefix)
+        val command = voiceCommandFactory.getCommand(cmd)
         command.execute(event)
     }
 
     private fun runAdminCommand(event: GuildMessageReceivedEvent) {
+
+        if (event.author.id == event.jda.selfUser.id || event.author.isBot) {
+            logger.info("Not running command as author is me or a bot")
+            return
+        }
 
         val cmd = event.message.contentStripped.split(" ")[0].removePrefix(properties.privilegedCommandPrefix)
         val channel = event.channel
@@ -260,7 +282,7 @@ class MessageListener(private val guildService: GuildService,
             return
         }
 
-        val command = adminCommandService.getCommand(cmd)
+        val command = adminCommandFactory.getCommand(cmd)
         command.execute(event)
 
     }

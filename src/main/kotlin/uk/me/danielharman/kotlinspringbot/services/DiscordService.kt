@@ -7,6 +7,9 @@ import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.factories.AdminCommandFactory
+import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
+import uk.me.danielharman.kotlinspringbot.factories.VoiceCommandFactory
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult
@@ -19,8 +22,9 @@ import uk.me.danielharman.kotlinspringbot.models.DiscordChannelMessage
 class DiscordService(
     private val guildService: GuildService,
     private val xkcdService: XkcdService,
-    private val adminCommandService: AdminCommandService,
-    private val commandService: CommandService,
+    private val adminCommandFactory: AdminCommandFactory,
+    private val commandFactory: CommandFactory,
+    private val voiceCommandFactory: VoiceCommandFactory,
     private val memeService: MemeService,
     private val properties: KotlinBotProperties
 ) {
@@ -84,8 +88,9 @@ class DiscordService(
         if (!DiscordObject.initialised) {
             DiscordObject.init(
                 guildService,
-                adminCommandService,
-                commandService,
+                adminCommandFactory,
+                commandFactory,
+                voiceCommandFactory,
                 memeService,
                 properties
             )

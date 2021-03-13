@@ -2,10 +2,23 @@ package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
 
-class SearchCommand(private val commandService: DiscordCommandService) : Command {
+@Component
+class SearchCommand(private val commandService: DiscordCommandService) : ICommand {
+
+    private val commandString = "search"
+    private val description = "Search for commands"
+
+    override fun matchCommandString(str: String): Boolean = str == commandString
+
+    override fun getCommandString(): String = commandString
+
+    override fun getCommandDescription(): String = description
+
     override fun execute(event: GuildMessageReceivedEvent) {
 
         val split = event.message.contentStripped.split(' ')

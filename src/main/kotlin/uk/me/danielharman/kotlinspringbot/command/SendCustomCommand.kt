@@ -1,6 +1,7 @@
 package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand.CommandType.FILE
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand.CommandType.STRING
@@ -8,9 +9,17 @@ import uk.me.danielharman.kotlinspringbot.services.AttachmentService
 import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 
-class SendCustomCommand(private val guildService: GuildService, private val attachmentService: AttachmentService,
+class SendCustomCommand(private val guildService: GuildService,
+                        private val attachmentService: AttachmentService,
                         private val commandService: DiscordCommandService,
-                        private val command: String) : Command {
+                        private val command: String) : ICommand {
+
+    override fun matchCommandString(str: String): Boolean = false
+
+    override fun getCommandString(): String = ""
+
+    override fun getCommandDescription(): String = ""
+
     override fun execute(event: GuildMessageReceivedEvent) {
 
         val guild = guildService.getGuild(event.guild.id)

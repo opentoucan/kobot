@@ -2,9 +2,22 @@ package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
 import uk.me.danielharman.kotlinspringbot.services.RequestService
 
-class FeatureRequestCommand(private val featureRequestService: RequestService): Command {
+@Component
+class FeatureRequestCommand(private val featureRequestService: RequestService): ICommand {
+
+    private val commandString = listOf("request", "newrequest")
+    private val description = "Create new bot feature request"
+
+    override fun matchCommandString(str: String): Boolean = commandString.contains(str)
+
+    override fun getCommandString(): String = commandString.joinToString(", ")
+
+    override fun getCommandDescription(): String = description
+
     override fun execute(event: GuildMessageReceivedEvent) {
         val split = event.message.contentStripped.split(" ")
 

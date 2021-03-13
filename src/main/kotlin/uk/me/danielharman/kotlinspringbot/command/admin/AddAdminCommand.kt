@@ -1,10 +1,19 @@
 package uk.me.danielharman.kotlinspringbot.command.admin
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
-import uk.me.danielharman.kotlinspringbot.command.Command
+import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 
-class AddAdminCommand(private val guildService: GuildService) : Command {
+@Component
+class AddAdminCommand(private val guildService: GuildService) : IAdminCommand {
+
+    private val commandString: String = "addadmin"
+
+    override fun matchCommandString(str: String): Boolean = commandString == str
+
+    override fun getCommandString(): String = commandString
+
     override fun execute(event: GuildMessageReceivedEvent) {
 
         val mentionedUsers = event.message.mentionedUsers
@@ -20,4 +29,5 @@ class AddAdminCommand(private val guildService: GuildService) : Command {
                 event.channel.sendMessage("Added ${u.asTag}").queue()
         }
     }
+
 }

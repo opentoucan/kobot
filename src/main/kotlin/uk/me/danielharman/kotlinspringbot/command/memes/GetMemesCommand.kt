@@ -1,12 +1,24 @@
-package uk.me.danielharman.kotlinspringbot.command
+package uk.me.danielharman.kotlinspringbot.command.memes
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
 import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getChannelName
 import uk.me.danielharman.kotlinspringbot.models.Meme
 import uk.me.danielharman.kotlinspringbot.services.MemeService
 
-class GetMemesCommand(private val memeService: MemeService) : Command {
+@Component
+class GetMemesCommand(private val memeService: MemeService) : ICommand {
+
+    private val commandString = "memes"
+    private val description = "List server memes by week or month"
+
+    override fun matchCommandString(str: String): Boolean = str == commandString
+
+    override fun getCommandString(): String = commandString
+
+    override fun getCommandDescription(): String = description
 
     override fun execute(event: GuildMessageReceivedEvent) {
 

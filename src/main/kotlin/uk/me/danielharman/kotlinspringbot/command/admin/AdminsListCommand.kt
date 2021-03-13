@@ -3,11 +3,22 @@ package uk.me.danielharman.kotlinspringbot.command.admin
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
-import uk.me.danielharman.kotlinspringbot.command.Command
+import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 
-class AdminsListCommand(val guildService: GuildService, private val primaryAdminUserId: String) : Command {
+@Component
+class AdminsListCommand(private val guildService: GuildService,
+                        private val properties: KotlinBotProperties) : IAdminCommand {
+
+    private val commandString: String = "admins"
+
+    override fun matchCommandString(str: String): Boolean = commandString == str
+
+    override fun getCommandString(): String = commandString
+
     override fun execute(event: GuildMessageReceivedEvent) {
         event.channel.sendMessage(createAdminUsersEmbed(event)).queue()
     }
@@ -22,10 +33,10 @@ class AdminsListCommand(val guildService: GuildService, private val primaryAdmin
         } else {
 
             val stringBuilder = StringBuilder()
-            val primaryAdmin = message.guild.retrieveMemberById(primaryAdminUserId).complete()
+            val primaryAdmin = message.guild.retrieveMemberById(properties.primaryPrivilegedUserId).complete()
 
 
-            stringBuilder.append("Bot controller:  ${primaryAdmin.nickname ?: primaryAdmin.user.asTag ?: primaryAdminUserId}\n")
+            stringBuilder.append("Bot controller:  ${primaryAdmin.nickname ?: primaryAdmin.user.asTag}\n")
 
             guild.privilegedUsers.forEach { s ->
                 run {

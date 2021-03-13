@@ -1,12 +1,24 @@
-package uk.me.danielharman.kotlinspringbot.command
+package uk.me.danielharman.kotlinspringbot.command.voice
 
-import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
-import uk.me.danielharman.kotlinspringbot.objects.ApplicationLogger
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.command.interfaces.IVoiceCommand
 
-class SummonCommand : VoiceCommand {
-    override var voiceChannel: VoiceChannel? = null
+@Component
+class SummonCommand : IVoiceCommand {
+
+    private val logger = LoggerFactory.getLogger(this::class.java)
+    private val commandString = "summon"
+    private val description = "Make the bot join the voice channel"
+
+    override fun matchCommandString(str: String): Boolean = str == commandString
+
+    override fun getCommandString(): String = commandString
+
+    override fun getCommandDescription(): String = description
+
     override fun execute(event: GuildMessageReceivedEvent) {
         val audioManager = event.guild.audioManager
         val member = event.member
@@ -33,7 +45,7 @@ class SummonCommand : VoiceCommand {
         try {
             audioManager.openAudioConnection(voiceChannel)
         } catch (e: InsufficientPermissionException) {
-            ApplicationLogger.logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
+            logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
             event.channel.sendMessage("I don't have permission to join.").queue()
         }
     }

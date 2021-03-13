@@ -1,11 +1,24 @@
-package uk.me.danielharman.kotlinspringbot.command
+package uk.me.danielharman.kotlinspringbot.command.memes
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
 import uk.me.danielharman.kotlinspringbot.services.MemeService
 import java.awt.Color
 
-class GetMemeRank(val memeService: MemeService) : Command {
+@Component
+class GetMemeRank(private val memeService: MemeService) : ICommand {
+
+    private val commandString = "memeranking"
+    private val description = "List server members by their meme score"
+
+    override fun matchCommandString(str: String): Boolean = str == commandString
+
+    override fun getCommandString(): String = commandString
+
+    override fun getCommandDescription(): String = description
+
     override fun execute(event: GuildMessageReceivedEvent) {
 
         val split = event.message.contentStripped.split(' ')
@@ -26,4 +39,6 @@ class GetMemeRank(val memeService: MemeService) : Command {
                 .setColor(Color.GRAY)
                 .appendDescription(des.toString()).build()).queue()
     }
+
+
 }

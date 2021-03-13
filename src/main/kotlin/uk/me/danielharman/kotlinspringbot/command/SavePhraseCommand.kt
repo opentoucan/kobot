@@ -1,11 +1,23 @@
 package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds.infoEmbedBuilder
 import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
 
-class SavePhraseCommand(private val commandService: DiscordCommandService) : Command {
+@Component
+class SavePhraseCommand(private val commandService: DiscordCommandService) : ICommand {
+
+    private val commandString = listOf("save", "set")
+    private val description = "Save a new command"
+
+    override fun matchCommandString(str: String): Boolean = commandString.contains(str)
+
+    override fun getCommandString(): String = commandString.joinToString(", ")
+
+    override fun getCommandDescription(): String = description
 
     override fun execute(event: GuildMessageReceivedEvent) {
 

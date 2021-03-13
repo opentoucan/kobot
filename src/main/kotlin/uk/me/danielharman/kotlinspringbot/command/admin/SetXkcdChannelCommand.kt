@@ -1,10 +1,19 @@
 package uk.me.danielharman.kotlinspringbot.command.admin
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
-import uk.me.danielharman.kotlinspringbot.command.Command
+import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 
-class SetXkcdChannelCommand(val guildService: GuildService) : Command {
+@Component
+class SetXkcdChannelCommand(private val guildService: GuildService) : IAdminCommand {
+
+    private val commandString: String = "setxkcdchannel"
+
+    override fun matchCommandString(str: String): Boolean = commandString == str
+
+    override fun getCommandString(): String = commandString
+
     override fun execute(event: GuildMessageReceivedEvent) {
         guildService.setXkcdChannel(event.guild.id, event.channel.id)
         event.channel.sendMessage("Set as xkcd channel").queue()

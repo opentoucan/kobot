@@ -1,13 +1,24 @@
-package uk.me.danielharman.kotlinspringbot.command.xkcd
+package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
-import uk.me.danielharman.kotlinspringbot.command.Command
+import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds.createXkcdComicEmbed
 import uk.me.danielharman.kotlinspringbot.services.XkcdService
 import java.lang.NumberFormatException
 
+@Component
+class XkcdComicCommand(private val xkcdService: XkcdService) : ICommand {
 
-class XkcdComicCommand(private val xkcdService: XkcdService) : Command {
+    private val commandString = "xkcd"
+    private val description = "Get the latest XKCD comic or a particular comic by number"
+
+    override fun matchCommandString(str: String): Boolean = str == commandString
+
+    override fun getCommandString(): String = commandString
+
+    override fun getCommandDescription(): String = description
+
     override fun execute(event: GuildMessageReceivedEvent) {
 
         val split = event.message.contentStripped.split(" ")
