@@ -41,6 +41,7 @@ deploy:
   variables:
     GIT_STRATEGY: none
   before_script:
+    - echo "$KUBE_CONFIG_FILE"
     - kubectl --kubeconfig="$KUBE_CONFIG_FILE" get pods
   script:
     - kubectl --kubeconfig="$KUBE_CONFIG_FILE" rollout restart deployment/kotbot
