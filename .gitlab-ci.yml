@@ -35,13 +35,12 @@ deploy:
   stage: deploy
   tags:
     - k8s
-  # rules:
-  #   - if: '$CI_COMMIT_REF_NAME == "master"'
-  #     when: always
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "master"'
+      when: always
   variables:
     GIT_STRATEGY: none
   before_script:
-    - echo "$KUBE_CONFIG_FILE"
-    - kubectl --kubeconfig="$KUBE_CONFIG_FILE" get pods
+    - kubectl --kubeconfig="$KUBE_CONFIG_FILE" describe deployment/kotbot
   script:
     - kubectl --kubeconfig="$KUBE_CONFIG_FILE" rollout restart deployment/kotbot
