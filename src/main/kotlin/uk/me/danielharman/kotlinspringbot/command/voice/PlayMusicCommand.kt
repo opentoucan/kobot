@@ -63,16 +63,16 @@ class PlayMusicCommand(
         }
         val botVoiceChannel = getBotVoiceChannel(event)
         if (botVoiceChannel != null) {
-            logger.info("Bot's voice channel: " + botVoiceChannel?.id)
+            logger.info("Bot's voice channel: " + botVoiceChannel.id)
             event.guild.audioManager.openAudioConnection(botVoiceChannel)
         }
         if (voiceChannel != event.guild.audioManager.connectedChannel) {
-            logger.info("My voice channel: " + voiceChannel?.id)
+            logger.info("My voice channel: " + voiceChannel.id)
             event.guild.audioManager.closeAudioConnection()
             event.guild.audioManager.openAudioConnection(voiceChannel)
         }
         logger.info("Connected voice channel from manager: " + event.guild.audioManager.connectedChannel?.id)
-        val musicManager = guildMusicPlayerProvider.getGuildAudioPlayer(voiceChannel!!.guild)
+        val musicManager = guildMusicPlayerProvider.getGuildAudioPlayer(voiceChannel.guild)
         guildMusicPlayerProvider.playerManager.loadItemOrdered(
             musicManager,
             split[1],
