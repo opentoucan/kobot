@@ -1,12 +1,12 @@
-package uk.me.danielharman.kotlinspringbot.command.admin
+package uk.me.danielharman.kotlinspringbot.command.moderators
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
+import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 
 @Component
-class ListAdminCommandsCommand(private val commands: List<IAdminCommand>) : IAdminCommand {
+class ListModeratorCommandsCommand(private val commands: List<IModeratorCommand>) : IModeratorCommand {
 
     private val commandString = "commands"
 

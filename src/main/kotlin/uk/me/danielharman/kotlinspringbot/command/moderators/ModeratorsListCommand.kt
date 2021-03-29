@@ -1,19 +1,19 @@
-package uk.me.danielharman.kotlinspringbot.command.admin
+package uk.me.danielharman.kotlinspringbot.command.moderators
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
-import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
+import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 
 @Component
-class AdminsListCommand(private val guildService: GuildService,
-                        private val properties: KotlinBotProperties) : IAdminCommand {
+class ModeratorsListCommand(private val guildService: GuildService,
+                            private val properties: KotlinBotProperties) : IModeratorCommand {
 
-    private val commandString: String = "admins"
+    private val commandString: String = "moderators"
 
     override fun matchCommandString(str: String): Boolean = commandString == str
 
@@ -48,7 +48,7 @@ class AdminsListCommand(private val guildService: GuildService,
             EmbedBuilder()
                     .appendDescription(stringBuilder.toString())
                     .setColor(0x9d03fc)
-                    .setTitle("Admins for $guildName")
+                    .setTitle("Moderators for $guildName")
                     .build()
         }
 

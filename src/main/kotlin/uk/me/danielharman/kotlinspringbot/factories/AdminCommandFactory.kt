@@ -1,7 +1,7 @@
 package uk.me.danielharman.kotlinspringbot.factories
 
 import org.springframework.stereotype.Service
-import uk.me.danielharman.kotlinspringbot.command.admin.DefaultAdminCommand
+import uk.me.danielharman.kotlinspringbot.command.administrators.DefaultAdminCommand
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
 
 @Service

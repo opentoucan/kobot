@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import me.qoomon.gradle.gitversioning.GitVersioningPluginConfig
+import me.qoomon.gradle.gitversioning.GitVersioningPluginConfig.*
 
 plugins {
     id("org.springframework.boot") version "2.4.3"
@@ -7,11 +9,25 @@ plugins {
     kotlin("plugin.spring") version "1.4.30"
     kotlin("kapt") version "1.4.30"
     kotlin("plugin.serialization") version "1.4.30"
+    id("me.qoomon.git-versioning") version "4.2.0"
 }
 
 group = "uk.me.danielharman"
-version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_15
+
+version = "Kobot"
+gitVersioning.apply(closureOf<GitVersioningPluginConfig> {
+    tag(closureOf<VersionDescription>{
+        versionFormat = "\${version} \${tag}"
+    })
+    branch(closureOf<VersionDescription>{
+        versionFormat = "\${version} \${branch}.\${commit.short}.\${commit.timestamp.datetime}"
+    })
+})
+
+springBoot {
+    buildInfo()
+}
 
 repositories {
     mavenCentral()

@@ -1,12 +1,12 @@
-package uk.me.danielharman.kotlinspringbot.command.admin
+package uk.me.danielharman.kotlinspringbot.command.moderators
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
+import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 
 @Component
-class PurgeMessagesCommand : IAdminCommand {
+class PurgeMessagesCommand : IModeratorCommand {
 
     private val commandString: String = "purge"
 

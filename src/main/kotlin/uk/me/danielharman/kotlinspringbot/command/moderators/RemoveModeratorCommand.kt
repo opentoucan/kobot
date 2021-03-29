@@ -1,14 +1,14 @@
-package uk.me.danielharman.kotlinspringbot.command.admin
+package uk.me.danielharman.kotlinspringbot.command.moderators
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
+import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 
 @Component
-class AddAdminCommand(private val guildService: GuildService) : IAdminCommand {
+class RemoveModeratorCommand(val guildService: GuildService) : IModeratorCommand {
 
-    private val commandString: String = "addadmin"
+    private val commandString: String = "removeadmin"
 
     override fun matchCommandString(str: String): Boolean = commandString == str
 
@@ -18,16 +18,13 @@ class AddAdminCommand(private val guildService: GuildService) : IAdminCommand {
 
         val mentionedUsers = event.message.mentionedUsers
 
-        if(mentionedUsers.size <= 0)
-        {
+        if (mentionedUsers.size <= 0) {
             event.channel.sendMessage("No users were provided").queue()
             return
         }
-        
-        mentionedUsers.forEach { u ->
-                guildService.addPrivileged(event.guild.id, u.id)
-                event.channel.sendMessage("Added ${u.asTag}").queue()
-        }
-    }
 
+        mentionedUsers.forEach { u -> guildService.removedPrivileged(event.guild.id, u.id) }
+        event.channel.sendMessage("Removed $mentionedUsers").queue()
+
+    }
 }

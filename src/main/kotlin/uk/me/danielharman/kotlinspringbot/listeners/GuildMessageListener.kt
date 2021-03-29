@@ -19,7 +19,7 @@ import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.helpers.EmojiCodes
 import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getAuthorIdFromMessageId
 import uk.me.danielharman.kotlinspringbot.models.Meme
-import uk.me.danielharman.kotlinspringbot.factories.AdminCommandFactory
+import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.VoiceCommandFactory
 import uk.me.danielharman.kotlinspringbot.services.GuildService
@@ -27,9 +27,9 @@ import uk.me.danielharman.kotlinspringbot.services.MemeService
 import java.util.regex.Pattern
 
 @Component
-class MessageListener(
+class GuildMessageListener(
     private val guildService: GuildService,
-    private val adminCommandFactory: AdminCommandFactory,
+    private val moderatorCommandFactory: ModeratorCommandFactory,
     private val commandFactory: CommandFactory,
     private val voiceCommandFactory: VoiceCommandFactory,
     private val properties: KotlinBotProperties,
@@ -311,7 +311,7 @@ class MessageListener(
             return
         }
 
-        val command = adminCommandFactory.getCommand(cmd)
+        val command = moderatorCommandFactory.getCommand(cmd)
         command.execute(event)
 
     }

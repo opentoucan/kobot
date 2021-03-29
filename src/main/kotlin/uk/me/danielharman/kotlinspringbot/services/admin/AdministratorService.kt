@@ -3,6 +3,7 @@ package uk.me.danielharman.kotlinspringbot.services.admin
 import org.joda.time.DateTime
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.boot.info.BuildProperties
 import org.springframework.data.mongodb.core.MongoOperations
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
@@ -69,6 +70,12 @@ class AdministratorService (private val repository: AdministratorRepository,
     fun getBotAdministratorByDiscordId(id: String): OperationResult<Administrator?>{
         val administrator = repository.getByDiscordId(id) ?: return failResult("Administrator not found")
         return successResult(administrator)
+    }
+
+    fun createBotAdministrator(discordId: String): OperationResult<Administrator?>{
+        val admin = getBotAdministratorByDiscordId(discordId)
+        if(admin.success) return admin
+        return successResult(repository.save(Administrator(discordId)))
     }
 
     fun createBotAdministrator(userId: String, discordId: String, roles: Set<Role>): OperationResult<Administrator?>{
@@ -166,5 +173,10 @@ class AdministratorService (private val repository: AdministratorRepository,
 
         discordService.sendUserMessage("You have been added as a bot administrator for ${discordService.getBotName()} in server ${guild.name} as you are the owner." +
                 " Use ${properties.privilegedCommandPrefix}help in your server for more information.", owner.user.id)
+    }
+
+    fun getAdministrators(userId: String): OperationResult<List<Administrator>?> {
+        //TODO Permissions
+        return successResult(repository.findAll())
     }
 }

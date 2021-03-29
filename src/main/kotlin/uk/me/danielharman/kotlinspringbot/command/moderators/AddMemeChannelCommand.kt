@@ -1,10 +1,10 @@
-package uk.me.danielharman.kotlinspringbot.command.admin
+package uk.me.danielharman.kotlinspringbot.command.moderators
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
-import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
+import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 
-class AddMemeChannelCommand(private val guildService: GuildService) : IAdminCommand {
+class AddMemeChannelCommand(private val guildService: GuildService) : IModeratorCommand {
 
     private val commandString: String = "addmemechannel"
 

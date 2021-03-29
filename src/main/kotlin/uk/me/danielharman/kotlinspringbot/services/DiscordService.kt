@@ -3,19 +3,16 @@ package uk.me.danielharman.kotlinspringbot.services
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
-import uk.me.danielharman.kotlinspringbot.factories.AdminCommandFactory
-import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
-import uk.me.danielharman.kotlinspringbot.factories.VoiceCommandFactory
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult.Companion.failResult
 import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult.Companion.successResult
-import uk.me.danielharman.kotlinspringbot.listeners.MessageListener
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelEmbedMessage
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelMessage
 
@@ -23,7 +20,6 @@ import uk.me.danielharman.kotlinspringbot.models.DiscordChannelMessage
 class DiscordService(
     private val guildService: GuildService,
     private val xkcdService: XkcdService,
-    private val messageListener: MessageListener,
     private val properties: KotlinBotProperties
 ) {
 
@@ -84,7 +80,7 @@ class DiscordService(
 
     fun startDiscordConnection(): OperationResult<String?> {
         if (!DiscordObject.initialised) {
-            DiscordObject.init(messageListener, properties)
+            DiscordObject.init(properties)
             return successResult("Discord connection up at ${DiscordObject.startTime?.toString() ?: "????"}")
         }
         return failResult("Discord connection is already up. Started at ${DiscordObject.startTime?.toString()}")
