@@ -1,16 +1,19 @@
 package uk.me.danielharman.kotlinspringbot
 
 import org.joda.time.DateTime
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.data.mongodb.core.MongoOperations
 import org.springframework.data.mongodb.core.query.Criteria.where
 import org.springframework.data.mongodb.core.query.Query.query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.data.mongodb.core.query.Update.update
-import uk.me.danielharman.kotlinspringbot.objects.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 
 class SchemaUpdater(private val mongoOperations: MongoOperations) {
+
+    private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     data class ApplicationOpts(val schemaVersion: Int)
 
@@ -48,12 +51,16 @@ class SchemaUpdater(private val mongoOperations: MongoOperations) {
 
             run {
 
-                if(sg.savedCommands.size > 0) {
+                if (sg.savedCommands.size > 0) {
                     val update = Update()
 
                     sg.savedCommands.forEach { cmd ->
-                        update.set("customCommands.${cmd.key}", SpringGuild.CustomCommand(cmd.value,
-                                SpringGuild.CommandType.STRING, "", DateTime.now()))
+                        update.set(
+                            "customCommands.${cmd.key}", SpringGuild.CustomCommand(
+                                cmd.value,
+                                SpringGuild.CommandType.STRING, "", DateTime.now()
+                            )
+                        )
                     }
 
                     mongoOperations.upsert(query(where("_id").`is`(sg.id)), update, SpringGuild::class.java)
@@ -89,7 +96,15 @@ class SchemaUpdater(private val mongoOperations: MongoOperations) {
                                 type = DiscordCommand.CommandType.FILE
                             }
                         }
-                        val newCommand = DiscordCommand(sg.guildId, c.key, content, fileName, type, c.value.creatorId, created = c.value.created)
+                        val newCommand = DiscordCommand(
+                            sg.guildId,
+                            c.key,
+                            content,
+                            fileName,
+                            type,
+                            c.value.creatorId,
+                            created = c.value.created
+                        )
                         mongoOperations.save(newCommand, "DiscordCommands")
                     }
                 }
@@ -100,16 +115,20 @@ class SchemaUpdater(private val mongoOperations: MongoOperations) {
     }
 
     private fun setVersion(ver: Int): Int {
-        mongoOperations.upsert(query(where("_id").`is`("appopts")),
-                update("schemaVersion", ver), ApplicationOpts::class.java, "ApplicationOpts")
+        mongoOperations.upsert(
+            query(where("_id").`is`("appopts")),
+            update("schemaVersion", ver), ApplicationOpts::class.java, "ApplicationOpts"
+        )
 
         return getOpts()?.schemaVersion ?: 0
 
     }
 
     private fun getOpts(): ApplicationOpts? {
-        return mongoOperations.findOne(query(where("_id").`is`("appopts")),
-                ApplicationOpts::class.java, "ApplicationOpts")
+        return mongoOperations.findOne(
+            query(where("_id").`is`("appopts")),
+            ApplicationOpts::class.java, "ApplicationOpts"
+        )
     }
 
 }
