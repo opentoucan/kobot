@@ -2,10 +2,15 @@ package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.exceptions.ErrorResponseException
+import org.slf4j.LoggerFactory
 import uk.me.danielharman.kotlinspringbot.helpers.Comparators
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 
 class UserStatsCommand (private val guildService: GuildService): Command{
+
+    private val logger = LoggerFactory.getLogger(this::class.java)
+
     override fun execute(event: GuildMessageReceivedEvent) {
 
         val guildId = event.message.guild.id
@@ -23,7 +28,14 @@ class UserStatsCommand (private val guildService: GuildService): Command{
                     .sorted(Comparators.mapStrIntComparator)
                     .limit(20)
                     .forEach { (s, i) ->
-                        stringBuilder.append("${event.message.guild.retrieveMemberById(s).complete()?.nickname ?: s} - $i words\n")
+                        run {
+                            try {
+                                stringBuilder.append("${event.message.guild.retrieveMemberById(s).complete()?.nickname ?: s} - $i words\n")
+                            } catch (e: ErrorResponseException)
+                            {
+                                logger.error("Failed to find user $s by id")
+                            }
+                        }
                     }
 
             EmbedBuilder()

@@ -19,7 +19,7 @@ class GetMemeRank(val memeService: MemeService) : Command {
             val name = event.guild.retrieveMemberById(pair.first).complete()?.nickname
                     ?: event.jda.retrieveUserById(pair.first).complete()?.asTag
                     ?: pair.first
-            des.append("${if(!asc) "#" else ""}${if (!asc) counter++.toString() else ""} $name: S:${pair.second.score}   U:${pair.second.upvotes}   D:${pair.second.downvotes} \n")
+            des.append("${if(!asc) "#" else ""}${if (!asc) counter++.toString() else ""} $name: S:${pair.second.score}   U:${pair.second.upvotes}   D:${pair.second.downvotes} of ${pair.second.count} posts\n")
         }
         event.channel.sendMessage(EmbedBuilder()
                 .setTitle(if (asc) "Losers in ${event.guild.name}" else "Meme ranking for ${event.guild.name}")
