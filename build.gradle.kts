@@ -29,7 +29,7 @@ dependencies {
     implementation(group="org.kohsuke", name="wordnet-random-name", version= "1.3")
     implementation(group = "joda-time", name = "joda-time", version = "2.10.6")
     implementation("net.dv8tion:JDA:4.2.0_222")
-    implementation("com.sedmelluq:lavaplayer:1.3.75")
+    implementation("com.sedmelluq:lavaplayer:1.3.73")
     implementation(group = "com.typesafe.akka", name = "akka-actor_2.13", version = "2.6.10")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
