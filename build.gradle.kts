@@ -3,7 +3,7 @@ import me.qoomon.gradle.gitversioning.GitVersioningPluginConfig
 import me.qoomon.gradle.gitversioning.GitVersioningPluginConfig.*
 
 plugins {
-    id("org.springframework.boot") version "2.4.3"
+    id("org.springframework.boot") version "2.4.4"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
     kotlin("jvm") version "1.4.30"
     kotlin("plugin.spring") version "1.4.30"
@@ -31,15 +31,18 @@ springBoot {
 
 repositories {
     mavenCentral()
-    jcenter()
+    maven {
+        name = "m2-dv8tion"
+        url = uri("https://m2.dv8tion.net/releases")
+    }
 }
 
 dependencies {
     implementation(group="org.kohsuke", name="wordnet-random-name", version= "1.3")
     implementation(group = "joda-time", name = "joda-time", version = "2.10.6")
     implementation(group="com.fasterxml.jackson.datatype", name="jackson-datatype-joda", version="2.11.3")
-    implementation("net.dv8tion:JDA:4.2.0_241")
-    implementation("com.sedmelluq:lavaplayer:1.3.73")
+    implementation("net.dv8tion:JDA:4.2.1_253")
+    implementation("com.sedmelluq:lavaplayer:1.3.75")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.boot:spring-boot-starter-web")
