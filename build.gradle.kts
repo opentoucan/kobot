@@ -1,12 +1,12 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "2.2.6.RELEASE"
-    id("io.spring.dependency-management") version "1.0.9.RELEASE"
-    kotlin("jvm") version "1.4.20"
-    kotlin("plugin.spring") version "1.4.20"
-    kotlin("kapt") version "1.4.20"
-    kotlin("plugin.serialization") version "1.4.20"
+    id("org.springframework.boot") version "2.4.4"
+    id("io.spring.dependency-management") version "1.0.11.RELEASE"
+    kotlin("jvm") version "1.4.30"
+    kotlin("plugin.spring") version "1.4.30"
+    kotlin("kapt") version "1.4.30"
+    kotlin("plugin.serialization") version "1.4.30"
 }
 
 group = "uk.me.danielharman"
@@ -22,14 +22,17 @@ configurations {
 
 repositories {
     mavenCentral()
-    jcenter()
+    maven {
+        name = "m2-dv8tion"
+        url = uri("https://m2.dv8tion.net/releases")
+    }
 }
 
 dependencies {
     implementation(group="org.kohsuke", name="wordnet-random-name", version= "1.3")
     implementation(group = "joda-time", name = "joda-time", version = "2.10.6")
-    implementation("net.dv8tion:JDA:4.2.0_222")
-    implementation("com.sedmelluq:lavaplayer:1.3.73")
+    implementation("net.dv8tion:JDA:4.2.1_253")
+    implementation("com.sedmelluq:lavaplayer:1.3.75")
     implementation(group = "com.typesafe.akka", name = "akka-actor_2.13", version = "2.6.10")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
