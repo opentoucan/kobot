@@ -1,12 +1,12 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "2.4.4"
-    id("io.spring.dependency-management") version "1.0.11.RELEASE"
-    kotlin("jvm") version "1.4.30"
-    kotlin("plugin.spring") version "1.4.30"
-    kotlin("kapt") version "1.4.30"
-    kotlin("plugin.serialization") version "1.4.30"
+    id("org.springframework.boot") version "2.2.6.RELEASE"
+    id("io.spring.dependency-management") version "1.0.9.RELEASE"
+    kotlin("jvm") version "1.4.20"
+    kotlin("plugin.spring") version "1.4.20"
+    kotlin("kapt") version "1.4.20"
+    kotlin("plugin.serialization") version "1.4.20"
 }
 
 group = "uk.me.danielharman"
