@@ -13,7 +13,7 @@ test:
 
 dockerbuild:
   stage: dockerbuild
-  image: docker:latest
+  image: docker:git
   services:
     - docker:dind
   tags:
