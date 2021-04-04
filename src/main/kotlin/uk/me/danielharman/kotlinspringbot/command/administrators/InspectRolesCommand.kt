@@ -4,13 +4,14 @@ import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
-
+import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers
+import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
 
 @Component
-class AddAdminCommand(private val administratorService: AdministratorService) : IAdminCommand {
+class InspectRolesCommand(private val administratorService: AdministratorService) : IAdminCommand {
 
-    private val commandString = "addadmin"
+    private val commandString = "inspectroles"
 
     override fun execute(event: PrivateMessageReceivedEvent) {
 
@@ -24,7 +25,7 @@ class AddAdminCommand(private val administratorService: AdministratorService) : 
         val split = event.message.contentRaw.split(' ')
 
         if (split.size < 2) {
-            event.channel.sendMessage(Embeds.createErrorEmbed("You are not an admin.")).queue()
+            event.channel.sendMessage(Embeds.createErrorEmbed("Not enough parameters")).queue()
             return
         }
 
@@ -35,17 +36,16 @@ class AddAdminCommand(private val administratorService: AdministratorService) : 
             return
         }
 
-        val createBotAdministrator =
-            administratorService.createBotAdministrator(thisAdmin.value.id, user.id, setOf())
+        val roles: OperationHelpers.OperationResult<Set<Role>?> = administratorService.getRoles(event.author.id, user.id)
 
-        if (createBotAdministrator.failure) {
-            event.channel.sendMessage(Embeds.createErrorEmbed(createBotAdministrator.message)).queue()
+        if(roles.failure)
+        {
+            event.channel.sendMessage(Embeds.createErrorEmbed(roles.message)).queue()
             return
         }
 
-
         event.channel.sendMessage(
-            Embeds.infoEmbedBuilder().appendDescription("Added ${user.asTag} as an admin").build()
+            Embeds.infoEmbedBuilder().appendDescription("${roles.value}").build()
         ).queue()
     }
 

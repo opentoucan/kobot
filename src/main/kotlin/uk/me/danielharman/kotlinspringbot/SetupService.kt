@@ -10,6 +10,7 @@ import org.springframework.core.env.Environment
 import org.springframework.data.mongodb.core.MongoOperations
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
 import uk.me.danielharman.kotlinspringbot.objects.ApplicationInfo
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 import uk.me.danielharman.kotlinspringbot.security.DashboardUser
@@ -70,7 +71,7 @@ class SetupService(
         }
 
         //Create default admin
-        administratorService.createBotAdministrator(kotlinBotProperties.primaryPrivilegedUserId)
+        administratorService.createBotAdministrator(kotlinBotProperties.primaryPrivilegedUserId, setOf(Role.Primary))
 
         if (!activeProfiles.contains("discordDisabled")) {
             //Injecting listeners here otherwise we'll get circular dependencies
@@ -81,7 +82,7 @@ class SetupService(
                     discordService.sendLatestXkcd()
                 }
             }, 3000, 10800000) // Start after 3 seconds, check every 3hrs
-
+            administratorService.logToAdmins("Bot started")
         } else {
             logger.info("Running with Discord disabled")
         }

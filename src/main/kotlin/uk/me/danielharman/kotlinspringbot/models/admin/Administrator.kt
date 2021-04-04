@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
 
 @Document("Administrators")
-class Administrator(val discordId: String, val roles: Set<Role> = mutableSetOf(Role.Global)) {
+class Administrator(val discordId: String, val roles: Set<Role> = mutableSetOf()) {
 
     @Id
     lateinit var id: String
