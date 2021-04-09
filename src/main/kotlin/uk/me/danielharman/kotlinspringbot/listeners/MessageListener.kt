@@ -91,7 +91,7 @@ class MessageListener(private val guildService: GuildService,
                     return
                 }
                 else if(emoji == EmojiCodes.Cross){
-                    event.reaction.removeReaction().queue()
+                    event.user?.let { event.reaction.removeReaction(it).queue() }
                 }
 
                 //Thumbs up
