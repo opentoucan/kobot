@@ -5,6 +5,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.domain.Sort.Order
 import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.core.aggregation.Aggregation
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Service
@@ -15,7 +16,12 @@ import java.lang.Integer.min
 import kotlin.math.ceil
 
 @Service
-class DiscordCommandService(private val repository: DiscordCommandRepository, private val guildService: GuildService, private val attachmentService: AttachmentService, private val mongoTemplate: MongoTemplate) {
+class DiscordCommandService(
+    private val repository: DiscordCommandRepository,
+    private val guildService: GuildService,
+    private val attachmentService: AttachmentService,
+    private val mongoTemplate: MongoTemplate
+) {
 
     fun commandCount(guildId: String): Long {
         guildService.getGuild(guildId) ?: return 0
@@ -31,6 +37,13 @@ class DiscordCommandService(private val repository: DiscordCommandRepository, pr
         guildService.getGuild(guildId) ?: return null
         return repository.findFirstByGuildIdAndKey(guildId, key)
     }
+
+    fun getRandomCommand(guildId: String): DiscordCommand? =
+        mongoTemplate.aggregate(
+            Aggregation.newAggregation(Aggregation.sample(1)),
+            "DiscordCommands",
+            DiscordCommand::class.java
+        ).uniqueMappedResult
 
     fun createStringCommand(guildId: String, key: String, content: String, creatorId: String, overwrite: Boolean): DiscordCommand? {
         return createCommand(guildId, key, content, null, DiscordCommand.CommandType.STRING, creatorId, true)
