@@ -94,8 +94,9 @@ class GuildMessageListener(
                         }
                     }
                     return
-                } else if (emoji == EmojiCodes.Cross) {
-                    event.reaction.removeReaction().queue()
+                }
+                else if(emoji == EmojiCodes.Cross){
+                    event.user?.let { event.reaction.removeReaction(it).queue() }
                 }
 
                 //Thumbs up
