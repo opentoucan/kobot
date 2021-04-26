@@ -9,7 +9,6 @@ import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
 interface AdministratorRepository : MongoRepository<Administrator, String> {
 
     fun getByDiscordId(discordId: String): Administrator?
-    //fun getAllByRole(role: Role): List<Administrator>
     fun deleteByDiscordId(discordId: String)
 
 }

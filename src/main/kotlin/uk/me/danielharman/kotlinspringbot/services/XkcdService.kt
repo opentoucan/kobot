@@ -28,7 +28,7 @@ class XkcdService(private val mongoOperations: MongoOperations) {
 
     fun getLatestComic(): XkcdComic {
 
-        logger.info("[XKCD Service] Getting latest comic")
+        logger.info("Getting latest comic")
 
         val client = HttpClient(CIO)
         val response = runBlocking { client.get<String>(latestUrl) }
@@ -40,8 +40,8 @@ class XkcdService(private val mongoOperations: MongoOperations) {
         val url = comicUrl.format(number)
         val response = runBlocking { client.get<HttpResponse>(url) }
 
-        if (response.status.value == 404) {
-            logger.error("[XKCD Service] Got a 404")
+        if (response.status.value != 200) {
+            logger.error("Got ${response.status.value} from XKCD server")
             return null
         }
 
@@ -50,7 +50,7 @@ class XkcdService(private val mongoOperations: MongoOperations) {
     }
 
     fun setLast(ver: Int): Int {
-        logger.info("[XKCD Service] Setting last comic to $ver ")
+        logger.info("Setting last comic to $ver")
         mongoOperations.upsert(
             Query.query(Criteria.where("_id").`is`("latest")),
             Update.update("num", ver), SchemaUpdater.ApplicationOpts::class.java, "XkcdLatest"
