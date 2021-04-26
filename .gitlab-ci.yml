@@ -6,7 +6,7 @@ stages:
   
 test:
   stage: test
-  image: gradle:jdk14
+  image: gradle:jdk15
   tags:
     - docker
   script: gradle check --info

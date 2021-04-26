@@ -2,11 +2,24 @@ package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.joda.time.format.ISODateTimeFormat
+import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.objects.ApplicationInfo
 import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
 
+@Component
+class InfoCommand(private val commandService: DiscordCommandService) : ICommand {
 
-class InfoCommand(private val commandService: DiscordCommandService) : Command {
+    private val commandString = "info"
+    private val description = "Bot information"
+
+    override fun matchCommandString(str: String): Boolean = str == commandString
+
+    override fun getCommandString(): String = commandString
+
+    override fun getCommandDescription(): String = description
+
     override fun execute(event: GuildMessageReceivedEvent) {
         val split = event.message.contentStripped.split(" ")
 
@@ -19,8 +32,7 @@ class InfoCommand(private val commandService: DiscordCommandService) : Command {
                 return
             }
 
-            val creatorName : String
-            creatorName = if(command.creatorId.isEmpty())
+            val creatorName = if(command.creatorId.isEmpty())
                 "Unknown"
             else
                 event.jda.retrieveUserById(command.creatorId).complete()?.asTag ?: "Unknown"
@@ -35,9 +47,10 @@ class InfoCommand(private val commandService: DiscordCommandService) : Command {
         else {
 
             event.channel.sendMessage(Embeds.infoEmbedBuilder(title = "KotBot")
-                    .appendDescription("This is a Discord bot written in Kotlin using Spring and Akka Actors")
+                    .appendDescription("This is a Discord bot written in Kotlin using Spring")
+                    .addField("Version", ApplicationInfo.version, false)
                     .addField("Developers", "Daniel Harman\nKieran Dennis\nJared Prest", false)
-                    .addField("Libraries", "https://akka.io, https://spring.io, https://kotlinlang.org", false)
+                    .addField("Libraries", "https://spring.io, https://kotlinlang.org", false)
                     .addField("Source", "https://gitlab.com/update-gitlab.yml/kotlinspringbot", false)
                     .addField("Licence", "https://www.apache.org/licenses/LICENSE-2.0", false)
                     .build()).queue()

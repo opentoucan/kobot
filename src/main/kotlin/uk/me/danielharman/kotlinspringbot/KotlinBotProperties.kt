@@ -7,6 +7,7 @@ import org.springframework.boot.context.properties.ConstructorBinding;
 @ConfigurationProperties("discord")
 data class KotlinBotProperties(
         var commandPrefix: String,
+        var voiceCommandPrefix: String,
         var privilegedCommandPrefix: String,
         var primaryPrivilegedUserId: String,
         var token: String

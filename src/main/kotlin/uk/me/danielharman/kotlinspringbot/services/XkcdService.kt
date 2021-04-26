@@ -1,23 +1,25 @@
 package uk.me.danielharman.kotlinspringbot.services
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.request.get
-import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.readText
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.data.mongodb.core.MongoOperations
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
-import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
 import uk.me.danielharman.kotlinspringbot.SchemaUpdater
 import uk.me.danielharman.kotlinspringbot.models.XkcdComic
 
 @Service
 class XkcdService(private val mongoOperations: MongoOperations) {
+
+    private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     private val latestUrl = "https://xkcd.com/info.0.json"
     private val comicUrl = "https://xkcd.com/%d/info.0.json"
@@ -29,35 +31,39 @@ class XkcdService(private val mongoOperations: MongoOperations) {
         logger.info("[XKCD Service] Getting latest comic")
 
         val client = HttpClient(CIO)
-        val response = runBlocking{client.get<String>(latestUrl)}
+        val response = runBlocking { client.get<String>(latestUrl) }
         return Json.decodeFromString(XkcdComic.serializer(), response)
     }
 
-    fun getComic(number: Int) : XkcdComic?{
+    fun getComic(number: Int): XkcdComic? {
         val client = HttpClient(CIO)
         val url = comicUrl.format(number)
-        val response = runBlocking{client.get<HttpResponse>(url)}
+        val response = runBlocking { client.get<HttpResponse>(url) }
 
-        if(response.status.value == 404){
+        if (response.status.value == 404) {
             logger.error("[XKCD Service] Got a 404")
             return null
         }
 
         val s = runBlocking { response.readText() }
-        return Json.decodeFromString(XkcdComic.serializer(), s )
+        return Json.decodeFromString(XkcdComic.serializer(), s)
     }
 
     fun setLast(ver: Int): Int {
         logger.info("[XKCD Service] Setting last comic to $ver ")
-        mongoOperations.upsert(Query.query(Criteria.where("_id").`is`("latest")),
-                Update.update("num", ver), SchemaUpdater.ApplicationOpts::class.java, "XkcdLatest")
+        mongoOperations.upsert(
+            Query.query(Criteria.where("_id").`is`("latest")),
+            Update.update("num", ver), SchemaUpdater.ApplicationOpts::class.java, "XkcdLatest"
+        )
 
         return getLast()?.num ?: 0
     }
 
     fun getLast(): XkcdLatest? {
-        return mongoOperations.findOne(Query.query(Criteria.where("_id").`is`("latest")),
-                XkcdLatest::class.java, "XkcdLatest")
+        return mongoOperations.findOne(
+            Query.query(Criteria.where("_id").`is`("latest")),
+            XkcdLatest::class.java, "XkcdLatest"
+        )
     }
 
 }

@@ -4,12 +4,23 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
 import uk.me.danielharman.kotlinspringbot.helpers.Comparators
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 
-class UserStatsCommand (private val guildService: GuildService): Command{
+@Component
+class UserStatsCommand (private val guildService: GuildService): ICommand {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
+    private val commandString = "userstats"
+    private val description = "List member word counts"
+
+    override fun matchCommandString(str: String): Boolean = str == commandString
+
+    override fun getCommandString(): String = commandString
+
+    override fun getCommandDescription(): String = description
 
     override fun execute(event: GuildMessageReceivedEvent) {
 

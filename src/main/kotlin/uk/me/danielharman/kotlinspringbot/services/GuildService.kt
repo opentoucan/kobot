@@ -1,23 +1,26 @@
 package uk.me.danielharman.kotlinspringbot.services
 
-import org.joda.time.DateTime
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria.where
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Query.query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
+import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
-import uk.me.danielharman.kotlinspringbot.models.SpringGuild.CommandType.STRING
-import uk.me.danielharman.kotlinspringbot.models.SpringGuild.CustomCommand
 import uk.me.danielharman.kotlinspringbot.repositories.GuildRepository
 import java.util.stream.Collectors
+import kotlin.math.max
 
 @Service
 class GuildService(private val guildRepository: GuildRepository, private val mongoTemplate: MongoTemplate) {
 
     fun getGuild(serverId: String): SpringGuild? = guildRepository.findByGuildId(serverId)
     fun createGuild(guildId: String): SpringGuild = guildRepository.save(SpringGuild(guildId))
+    fun getGuilds(pageSize: Int = 10, page: Int = 0): List<SpringGuild> =
+        guildRepository.findAll(PageRequest.of(max(page, 0),  max(pageSize, 1))).toList()
+
 
     fun updateUserCount(guildId: String, userId: String, count: Int) {
         val guild = getGuild(guildId)
@@ -63,7 +66,7 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
         return guild.privilegedUsers.contains(userId)
     }
 
-    fun addPrivileged(guildId: String, userId: String) {
+    fun addPrivileged(guildId: String, userId: String): OperationResult<String?> {
         val guild = getGuild(guildId)
         if (guild == null) {
             createGuild(guildId)
@@ -71,16 +74,19 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
 
         mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
                 Update().addToSet("privilegedUsers", userId), SpringGuild::class.java)
+
+        return OperationResult.successResult("Added $userId")
     }
 
-    fun removedPrivileged(guildId: String, userId: String) {
+    fun removedPrivileged(guildId: String, userId: String): OperationResult<String?> {
 
-        val guild = getGuild(guildId) ?: return
+        val guild = getGuild(guildId) ?: return OperationResult.failResult("Could not find guild")
 
         val filter = guild.privilegedUsers.filter { s -> s != userId }
 
         mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
                 Update().set("privilegedUsers", filter), SpringGuild::class.java)
+        return OperationResult.successResult("Removed $userId")
     }
 
     fun addMemeChannel(guildId: String, channelId: String) {
@@ -136,5 +142,14 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
     }
 
     fun getDeafenedChannels(guildId: String): List<String> = getGuild(guildId)?.deafenedChannels ?: listOf()
+
+    fun getGuildsWithoutAdmins(): List<SpringGuild> {
+        return mongoTemplate.find(Query(where("privilegedUsers").size(0)), SpringGuild::class.java);
+    }
+
+    fun deleteSpringGuild(guildId: String): OperationResult<String?> {
+        guildRepository.deleteByGuildId(guildId)
+        return OperationResult.successResult("Deleted")
+    }
 
 }

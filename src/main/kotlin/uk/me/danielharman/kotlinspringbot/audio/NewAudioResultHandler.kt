@@ -7,12 +7,17 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
-import uk.me.danielharman.kotlinspringbot.ApplicationLogger
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 
 //TODO re-write because dumb things because java inline class overrides
-class NewAudioResultHandler(private val voiceChannel: VoiceChannel?, private val musicManager: GuildMusicManager,
-                            private val channel: TextChannel, private val guildService: GuildService) : AudioLoadResultHandler {
+class NewAudioResultHandler(
+    private val voiceChannel: VoiceChannel?, private val musicManager: GuildMusicManager,
+    private val channel: TextChannel, private val guildService: GuildService
+) : AudioLoadResultHandler {
+
+    private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun trackLoaded(track: AudioTrack) {
         play(track)
@@ -39,7 +44,7 @@ class NewAudioResultHandler(private val voiceChannel: VoiceChannel?, private val
         channel.sendMessage("Could not play: ${exception.message}").queue()
     }
 
-    fun play(track: AudioTrack){
+    fun play(track: AudioTrack) {
         if (voiceChannel == null)
             return
 
@@ -47,7 +52,7 @@ class NewAudioResultHandler(private val voiceChannel: VoiceChannel?, private val
             try {
                 channel.guild.audioManager.openAudioConnection(voiceChannel)
             } catch (e: InsufficientPermissionException) {
-                ApplicationLogger.logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
+                logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
             }
         }
         musicManager.scheduler.queue(track)

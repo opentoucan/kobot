@@ -8,5 +8,6 @@ import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 interface GuildRepository : MongoRepository<SpringGuild, String> {
 
     fun findByGuildId(guildId: String) : SpringGuild?
+    fun deleteByGuildId(guildId: String)
 
 }
