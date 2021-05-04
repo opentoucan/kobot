@@ -3,7 +3,10 @@ package uk.me.danielharman.kotlinspringbot.command
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds.createXkcdComicEmbed
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.XkcdService
 import java.lang.NumberFormatException
 
@@ -24,8 +27,11 @@ class XkcdComicCommand(private val xkcdService: XkcdService) : ICommand {
         val split = event.message.contentStripped.split(" ")
 
         if (split.size < 2) {
-            val xkcd = xkcdService.getLatestComic()
-            event.channel.sendMessage(createXkcdComicEmbed(xkcd, "Latest Comic")).queue()
+            val message = when (val xkcd = xkcdService.getLatestComic()) {
+                is Failure -> Embeds.createErrorEmbed(xkcd.reason)
+                is Success -> createXkcdComicEmbed(xkcd.value, "Latest Comic")
+            }
+            event.channel.sendMessage(message).queue()
             return
         }
 
@@ -42,13 +48,9 @@ class XkcdComicCommand(private val xkcdService: XkcdService) : ICommand {
             return
         }
 
-        val xkcd = xkcdService.getComic(comicNumber)
-
-        if (xkcd == null) {
-            event.message.channel.sendMessage("Comic not found.").queue()
-            return
+        when (val xkcd = xkcdService.getComic(comicNumber)) {
+            is Failure -> event.message.channel.sendMessage("Comic not found.").queue()
+            is Success -> event.channel.sendMessage(createXkcdComicEmbed(xkcd.value)).queue()
         }
-
-        event.channel.sendMessage(createXkcdComicEmbed(xkcd)).queue()
     }
 }

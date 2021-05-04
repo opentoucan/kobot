@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult.Companion.failResult
 import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult.Companion.successResult
@@ -26,26 +27,34 @@ class DiscordService(
     private val logger = LoggerFactory.getLogger(DiscordService::class.java)
 
     fun sendLatestXkcd() {
-        logger.info("[Discord Actor] Checking for new XKCD comic")
+        logger.info("Checking for new XKCD comic")
 
         val xkcdChannels = springGuildService.getXkcdChannels() as Success
 
         if (xkcdChannels.value.isEmpty())
             return
 
-        val last = xkcdService.getLast()
-        val latestComic = xkcdService.getLatestComic()
 
-        logger.info("[Discord Actor] XKCD last comic recorded #${last}. Current #${latestComic.num}")
-        if (last == null || last.num < latestComic.num) {
-            xkcdService.setLast(latestComic.num)
-            for (channel in xkcdChannels.value) {
-                sendChannelMessage(
-                    DiscordChannelEmbedMessage(
-                        Embeds.createXkcdComicEmbed(latestComic, "Latest comic"),
-                        channel
-                    )
-                )
+        when (val latestComic = xkcdService.getLatestComic()) {
+            is Failure -> logger.error(latestComic.reason)
+            is Success -> {
+                when (val last = xkcdService.getLast()) {
+                    is Failure -> logger.error(last.reason)
+                    is Success -> {
+                        logger.info("XKCD last comic recorded #${last}. Current #${latestComic.value.num}")
+                        if (last.value.num < latestComic.value.num) {
+                            xkcdService.setLast(latestComic.value.num)
+                            for (channel in xkcdChannels.value) {
+                                sendChannelMessage(
+                                    DiscordChannelEmbedMessage(
+                                        Embeds.createXkcdComicEmbed(latestComic.value, "Latest comic"),
+                                        channel
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
