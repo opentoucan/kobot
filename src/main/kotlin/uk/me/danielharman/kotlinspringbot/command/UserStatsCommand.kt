@@ -7,10 +7,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
 import uk.me.danielharman.kotlinspringbot.helpers.Comparators
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 
 @Component
-class UserStatsCommand (private val guildService: GuildService): ICommand {
+class UserStatsCommand(private val guildService: GuildService) : ICommand {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
     private val commandString = "userstats"
@@ -26,36 +28,38 @@ class UserStatsCommand (private val guildService: GuildService): ICommand {
 
         val guildId = event.message.guild.id
         val guildName = event.message.guild.name
-        val springGuild = guildService.getGuild(guildId)
+        val getSpringGuild = guildService.getGuild(guildId)
 
-        val message = if (springGuild == null) {
-            EmbedBuilder().addField("error", "Could not find stats for server", false).build()
-        } else {
+        val message = when (getSpringGuild) {
+            is Failure -> EmbedBuilder().addField("error", "Could not find stats for server", false).build()
+            is Success -> {
+                val stringBuilder = StringBuilder()
 
-            val stringBuilder = StringBuilder()
-
-            springGuild.userWordCounts.entries
+                getSpringGuild.value.userWordCounts.entries
                     .stream()
                     .sorted(Comparators.mapStrIntComparator)
                     .limit(20)
                     .forEach { (s, i) ->
                         run {
                             try {
-                                stringBuilder.append("${event.message.guild.retrieveMemberById(s).complete()?.nickname ?: s} - $i words\n")
-                            } catch (e: ErrorResponseException)
-                            {
+                                stringBuilder.append(
+                                    "${
+                                        event.message.guild.retrieveMemberById(s).complete()?.nickname ?: s
+                                    } - $i words\n"
+                                )
+                            } catch (e: ErrorResponseException) {
                                 logger.error("Failed to find user $s by id")
                             }
                         }
                     }
 
-            EmbedBuilder()
+                EmbedBuilder()
                     .appendDescription(stringBuilder.toString())
                     .setColor(0x9d03fc)
                     .setTitle("Words said per user for $guildName")
                     .build()
+            }
         }
-
         event.channel.sendMessage(message).queue()
     }
 }

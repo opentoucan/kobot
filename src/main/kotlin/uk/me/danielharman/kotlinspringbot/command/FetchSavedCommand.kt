@@ -5,6 +5,8 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 import kotlin.math.ceil
@@ -26,37 +28,40 @@ class FetchSavedCommand(
     override fun getCommandDescription(): String = description
 
     override fun execute(event: GuildMessageReceivedEvent) {
-        val guild = guildService.getGuild(event.guild.id)
-        if (guild == null) {
-            event.channel.sendMessage(Embeds.createErrorEmbed("Guild not found")).queue()
-            return
+
+        val message = when(val getGuild = guildService.getGuild(event.guild.id)){
+            is Failure -> Embeds.createErrorEmbed("Guild not found")
+            is Success -> {
+                val guild = getGuild.value
+                val split = event.message.contentStripped.split(" ")
+                val page = if (split.size < 2) 1 else split[1].toIntOrNull() ?: 1
+
+                val commandCount = commandService.commandCount(guild.guildId)
+
+                val pages = ceil((commandCount.toDouble() / MAX_PAGE_SIZE)).toInt()
+
+                if (page < 1 || page > pages) {
+                    event.channel.sendMessage(Embeds.createErrorEmbed("$page is not a valid page number, choose between 1 and $pages"))
+                        .queue()
+                    return
+                }
+
+                val commandList = commandService.getCommands(guild.guildId, page - 1, MAX_PAGE_SIZE)
+
+                val builder = EmbedBuilder()
+                    .setTitle("Saved commands")
+                    .setDescription("Page $page of $pages ($commandCount saved commands)")
+                    .setColor(0x9d03fc)
+
+                commandList.forEach { cmd ->
+                    builder.addField(cmd.key, truncate(cmd.content ?: cmd.fileName ?: "No Content", 30), true)
+                }
+
+                builder.build()
+            }
         }
 
-        val split = event.message.contentStripped.split(" ")
-        val page = if (split.size < 2) 1 else split[1].toIntOrNull() ?: 1
-
-        val commandCount = commandService.commandCount(guild.guildId)
-
-        val pages = ceil((commandCount.toDouble() / MAX_PAGE_SIZE)).toInt()
-
-        if (page < 1 || page > pages) {
-            event.channel.sendMessage(Embeds.createErrorEmbed("$page is not a valid page number, choose between 1 and $pages"))
-                .queue()
-            return
-        }
-
-        val commandList = commandService.getCommands(guild.guildId, page - 1, MAX_PAGE_SIZE)
-
-        val builder = EmbedBuilder()
-            .setTitle("Saved commands")
-            .setDescription("Page $page of $pages ($commandCount saved commands)")
-            .setColor(0x9d03fc)
-
-        commandList.forEach { cmd ->
-            builder.addField(cmd.key, truncate(cmd.content ?: cmd.fileName ?: "No Content", 30), true)
-        }
-
-        event.channel.sendMessage(builder.build()).queue()
+        event.channel.sendMessage(message).queue()
     }
 
 

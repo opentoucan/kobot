@@ -5,6 +5,8 @@ import com.fasterxml.jackson.datatype.joda.JodaModule
 import org.springframework.http.ResponseEntity
 import org.springframework.http.ResponseEntity.*
 import org.springframework.web.bind.annotation.*
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 import uk.me.danielharman.kotlinspringbot.services.RequestService
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
@@ -64,7 +66,9 @@ class ApiController(
 
     @GetMapping("/api/guilds/{id}/commands", produces = ["application/json"])
     fun getGuildCommands(@PathVariable id: String): ResponseEntity<String> {
-        val guild = guildService.getGuild(id) ?: return notFound().build()
+        val getGuild = guildService.getGuild(id)
+        if (getGuild is Failure) return badRequest().build()
+        val guild = (getGuild as Success).value
 
         val collect = guild.customCommands.entries.stream()
             .map { kp ->
@@ -80,7 +84,9 @@ class ApiController(
 
     @GetMapping("/api/guilds/{guildId}/commands/{id}", produces = ["application/json"])
     fun getGuildCommand(@PathVariable guildId: String, @PathVariable id: String): ResponseEntity<String> {
-        val guild = guildService.getGuild(guildId) ?: return notFound().build()
+        val getGuild = guildService.getGuild(id)
+        if (getGuild is Failure) return badRequest().build()
+        val guild = (getGuild as Success).value
 
         if (guild.customCommands.isEmpty())
             return badRequest().build()

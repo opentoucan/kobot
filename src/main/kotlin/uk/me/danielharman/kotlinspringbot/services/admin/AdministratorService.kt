@@ -9,9 +9,11 @@ import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult.Companion.failResult
 import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult.Companion.successResult
+import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.models.admin.Administrator
 import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
@@ -103,40 +105,48 @@ class AdministratorService(
 
     fun addSpringGuildAdministrator(userId: String, guildId: String, newAdminId: String): OperationResult<String?> {
         //TODO: Permissions
-        val guild = guildService.getGuild(guildId) ?: return failResult("No such guild.")
+        val getGuild = guildService.getGuild(guildId)
+        if(getGuild is Failure) return failResult(getGuild.reason)
+        val guild = (getGuild as Success).value
 
         if (!guild.privilegedUsers.contains(userId)) {
             return failResult("Insufficient permissions.")
         }
 
-        return guildService.addPrivileged(guildId, newAdminId)
+        return successResult((guildService.addModerator(guildId, newAdminId) as Success).value)
     }
 
     fun removeSpringGuildAdministrator(userId: String, guildId: String, adminId: String): OperationResult<String?> {
         //TODO: Permissions
-        val guild = guildService.getGuild(guildId) ?: return failResult("No such guild.")
+        val getGuild = guildService.getGuild(guildId)
+        if(getGuild is Failure) return failResult(getGuild.reason)
+        val guild = (getGuild as Success).value
 
         if (!guild.privilegedUsers.contains(userId)) {
             return failResult("Insufficient permissions.")
         }
 
-        return guildService.removedPrivileged(guildId, adminId)
+        return successResult((guildService.removeModerator(guildId, adminId) as Success).value)
     }
 
     fun deleteSpringGuild(userId: String, guildId: String): OperationResult<String?> {
         //TODO: Permissions
-        val guild = guildService.getGuild(guildId) ?: return failResult("No such guild.")
+        val getGuild = guildService.getGuild(guildId)
+        if(getGuild is Failure) return failResult(getGuild.reason)
+        val guild = (getGuild as Success).value
 
         if (!guild.privilegedUsers.contains(userId)) {
             return failResult("Insufficient permissions.")
         }
 
-        return guildService.deleteSpringGuild(guildId)
+        return successResult((guildService.deleteSpringGuild(guildId) as Success).value)
     }
 
     fun getSpringGuild(userId: String, guildId: String): OperationResult<SpringGuild?> {
         //TODO: Permissions
-        val guild = guildService.getGuild(guildId) ?: return failResult("No such guild")
+        val getGuild = guildService.getGuild(guildId)
+        if(getGuild is Failure) return failResult(getGuild.reason)
+        val guild = (getGuild as Success).value
 
         if (!guild.privilegedUsers.contains(userId)) {
             return failResult("Insufficient permissions.")
@@ -145,7 +155,9 @@ class AdministratorService(
     }
 
     fun syncGuildAdmins(): OperationResult<String?> {
-        val guildsWithoutAdmins = guildService.getGuildsWithoutAdmins()
+        val getGuildsWithoutAdmins = guildService.getGuildsWithoutModerators()
+        if(getGuildsWithoutAdmins is Failure) return failResult(getGuildsWithoutAdmins.reason)
+        val guildsWithoutAdmins = (getGuildsWithoutAdmins as Success).value
 
         for (guild in guildsWithoutAdmins) {
             syncGuildAdmin(guild)
@@ -168,7 +180,7 @@ class AdministratorService(
             return
         }
 
-        guildService.addPrivileged(springGuild.guildId, owner.user.id)
+        guildService.addModerator(springGuild.guildId, owner.user.id)
 
         logger.info("Set ${owner.user.id} as admin of ${springGuild.guildId}")
 

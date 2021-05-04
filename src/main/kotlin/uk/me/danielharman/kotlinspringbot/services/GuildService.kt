@@ -7,7 +7,9 @@ import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Query.query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
-import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.OperationResult
+import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.repositories.GuildRepository
 import java.util.stream.Collectors
@@ -16,28 +18,45 @@ import kotlin.math.max
 @Service
 class GuildService(private val guildRepository: GuildRepository, private val mongoTemplate: MongoTemplate) {
 
-    fun getGuild(serverId: String): SpringGuild? = guildRepository.findByGuildId(serverId)
-    fun createGuild(guildId: String): SpringGuild = guildRepository.save(SpringGuild(guildId))
-    fun getGuilds(pageSize: Int = 10, page: Int = 0): List<SpringGuild> =
-        guildRepository.findAll(PageRequest.of(max(page, 0),  max(pageSize, 1))).toList()
+    //TODO: Look at utilising the custom queries on Spring repositories over mongoTemplate
+    private val DATA_CLASS = SpringGuild::class.java
 
-
-    fun updateUserCount(guildId: String, userId: String, count: Int) {
-        val guild = getGuild(guildId)
-        if (guild == null) {
-            createGuild(guildId)
-        }
-
-        val update = Update()
-        update.inc("userWordCounts.$userId", count)
-        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)), update, SpringGuild::class.java)
+    fun getGuild(guildId: String): OperationResult<SpringGuild, String> {
+        val guild = guildRepository.findByGuildId(guildId) ?: return Failure("Could not find guild $guildId")
+        return Success(guild)
     }
 
-    fun setVol(guildId: String, vol: Int) {
+    fun createGuild(guildId: String): OperationResult<SpringGuild, String> {
+        if (getGuild(guildId) is Success) return Failure("Guild already exists")
+        return Success(guildRepository.save(SpringGuild(guildId)))
+    }
+
+    fun createGuildIfNotExists(guildId: String): OperationResult<SpringGuild, String> {
         val guild = getGuild(guildId)
-        if (guild == null) {
-            createGuild(guildId)
-        }
+        if (guild is Success) return guild
+        return Success(guildRepository.save(SpringGuild(guildId)))
+    }
+
+    fun getGuilds(pageSize: Int = 10, page: Int = 0): OperationResult<List<SpringGuild>, String> =
+        Success(guildRepository.findAll(PageRequest.of(max(page, 0), max(pageSize, 1))).toList())
+
+
+    fun updateUserCount(guildId: String, userId: String, count: Int): OperationResult<SpringGuild, String> {
+        val guild = createGuildIfNotExists(guildId)
+        if (guild is Failure) return guild
+
+        val result =
+            mongoTemplate.findAndModify(
+                query(where("_id").`is`((guild as Success).value.id)),
+                Update().inc("userWordCounts.$userId", count),
+                DATA_CLASS
+            ) ?: return Failure("No guild was found")
+        return Success(result)
+    }
+
+    fun setVol(guildId: String, vol: Int): OperationResult<Int, String> {
+        val guild = createGuildIfNotExists(guildId)
+        if (guild is Failure) return guild
 
         val newVol = when {
             vol > 100 -> 100
@@ -45,111 +64,153 @@ class GuildService(private val guildRepository: GuildRepository, private val mon
             else -> vol
         }
 
-        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
-                Update.update("volume", newVol), SpringGuild::class.java)
+        val findAndModify = mongoTemplate.findAndModify(
+            query(where("_id").`is`((guild as Success).value.id)),
+            Update.update("volume", newVol), DATA_CLASS
+        ) ?: return Failure("Failed to update guild")
+
+        return Success(findAndModify.volume)
     }
 
-    fun getVol(guildId: String) = getGuild(guildId)?.volume ?: 50
-
-    fun setGuildLogChannel(guildId: String, channelId: String) {
+    fun getVol(guildId: String): OperationResult<Int, String> {
         val guild = getGuild(guildId)
-        if (guild == null) {
-            createGuild(guildId)
-        }
-
-        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
-                Update().set("logChannelId", channelId), SpringGuild::class.java)
+        if (guild is Failure) return Failure(guild.reason)
+        return Success((guild as Success).value.volume)
     }
 
-    fun isPrivileged(guildId: String, userId: String): Boolean {
-        val guild = getGuild(guildId) ?: return false
-        return guild.privilegedUsers.contains(userId)
-    }
-
-    fun addPrivileged(guildId: String, userId: String): OperationResult<String?> {
+    fun isModerator(guildId: String, userId: String): OperationResult<String, String> {
         val guild = getGuild(guildId)
-        if (guild == null) {
-            createGuild(guildId)
+        if (guild is Failure) return guild
+
+        return if ((guild as Success).value.privilegedUsers.contains(userId)) {
+            Success(userId)
+        } else {
+            Failure("User is not a moderator")
         }
-
-        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
-                Update().addToSet("privilegedUsers", userId), SpringGuild::class.java)
-
-        return OperationResult.successResult("Added $userId")
     }
 
-    fun removedPrivileged(guildId: String, userId: String): OperationResult<String?> {
+    fun addModerator(guildId: String, userId: String): OperationResult<String, String> {
+        val guild = createGuildIfNotExists(guildId)
+        if (guild is Failure) return guild
 
-        val guild = getGuild(guildId) ?: return OperationResult.failResult("Could not find guild")
+        mongoTemplate.findAndModify(
+            query(where("guildId").`is`(guildId)),
+            Update().addToSet("privilegedUsers", userId), DATA_CLASS
+        ) ?: return Failure("Could not update guild")
 
-        val filter = guild.privilegedUsers.filter { s -> s != userId }
-
-        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
-                Update().set("privilegedUsers", filter), SpringGuild::class.java)
-        return OperationResult.successResult("Removed $userId")
+        return Success(userId)
     }
 
-    fun addMemeChannel(guildId: String, channelId: String) {
-        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
-                Update().addToSet("memeChannels", channelId), SpringGuild::class.java)
+    fun removeModerator(guildId: String, userId: String): OperationResult<String, String> {
+
+        val getGuild = getGuild(guildId)
+        if (getGuild is Failure) return getGuild
+        val guild = (getGuild as Success).value
+
+        mongoTemplate.findAndModify(
+            query(where("_id").`is`(guild.id)),
+            Update().set("privilegedUsers", guild.privilegedUsers.filter { s -> s != userId }),
+            DATA_CLASS
+        ) ?: return Failure("Could not update guild")
+
+        return Success(userId)
     }
 
-    fun removeMemeChannel(guildId: String, channelId: String) {
-        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
-                Update().pull("memeChannels", channelId), SpringGuild::class.java)
+    fun addMemeChannel(guildId: String, channelId: String): OperationResult<String, String> {
+        val guild = (createGuildIfNotExists(guildId) as Success).value
+
+        mongoTemplate.findAndModify(
+            query(where("_id").`is`(guild.id)),
+            Update().addToSet("memeChannels", channelId),
+            DATA_CLASS
+        ) ?: return Failure("Could not update guild")
+
+        return Success(channelId)
     }
 
-    fun getMemeChannels(guildId: String): List<String> = getGuild(guildId)?.memeChannels ?: listOf()
+    fun removeMemeChannel(guildId: String, channelId: String): OperationResult<String, String> {
+        val getGuild = getGuild(guildId)
+        if (getGuild is Failure) return getGuild
+        val guild = (getGuild as Success).value
 
-    fun setXkcdChannel(guildId: String, channelId: String) {
-        val guild = getGuild(guildId)
-        if (guild == null) {
-            createGuild(guildId)
-        }
+        mongoTemplate.findAndModify(
+            query(where("_id").`is`(guild.id)),
+            Update().pull("memeChannels", channelId), DATA_CLASS
+        ) ?: return Failure("Could not update guild")
 
-        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
-                Update().set("xkcdChannelId", channelId), SpringGuild::class.java)
+        return Success(channelId)
     }
 
-    fun getXkcdChannel(guildId: String): String = getGuild(guildId)?.xkcdChannelId ?: ""
+    fun getMemeChannels(guildId: String): OperationResult<List<String>, String> {
+        val getGuild = getGuild(guildId)
+        if (getGuild is Failure) return getGuild
+        val guild = (getGuild as Success).value
+        return Success(guild.memeChannels)
+    }
 
-    fun getXkcdChannels(): List<String>{
+    fun setXkcdChannel(guildId: String, channelId: String): OperationResult<String, String> {
+        val guild = (createGuildIfNotExists(guildId) as Success).value
 
+        mongoTemplate.findAndModify(
+            query(where("_id").`is`(guild.id)),
+            Update().set("xkcdChannelId", channelId),
+            DATA_CLASS
+        ) ?: return Failure("Could not update guild")
+
+        return Success(channelId)
+    }
+
+    fun getXkcdChannel(guildId: String): OperationResult<String, String> {
+        val getGuild = getGuild(guildId)
+        if (getGuild is Failure) return getGuild
+        val guild = (getGuild as Success).value
+        return Success(guild.xkcdChannelId)
+    }
+
+    fun getXkcdChannels(): OperationResult<List<String>, String> {
         val query = Query()
         query.fields().include("xkcdChannelId").include("guildId")
-
-        val list = mongoTemplate.find(query, SpringGuild::class.java)
-        return list.stream().map { g -> g.xkcdChannelId }.filter { s -> s.isNotEmpty() }.collect(Collectors.toList())
+        val list = mongoTemplate.find(query, DATA_CLASS)
+        return Success(list.stream().map { g -> g.xkcdChannelId }.filter { s -> s.isNotEmpty() }
+            .collect(Collectors.toList()))
     }
 
-    fun deafenChannel(guildId: String, channelId: String): Boolean {
-        val guild = getGuild(guildId)
-        if (guild == null) {
-            createGuild(guildId)
+    fun deafenChannel(guildId: String, channelId: String, deafen: Boolean = true): OperationResult<String, String> {
+        val getGuild = getGuild(guildId)
+        if (getGuild is Failure) return getGuild
+        val guild = (getGuild as Success).value
+
+        val update = Update()
+        if (deafen) {
+            update.addToSet("deafenedChannels", channelId)
+        } else {
+            update.pull("deafenedChannels", channelId)
         }
-
-        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
-                Update().addToSet("deafenedChannels", channelId), SpringGuild::class.java)
-        return true
+        mongoTemplate.findAndModify(
+            query(where("_id").`is`(guild.id)), update, DATA_CLASS
+        )
+        return Success(channelId)
     }
 
-    fun unDeafenChannel(guildId: String, channelId: String): Boolean {
-        getGuild(guildId) ?: return false
+    fun unDeafenChannel(guildId: String, channelId: String): OperationResult<String, String> =
+        deafenChannel(guildId, channelId, false)
 
-        mongoTemplate.findAndModify(query(where("guildId").`is`(guildId)),
-                Update().pull("deafenedChannels", channelId), SpringGuild::class.java)
-        return true
+    fun getDeafenedChannels(guildId: String): OperationResult<List<String>, String> {
+        val getGuild = getGuild(guildId)
+        if (getGuild is Failure) return getGuild
+        val guild = (getGuild as Success).value
+        return Success(guild.deafenedChannels)
     }
 
-    fun getDeafenedChannels(guildId: String): List<String> = getGuild(guildId)?.deafenedChannels ?: listOf()
+    fun getGuildsWithoutModerators(): OperationResult<List<SpringGuild>, String> =
+        Success(mongoTemplate.find(Query(where("privilegedUsers").size(0)), DATA_CLASS))
 
-    fun getGuildsWithoutAdmins(): List<SpringGuild> {
-        return mongoTemplate.find(Query(where("privilegedUsers").size(0)), SpringGuild::class.java);
+
+    fun deleteSpringGuild(guildId: String): OperationResult<String, String> {
+        val getGuild = getGuild(guildId)
+        if (getGuild is Failure) return getGuild
+        val guild = (getGuild as Success).value
+        guildRepository.deleteByGuildId(guild.guildId)
+        return Success(guild.id)
     }
-
-    fun deleteSpringGuild(guildId: String): OperationResult<String?> {
-        guildRepository.deleteByGuildId(guildId)
-        return OperationResult.successResult("Deleted")
-    }
-
 }

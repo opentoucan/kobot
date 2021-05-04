@@ -18,6 +18,7 @@ import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.VoiceCommandFactory
 import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult
+import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
@@ -58,19 +59,18 @@ internal class GuildMessageListenerTest {
         val sendTyping = mock(RestAction::class.java) as RestAction<Void>
         val messageRequest = mock(MessageAction::class.java)
         val owner = mock(Member::class.java)
-        val mockOpResult = mock(OperationResult::class.java) as OperationResult<String?>
         val defaultChannel = mock(TextChannel::class.java)
 
         `when`(springGuild.privilegedUsers).thenReturn(listOf())
         `when`(event.guild).thenReturn(guild)
         `when`(guild.id).thenReturn("123")
         `when`(guild.name).thenReturn("Test guild")
-        `when`(guildService.getGuild("123")).thenReturn(springGuild)
+        `when`(guildService.getGuild("123")).thenReturn(Success(springGuild))
         `when`(guild.retrieveOwner()).thenReturn(ownerRequest)
         `when`(ownerRequest.complete()).thenReturn(owner)
         `when`(owner.id).thenReturn("123")
         `when`(owner.nickname).thenReturn("Name")
-        `when`(guildService.addPrivileged("123", "123")).thenReturn(mockOpResult)
+        `when`(guildService.addModerator("123", "123")).thenReturn(Success(""))
 
         `when`(guild.defaultChannel).thenReturn(defaultChannel)
         `when`(defaultChannel.canTalk()).thenReturn(true)
@@ -83,7 +83,7 @@ internal class GuildMessageListenerTest {
         verify(springGuild, times(1)).privilegedUsers
         verify(guild, times(1)).retrieveOwner()
         verify(ownerRequest, times(1)).complete()
-        verify(guildService, times(1)).addPrivileged("123", "123")
+        verify(guildService, times(1)).addModerator("123", "123")
         verify(guild, times(1)).defaultChannel
         verify(defaultChannel, times(1)).canTalk()
         verify(defaultChannel, times(1)).sendTyping()

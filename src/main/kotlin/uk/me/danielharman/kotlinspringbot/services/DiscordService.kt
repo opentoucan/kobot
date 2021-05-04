@@ -13,6 +13,7 @@ import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult.Companion.failResult
 import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult.Companion.successResult
+import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelEmbedMessage
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelMessage
 
@@ -28,9 +29,9 @@ class DiscordService(
     fun sendLatestXkcd() {
         logger.info("[Discord Actor] Checking for new XKCD comic")
 
-        val xkcdChannels = guildService.getXkcdChannels()
+        val xkcdChannels = guildService.getXkcdChannels() as Success
 
-        if (xkcdChannels.isEmpty())
+        if (xkcdChannels.value.isEmpty())
             return
 
         val last = xkcdService.getLast()
@@ -39,7 +40,7 @@ class DiscordService(
         logger.info("[Discord Actor] XKCD last comic recorded #${last}. Current #${latestComic.num}")
         if (last == null || last.num < latestComic.num) {
             xkcdService.setLast(latestComic.num)
-            for (channel in xkcdChannels) {
+            for (channel in xkcdChannels.value) {
                 sendChannelMessage(
                     DiscordChannelEmbedMessage(
                         Embeds.createXkcdComicEmbed(latestComic, "Latest comic"),

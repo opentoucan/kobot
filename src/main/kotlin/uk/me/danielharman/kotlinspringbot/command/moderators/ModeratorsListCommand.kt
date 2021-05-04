@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.GuildService
 
 @Component
@@ -25,33 +27,28 @@ class ModeratorsListCommand(private val guildService: GuildService,
 
     private fun createAdminUsersEmbed(message: GuildMessageReceivedEvent): MessageEmbed {
 
-        val guildName = message.guild.name
-        val guild = guildService.getGuild(message.guild.id)
+        return when (val guild = guildService.getGuild(message.guild.id)) {
+            is Failure -> Embeds.createErrorEmbed("Could not find data for ${message.guild.name}")
+            is Success -> {
+                val stringBuilder = StringBuilder()
+                val primaryAdmin = message.guild.retrieveMemberById(properties.primaryPrivilegedUserId).complete()
 
-        return if (guild == null) {
-            Embeds.createErrorEmbed("Could not find data for $guildName")
-        } else {
+                stringBuilder.append("Bot controller:  ${primaryAdmin.nickname ?: primaryAdmin.user.asTag}\n")
 
-            val stringBuilder = StringBuilder()
-            val primaryAdmin = message.guild.retrieveMemberById(properties.primaryPrivilegedUserId).complete()
-
-
-            stringBuilder.append("Bot controller:  ${primaryAdmin.nickname ?: primaryAdmin.user.asTag}\n")
-
-            guild.privilegedUsers.forEach { s ->
-                run {
-                    val member = message.guild.retrieveMemberById(s).complete()
-                    stringBuilder.append(member?.nickname ?: member.user.asTag ?: s)
+                guild.value.privilegedUsers.forEach { s ->
+                    run {
+                        val member = message.guild.retrieveMemberById(s).complete()
+                        stringBuilder.append(member?.nickname ?: member.user.asTag ?: s)
+                    }
                 }
-            }
 
-            EmbedBuilder()
+                EmbedBuilder()
                     .appendDescription(stringBuilder.toString())
                     .setColor(0x9d03fc)
-                    .setTitle("Moderators for $guildName")
+                    .setTitle("Moderators for ${message.guild.name}")
                     .build()
+            }
+
         }
-
     }
-
 }

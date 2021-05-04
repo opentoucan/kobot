@@ -8,6 +8,7 @@ object OperationHelpers {
      * Avoids the passing of nulls if there is a failure and can provide error messages
      * @param <T> The type of the object to be returned
     </T> */
+    @Deprecated("Use result class")
     class OperationResult<T> internal constructor(val value: T, val message: String, val success: Boolean){
 
         val failure: Boolean

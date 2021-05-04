@@ -5,6 +5,8 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.helpers.toJavaZonedDateTime
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand.CommandType.FILE
 import uk.me.danielharman.kotlinspringbot.services.AttachmentService
@@ -30,39 +32,37 @@ class RandomDiscordCommand(
 
     override fun execute(event: GuildMessageReceivedEvent) {
 
-        val guild = guildService.getGuild(event.guild.id)
+        when(val getGuild = guildService.getGuild(event.guild.id)){
+            is Failure -> event.channel.sendMessage(Embeds.createErrorEmbed("Guild not found")).queue()
+            is Success -> {
+                val guild = getGuild.value
+                val customCommand = commandService.getRandomCommand(guild.guildId)
 
-        if (guild == null) {
-            event.channel.sendMessage(Embeds.createErrorEmbed("Guild not found")).queue()
-            return
-        }
+                if (customCommand != null) {
 
-        val customCommand = commandService.getRandomCommand(guild.guildId)
+                    val complete = event.jda.retrieveUserById(customCommand.creatorId).complete()
+                    val member = event.guild.getMember(complete)
+                    val name = member?.nickname ?: complete.name
 
-        if (customCommand != null) {
+                    event.channel.sendMessage(
+                        EmbedBuilder()
+                            .setAuthor(name, complete.effectiveAvatarUrl, complete.effectiveAvatarUrl)
+                            .appendDescription(customCommand.content ?: customCommand.fileName ?: "")
+                            .setTitle(customCommand.key)
+                            .setTimestamp(customCommand.created.toJavaZonedDateTime())
+                            .setColor(Color.YELLOW)
+                            .build()
+                    ).queue()
 
-            val complete = event.jda.retrieveUserById(customCommand.creatorId).complete()
-            val member = event.guild.getMember(complete)
-            val name = member?.nickname ?: complete.name
+                    if (customCommand.type === FILE) {
+                        val file = attachmentService.getFile(event.guild.id, customCommand.fileName ?: "", customCommand.key)
+                        event.channel.sendFile(file, customCommand.fileName ?: "").queue()
+                    }
 
-            event.channel.sendMessage(
-                EmbedBuilder()
-                    .setAuthor(name, complete.effectiveAvatarUrl, complete.effectiveAvatarUrl)
-                    .appendDescription(customCommand.content ?: customCommand.fileName ?: "")
-                    .setTitle(customCommand.key)
-                    .setTimestamp(customCommand.created.toJavaZonedDateTime())
-                    .setColor(Color.YELLOW)
-                    .build()
-            ).queue()
-
-            if (customCommand.type === FILE) {
-                val file = attachmentService.getFile(event.guild.id, customCommand.fileName ?: "", customCommand.key)
-                event.channel.sendFile(file, customCommand.fileName ?: "").queue()
+                } else {
+                    event.channel.sendMessage(Embeds.createErrorEmbed("No commands found"))
+                }
             }
-
-        } else {
-            event.channel.sendMessage(Embeds.createErrorEmbed("No commands found")).queue()
         }
-
     }
 }

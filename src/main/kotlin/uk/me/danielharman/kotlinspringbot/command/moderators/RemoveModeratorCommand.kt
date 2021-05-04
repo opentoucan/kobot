@@ -23,7 +23,7 @@ class RemoveModeratorCommand(val guildService: GuildService) : IModeratorCommand
             return
         }
 
-        mentionedUsers.forEach { u -> guildService.removedPrivileged(event.guild.id, u.id) }
+        mentionedUsers.forEach { u -> guildService.removeModerator(event.guild.id, u.id) }
         event.channel.sendMessage("Removed $mentionedUsers").queue()
 
     }

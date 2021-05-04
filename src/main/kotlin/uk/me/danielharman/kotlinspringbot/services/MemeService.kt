@@ -15,7 +15,8 @@ import java.util.stream.Collectors
 
 @Service
 class MemeService(private val mongoTemplate: MongoTemplate,
-                  private val memeRepository: MemeRepository, private val guildService: GuildService) {
+                  private val memeRepository: MemeRepository,
+                  private val guildService: GuildService) {
 
     enum class MemeInterval {
         WEEK,

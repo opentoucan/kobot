@@ -25,7 +25,7 @@ class AddModeratorCommand(private val guildService: GuildService) : IModeratorCo
         }
         
         mentionedUsers.forEach { u ->
-                guildService.addPrivileged(event.guild.id, u.id)
+                guildService.addModerator(event.guild.id, u.id)
                 event.channel.sendMessage("Added ${u.asTag}").queue()
         }
     }
