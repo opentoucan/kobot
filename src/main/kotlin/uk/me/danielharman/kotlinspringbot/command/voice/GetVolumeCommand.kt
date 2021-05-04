@@ -3,10 +3,10 @@ package uk.me.danielharman.kotlinspringbot.command.voice
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IVoiceCommand
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
-class GetVolumeCommand(private val guildService: GuildService) : IVoiceCommand {
+class GetVolumeCommand(private val springGuildService: SpringGuildService) : IVoiceCommand {
 
     private val commandString = listOf("getvol", "getvolume")
     private val description = "Get the bot's current volume level"
@@ -18,5 +18,5 @@ class GetVolumeCommand(private val guildService: GuildService) : IVoiceCommand {
     override fun getCommandDescription(): String = description
 
     override fun execute(event: GuildMessageReceivedEvent) =
-        event.channel.sendMessage("${guildService.getVol(event.guild.id)}").queue()
+        event.channel.sendMessage("${springGuildService.getVol(event.guild.id)}").queue()
 }

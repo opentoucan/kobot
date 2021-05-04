@@ -16,7 +16,7 @@ import java.util.stream.Collectors
 import kotlin.math.max
 
 @Service
-class GuildService(private val guildRepository: GuildRepository, private val mongoTemplate: MongoTemplate) {
+class SpringGuildService(private val guildRepository: GuildRepository, private val mongoTemplate: MongoTemplate) {
 
     //TODO: Look at utilising the custom queries on Spring repositories over mongoTemplate
     private val DATA_CLASS = SpringGuild::class.java

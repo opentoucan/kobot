@@ -2,14 +2,14 @@ package uk.me.danielharman.kotlinspringbot.command.moderators
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
-class AddMemeChannelCommand(private val guildService: GuildService) : IModeratorCommand {
+class AddMemeChannelCommand(private val springGuildService: SpringGuildService) : IModeratorCommand {
 
     private val commandString: String = "addmemechannel"
 
     override fun execute(event: GuildMessageReceivedEvent) {
-        guildService.addMemeChannel(event.guild.id, event.channel.id)
+        springGuildService.addMemeChannel(event.guild.id, event.channel.id)
         event.channel.sendMessage("Added meme channel").queue()
     }
 

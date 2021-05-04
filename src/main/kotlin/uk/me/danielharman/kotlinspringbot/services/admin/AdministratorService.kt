@@ -20,12 +20,12 @@ import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
 import uk.me.danielharman.kotlinspringbot.objects.ApplicationInfo
 import uk.me.danielharman.kotlinspringbot.repositories.admin.AdministratorRepository
 import uk.me.danielharman.kotlinspringbot.services.DiscordService
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Service
 class AdministratorService(
     private val repository: AdministratorRepository,
-    private val guildService: GuildService,
+    private val springGuildService: SpringGuildService,
     private val discordService: DiscordService,
     private val properties: KotlinBotProperties,
     private val mongoOperations: MongoOperations
@@ -105,7 +105,7 @@ class AdministratorService(
 
     fun addSpringGuildAdministrator(userId: String, guildId: String, newAdminId: String): OperationResult<String?> {
         //TODO: Permissions
-        val getGuild = guildService.getGuild(guildId)
+        val getGuild = springGuildService.getGuild(guildId)
         if(getGuild is Failure) return failResult(getGuild.reason)
         val guild = (getGuild as Success).value
 
@@ -113,12 +113,12 @@ class AdministratorService(
             return failResult("Insufficient permissions.")
         }
 
-        return successResult((guildService.addModerator(guildId, newAdminId) as Success).value)
+        return successResult((springGuildService.addModerator(guildId, newAdminId) as Success).value)
     }
 
     fun removeSpringGuildAdministrator(userId: String, guildId: String, adminId: String): OperationResult<String?> {
         //TODO: Permissions
-        val getGuild = guildService.getGuild(guildId)
+        val getGuild = springGuildService.getGuild(guildId)
         if(getGuild is Failure) return failResult(getGuild.reason)
         val guild = (getGuild as Success).value
 
@@ -126,12 +126,12 @@ class AdministratorService(
             return failResult("Insufficient permissions.")
         }
 
-        return successResult((guildService.removeModerator(guildId, adminId) as Success).value)
+        return successResult((springGuildService.removeModerator(guildId, adminId) as Success).value)
     }
 
     fun deleteSpringGuild(userId: String, guildId: String): OperationResult<String?> {
         //TODO: Permissions
-        val getGuild = guildService.getGuild(guildId)
+        val getGuild = springGuildService.getGuild(guildId)
         if(getGuild is Failure) return failResult(getGuild.reason)
         val guild = (getGuild as Success).value
 
@@ -139,12 +139,12 @@ class AdministratorService(
             return failResult("Insufficient permissions.")
         }
 
-        return successResult((guildService.deleteSpringGuild(guildId) as Success).value)
+        return successResult((springGuildService.deleteSpringGuild(guildId) as Success).value)
     }
 
     fun getSpringGuild(userId: String, guildId: String): OperationResult<SpringGuild?> {
         //TODO: Permissions
-        val getGuild = guildService.getGuild(guildId)
+        val getGuild = springGuildService.getGuild(guildId)
         if(getGuild is Failure) return failResult(getGuild.reason)
         val guild = (getGuild as Success).value
 
@@ -155,7 +155,7 @@ class AdministratorService(
     }
 
     fun syncGuildAdmins(): OperationResult<String?> {
-        val getGuildsWithoutAdmins = guildService.getGuildsWithoutModerators()
+        val getGuildsWithoutAdmins = springGuildService.getGuildsWithoutModerators()
         if(getGuildsWithoutAdmins is Failure) return failResult(getGuildsWithoutAdmins.reason)
         val guildsWithoutAdmins = (getGuildsWithoutAdmins as Success).value
 
@@ -180,7 +180,7 @@ class AdministratorService(
             return
         }
 
-        guildService.addModerator(springGuild.guildId, owner.user.id)
+        springGuildService.addModerator(springGuild.guildId, owner.user.id)
 
         logger.info("Set ${owner.user.id} as admin of ${springGuild.guildId}")
 

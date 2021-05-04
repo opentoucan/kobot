@@ -9,10 +9,10 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
-class ModeratorsListCommand(private val guildService: GuildService,
+class ModeratorsListCommand(private val springGuildService: SpringGuildService,
                             private val properties: KotlinBotProperties) : IModeratorCommand {
 
     private val commandString: String = "moderators"
@@ -27,7 +27,7 @@ class ModeratorsListCommand(private val guildService: GuildService,
 
     private fun createAdminUsersEmbed(message: GuildMessageReceivedEvent): MessageEmbed {
 
-        return when (val guild = guildService.getGuild(message.guild.id)) {
+        return when (val guild = springGuildService.getGuild(message.guild.id)) {
             is Failure -> Embeds.createErrorEmbed("Could not find data for ${message.guild.name}")
             is Success -> {
                 val stringBuilder = StringBuilder()

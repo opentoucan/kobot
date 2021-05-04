@@ -17,10 +17,9 @@ import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.VoiceCommandFactory
-import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
 
 @SpringBootTest
@@ -32,7 +31,7 @@ internal class GuildMessageListenerTest {
     private lateinit var listener: GuildMessageListener
 
     @Mock
-    private lateinit var guildService: GuildService
+    private lateinit var springGuildService: SpringGuildService
 
     @Mock
     private lateinit var moderatorCommandFactory: ModeratorCommandFactory
@@ -65,12 +64,12 @@ internal class GuildMessageListenerTest {
         `when`(event.guild).thenReturn(guild)
         `when`(guild.id).thenReturn("123")
         `when`(guild.name).thenReturn("Test guild")
-        `when`(guildService.getGuild("123")).thenReturn(Success(springGuild))
+        `when`(springGuildService.getGuild("123")).thenReturn(Success(springGuild))
         `when`(guild.retrieveOwner()).thenReturn(ownerRequest)
         `when`(ownerRequest.complete()).thenReturn(owner)
         `when`(owner.id).thenReturn("123")
         `when`(owner.nickname).thenReturn("Name")
-        `when`(guildService.addModerator("123", "123")).thenReturn(Success(""))
+        `when`(springGuildService.addModerator("123", "123")).thenReturn(Success(""))
 
         `when`(guild.defaultChannel).thenReturn(defaultChannel)
         `when`(defaultChannel.canTalk()).thenReturn(true)
@@ -79,11 +78,11 @@ internal class GuildMessageListenerTest {
 
         listener.onGuildJoin(event)
 
-        verify(guildService, times(1)).getGuild("123")
+        verify(springGuildService, times(1)).getGuild("123")
         verify(springGuild, times(1)).privilegedUsers
         verify(guild, times(1)).retrieveOwner()
         verify(ownerRequest, times(1)).complete()
-        verify(guildService, times(1)).addModerator("123", "123")
+        verify(springGuildService, times(1)).addModerator("123", "123")
         verify(guild, times(1)).defaultChannel
         verify(defaultChannel, times(1)).canTalk()
         verify(defaultChannel, times(1)).sendTyping()

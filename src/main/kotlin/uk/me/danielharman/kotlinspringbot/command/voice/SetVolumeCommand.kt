@@ -4,12 +4,12 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IVoiceCommand
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
 class SetVolumeCommand(
     private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
-    private val guildService: GuildService
+    private val springGuildService: SpringGuildService
 ) : IVoiceCommand {
 
     private val commandString = listOf("vol", "volume")
@@ -31,7 +31,7 @@ class SetVolumeCommand(
             else -> vol
         }
         musicManager.player.volume = newVol
-        guildService.setVol(event.channel.guild.id, newVol)
+        springGuildService.setVol(event.channel.guild.id, newVol)
         event.channel.sendMessage("Setting volume to $newVol").queue()
     }
 }

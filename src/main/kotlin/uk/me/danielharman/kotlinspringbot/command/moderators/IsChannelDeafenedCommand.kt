@@ -5,10 +5,10 @@ import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
-class IsChannelDeafenedCommand(private val guildService: GuildService) : IModeratorCommand {
+class IsChannelDeafenedCommand(private val springGuildService: SpringGuildService) : IModeratorCommand {
 
     private val commandString: String = "isdeafened"
 
@@ -18,7 +18,7 @@ class IsChannelDeafenedCommand(private val guildService: GuildService) : IModera
 
     override fun execute(event: GuildMessageReceivedEvent) {
 
-        val message = when(val deafenedChannels = guildService.getDeafenedChannels(event.guild.id)){
+        val message = when(val deafenedChannels = springGuildService.getDeafenedChannels(event.guild.id)){
             is Failure -> deafenedChannels.reason
             is Success -> {
                 if(deafenedChannels.value.contains(event.channel.id))

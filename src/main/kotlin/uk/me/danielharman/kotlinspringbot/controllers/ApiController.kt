@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity.*
 import org.springframework.web.bind.annotation.*
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import uk.me.danielharman.kotlinspringbot.services.RequestService
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
 import java.text.SimpleDateFormat
@@ -17,7 +17,7 @@ import java.util.stream.Collectors
 @CrossOrigin(origins = ["https://localhost:5001"])
 class ApiController(
     private val requestService: RequestService,
-    private val guildService: GuildService,
+    private val springGuildService: SpringGuildService,
     private val administratorService: AdministratorService
 ) {
 
@@ -51,22 +51,22 @@ class ApiController(
     ): ResponseEntity<String> {
 
         return if (page == null && pageSize != null)
-            ok(mapper.writeValueAsString(guildService.getGuilds(pageSize = pageSize)))
+            ok(mapper.writeValueAsString(springGuildService.getGuilds(pageSize = pageSize)))
         else if (pageSize == null && page != null)
-            ok(mapper.writeValueAsString(guildService.getGuilds(page = page)))
+            ok(mapper.writeValueAsString(springGuildService.getGuilds(page = page)))
         else
-            ok(mapper.writeValueAsString(guildService.getGuilds()))
+            ok(mapper.writeValueAsString(springGuildService.getGuilds()))
     }
 
     @GetMapping("/api/guilds/{id}", produces = ["application/json"])
     fun getGuild(@PathVariable id: String): ResponseEntity<String> {
-        val guild = guildService.getGuild(id) ?: return notFound().build()
+        val guild = springGuildService.getGuild(id) ?: return notFound().build()
         return ok(mapper.writeValueAsString(guild))
     }
 
     @GetMapping("/api/guilds/{id}/commands", produces = ["application/json"])
     fun getGuildCommands(@PathVariable id: String): ResponseEntity<String> {
-        val getGuild = guildService.getGuild(id)
+        val getGuild = springGuildService.getGuild(id)
         if (getGuild is Failure) return badRequest().build()
         val guild = (getGuild as Success).value
 
@@ -84,7 +84,7 @@ class ApiController(
 
     @GetMapping("/api/guilds/{guildId}/commands/{id}", produces = ["application/json"])
     fun getGuildCommand(@PathVariable guildId: String, @PathVariable id: String): ResponseEntity<String> {
-        val getGuild = guildService.getGuild(id)
+        val getGuild = springGuildService.getGuild(id)
         if (getGuild is Failure) return badRequest().build()
         val guild = (getGuild as Success).value
 

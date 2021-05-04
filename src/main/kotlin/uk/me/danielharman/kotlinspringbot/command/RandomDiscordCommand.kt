@@ -11,12 +11,12 @@ import uk.me.danielharman.kotlinspringbot.helpers.toJavaZonedDateTime
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand.CommandType.FILE
 import uk.me.danielharman.kotlinspringbot.services.AttachmentService
 import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import java.awt.Color
 
 @Component
 class RandomDiscordCommand(
-    private val guildService: GuildService,
+    private val springGuildService: SpringGuildService,
     private val attachmentService: AttachmentService,
     private val commandService: DiscordCommandService
 ) : ICommand {
@@ -32,7 +32,7 @@ class RandomDiscordCommand(
 
     override fun execute(event: GuildMessageReceivedEvent) {
 
-        when(val getGuild = guildService.getGuild(event.guild.id)){
+        when(val getGuild = springGuildService.getGuild(event.guild.id)){
             is Failure -> event.channel.sendMessage(Embeds.createErrorEmbed("Guild not found")).queue()
             is Success -> {
                 val guild = getGuild.value

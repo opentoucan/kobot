@@ -3,10 +3,10 @@ package uk.me.danielharman.kotlinspringbot.command.moderators
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
-class AddModeratorCommand(private val guildService: GuildService) : IModeratorCommand {
+class AddModeratorCommand(private val springGuildService: SpringGuildService) : IModeratorCommand {
 
     private val commandString: String = "addmoderator"
 
@@ -25,7 +25,7 @@ class AddModeratorCommand(private val guildService: GuildService) : IModeratorCo
         }
         
         mentionedUsers.forEach { u ->
-                guildService.addModerator(event.guild.id, u.id)
+                springGuildService.addModerator(event.guild.id, u.id)
                 event.channel.sendMessage("Added ${u.asTag}").queue()
         }
     }

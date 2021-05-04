@@ -9,9 +9,9 @@ import uk.me.danielharman.kotlinspringbot.models.DiscordCommand.CommandType.FILE
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand.CommandType.STRING
 import uk.me.danielharman.kotlinspringbot.services.AttachmentService
 import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
-class SendCustomCommand(private val guildService: GuildService,
+class SendCustomCommand(private val springGuildService: SpringGuildService,
                         private val attachmentService: AttachmentService,
                         private val commandService: DiscordCommandService,
                         private val command: String) : ICommand {
@@ -24,7 +24,7 @@ class SendCustomCommand(private val guildService: GuildService,
 
     override fun execute(event: GuildMessageReceivedEvent) {
 
-        when(val getGuild = guildService.getGuild(event.guild.id)){
+        when(val getGuild = springGuildService.getGuild(event.guild.id)){
             is Failure -> event.channel.sendMessage(Embeds.createErrorEmbed("Guild not found")).queue()
             is Success -> {
                 val customCommand = commandService.getCommand(getGuild.value.guildId, command)

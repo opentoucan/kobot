@@ -8,12 +8,12 @@ import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import kotlin.math.ceil
 
 @Component
 class FetchSavedCommand(
-    private val guildService: GuildService,
+    private val springGuildService: SpringGuildService,
     private val commandService: DiscordCommandService
 ) : ICommand {
 
@@ -29,7 +29,7 @@ class FetchSavedCommand(
 
     override fun execute(event: GuildMessageReceivedEvent) {
 
-        val message = when(val getGuild = guildService.getGuild(event.guild.id)){
+        val message = when(val getGuild = springGuildService.getGuild(event.guild.id)){
             is Failure -> Embeds.createErrorEmbed("Guild not found")
             is Success -> {
                 val guild = getGuild.value

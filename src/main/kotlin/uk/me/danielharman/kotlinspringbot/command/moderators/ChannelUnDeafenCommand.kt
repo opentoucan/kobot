@@ -5,10 +5,10 @@ import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
-class ChannelUnDeafenCommand(private val guildService: GuildService) : IModeratorCommand {
+class ChannelUnDeafenCommand(private val springGuildService: SpringGuildService) : IModeratorCommand {
 
     private val commandString: String = "undeafen"
 
@@ -17,7 +17,7 @@ class ChannelUnDeafenCommand(private val guildService: GuildService) : IModerato
     override fun getCommandString(): String = commandString
 
     override fun execute(event: GuildMessageReceivedEvent) {
-        val message = when (guildService.unDeafenChannel(event.guild.id, event.channel.id)) {
+        val message = when (springGuildService.unDeafenChannel(event.guild.id, event.channel.id)) {
             is Failure -> "Failed to undeafen channel."
             is Success -> "Channel has been undeafened."
         }

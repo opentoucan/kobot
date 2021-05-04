@@ -18,23 +18,23 @@ import kotlin.math.ceil
 @Service
 class DiscordCommandService(
     private val repository: DiscordCommandRepository,
-    private val guildService: GuildService,
+    private val springGuildService: SpringGuildService,
     private val attachmentService: AttachmentService,
     private val mongoTemplate: MongoTemplate
 ) {
 
     fun commandCount(guildId: String): Long {
-        guildService.getGuild(guildId) ?: return 0
+        springGuildService.getGuild(guildId) ?: return 0
         return repository.countByGuildId(guildId);
     }
 
     fun getCommands(guildId: String, page: Int = 0, pageSize: Int = 20, sort: Order = Order.asc("key")): List<DiscordCommand> {
-        guildService.getGuild(guildId) ?: return listOf()
+        springGuildService.getGuild(guildId) ?: return listOf()
         return repository.findAllByGuildId(guildId, PageRequest.of(page, pageSize, Sort.by(sort))).toList()
     }
 
     fun getCommand(guildId: String, key: String): DiscordCommand? {
-        guildService.getGuild(guildId) ?: return null
+        springGuildService.getGuild(guildId) ?: return null
         return repository.findFirstByGuildIdAndKey(guildId, key)
     }
 
@@ -58,7 +58,7 @@ class DiscordCommandService(
 
     fun createCommand(guildId: String, key: String, content: String?, fileName: String?,
                       type: DiscordCommand.CommandType, creatorId: String, overwrite: Boolean): DiscordCommand? {
-        guildService.getGuild(guildId) ?: return null
+        springGuildService.getGuild(guildId) ?: return null
 
         val command: DiscordCommand? = getCommand(guildId, key)
 
@@ -77,7 +77,7 @@ class DiscordCommandService(
     }
 
     fun deleteCommand(guildId: String, key: String): Boolean {
-        guildService.getGuild(guildId) ?: return false
+        springGuildService.getGuild(guildId) ?: return false
         val command = getCommand(guildId, key) ?: return false
         repository.deleteById(command.id)
         if (command.type == DiscordCommand.CommandType.FILE) {

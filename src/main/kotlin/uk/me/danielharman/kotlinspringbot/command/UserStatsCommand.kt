@@ -9,10 +9,10 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
 import uk.me.danielharman.kotlinspringbot.helpers.Comparators
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
-class UserStatsCommand(private val guildService: GuildService) : ICommand {
+class UserStatsCommand(private val springGuildService: SpringGuildService) : ICommand {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
     private val commandString = "userstats"
@@ -28,7 +28,7 @@ class UserStatsCommand(private val guildService: GuildService) : ICommand {
 
         val guildId = event.message.guild.id
         val guildName = event.message.guild.name
-        val getSpringGuild = guildService.getGuild(guildId)
+        val getSpringGuild = springGuildService.getGuild(guildId)
 
         val message = when (getSpringGuild) {
             is Failure -> EmbedBuilder().addField("error", "Could not find stats for server", false).build()

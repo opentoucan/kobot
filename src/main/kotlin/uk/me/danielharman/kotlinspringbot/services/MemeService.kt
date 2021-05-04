@@ -16,7 +16,7 @@ import java.util.stream.Collectors
 @Service
 class MemeService(private val mongoTemplate: MongoTemplate,
                   private val memeRepository: MemeRepository,
-                  private val guildService: GuildService) {
+                  private val springGuildService: SpringGuildService) {
 
     enum class MemeInterval {
         WEEK,
@@ -43,7 +43,7 @@ class MemeService(private val mongoTemplate: MongoTemplate,
     }
 
     fun getMemerIds(guildId: String, asc: Boolean = false): List<Pair<String, MemeRanking>> {
-        guildService.getGuild(guildId) ?: return listOf()
+        springGuildService.getGuild(guildId) ?: return listOf()
 
         val idMap = HashMap<String, MemeRanking>()
 

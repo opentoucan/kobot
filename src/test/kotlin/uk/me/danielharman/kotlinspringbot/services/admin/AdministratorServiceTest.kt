@@ -16,14 +16,13 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.MongoOperations
 import org.springframework.test.context.ActiveProfiles
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
-import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult.Companion.successResult
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.models.admin.Administrator
 import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
 import uk.me.danielharman.kotlinspringbot.repositories.admin.AdministratorRepository
 import uk.me.danielharman.kotlinspringbot.services.DiscordService
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import java.util.*
 
 @SpringBootTest
@@ -38,7 +37,7 @@ internal class AdministratorServiceTest {
     lateinit var repository: AdministratorRepository
 
     @Mock
-    lateinit var guildService: GuildService
+    lateinit var springGuildService: SpringGuildService
 
     @Mock
     lateinit var discordService: DiscordService
@@ -113,13 +112,13 @@ internal class AdministratorServiceTest {
         val stubSpringGuild = Success(SpringGuild("123"))
         stubSpringGuild.value.privilegedUsers = listOf("892")
 
-        Mockito.`when`(guildService.getGuild("123")).thenReturn(stubSpringGuild)
-        Mockito.`when`(guildService.addModerator("123", "456")).thenReturn(Success("Added 456"))
+        Mockito.`when`(springGuildService.getGuild("123")).thenReturn(stubSpringGuild)
+        Mockito.`when`(springGuildService.addModerator("123", "456")).thenReturn(Success("Added 456"))
 
         val result = administratorService.addSpringGuildAdministrator("892", "123", "456")
 
-        Mockito.verify(guildService, times(1)).getGuild("123")
-        Mockito.verify(guildService, times(1)).addModerator("123", "456")
+        Mockito.verify(springGuildService, times(1)).getGuild("123")
+        Mockito.verify(springGuildService, times(1)).addModerator("123", "456")
 
         assertThat(result.success, equalTo(true))
     }
@@ -128,12 +127,12 @@ internal class AdministratorServiceTest {
     fun shouldNotAddSpringAdminWithInsufficientPerms() {
         val stubSpringGuild = Success(SpringGuild("123"))
 
-        Mockito.`when`(guildService.getGuild("123")).thenReturn(stubSpringGuild)
+        Mockito.`when`(springGuildService.getGuild("123")).thenReturn(stubSpringGuild)
 
         val result = administratorService.addSpringGuildAdministrator("892", "123", "456")
 
-        Mockito.verify(guildService, times(1)).getGuild("123")
-        Mockito.verify(guildService, times(0)).addModerator("123", "456")
+        Mockito.verify(springGuildService, times(1)).getGuild("123")
+        Mockito.verify(springGuildService, times(0)).addModerator("123", "456")
 
         assertThat(result.failure, equalTo(true))
     }
@@ -143,13 +142,13 @@ internal class AdministratorServiceTest {
         val stubSpringGuild = Success(SpringGuild("123"))
         stubSpringGuild.value.privilegedUsers = listOf("892")
 
-        Mockito.`when`(guildService.getGuild("123")).thenReturn(stubSpringGuild)
-        Mockito.`when`(guildService.removeModerator("123", "456")).thenReturn(Success("Removed 456"))
+        Mockito.`when`(springGuildService.getGuild("123")).thenReturn(stubSpringGuild)
+        Mockito.`when`(springGuildService.removeModerator("123", "456")).thenReturn(Success("Removed 456"))
 
         val result = administratorService.removeSpringGuildAdministrator("892", "123", "456")
 
-        Mockito.verify(guildService, times(1)).getGuild("123")
-        Mockito.verify(guildService, times(1)).removeModerator("123", "456")
+        Mockito.verify(springGuildService, times(1)).getGuild("123")
+        Mockito.verify(springGuildService, times(1)).removeModerator("123", "456")
 
         assertThat(result.success, equalTo(true))
     }
@@ -158,12 +157,12 @@ internal class AdministratorServiceTest {
     fun shouldNotRemoveSpringAdminWithInsufficientPerms() {
         val stubSpringGuild = Success(SpringGuild("123"))
 
-        Mockito.`when`(guildService.getGuild("123")).thenReturn(stubSpringGuild)
+        Mockito.`when`(springGuildService.getGuild("123")).thenReturn(stubSpringGuild)
 
         val result = administratorService.removeSpringGuildAdministrator("892", "123", "456")
 
-        Mockito.verify(guildService, times(1)).getGuild("123")
-        Mockito.verify(guildService, times(0)).removeModerator("123", "456")
+        Mockito.verify(springGuildService, times(1)).getGuild("123")
+        Mockito.verify(springGuildService, times(0)).removeModerator("123", "456")
 
         assertThat(result.failure, equalTo(true))
     }
@@ -173,11 +172,11 @@ internal class AdministratorServiceTest {
         val stubSpringGuild = Success(SpringGuild("123"))
         stubSpringGuild.value.privilegedUsers = listOf("892")
 
-        Mockito.`when`(guildService.getGuild("123")).thenReturn(stubSpringGuild)
+        Mockito.`when`(springGuildService.getGuild("123")).thenReturn(stubSpringGuild)
 
         val result = administratorService.getSpringGuild("892", "123")
 
-        Mockito.verify(guildService, times(1)).getGuild("123")
+        Mockito.verify(springGuildService, times(1)).getGuild("123")
 
         assertThat(result.success, equalTo(true))
     }
@@ -186,11 +185,11 @@ internal class AdministratorServiceTest {
     fun shouldNotGetSpringGuildWithInsufficientPerms() {
         val stubSpringGuild = Success(SpringGuild("123"))
 
-        Mockito.`when`(guildService.getGuild("123")).thenReturn(stubSpringGuild)
+        Mockito.`when`(springGuildService.getGuild("123")).thenReturn(stubSpringGuild)
 
         val result = administratorService.getSpringGuild("892", "123")
 
-        Mockito.verify(guildService, times(1)).getGuild("123")
+        Mockito.verify(springGuildService, times(1)).getGuild("123")
 
         assertThat(result.failure, equalTo(true))
     }
@@ -200,13 +199,13 @@ internal class AdministratorServiceTest {
         val stubSpringGuild = Success(SpringGuild("123"))
         stubSpringGuild.value.privilegedUsers = listOf("892")
 
-        Mockito.`when`(guildService.getGuild("123")).thenReturn(stubSpringGuild)
-        Mockito.`when`(guildService.deleteSpringGuild("123")).thenReturn(Success("Delete"))
+        Mockito.`when`(springGuildService.getGuild("123")).thenReturn(stubSpringGuild)
+        Mockito.`when`(springGuildService.deleteSpringGuild("123")).thenReturn(Success("Delete"))
 
         val result = administratorService.deleteSpringGuild("892", "123")
 
-        Mockito.verify(guildService, times(1)).getGuild("123")
-        Mockito.verify(guildService, times(1)).deleteSpringGuild("123")
+        Mockito.verify(springGuildService, times(1)).getGuild("123")
+        Mockito.verify(springGuildService, times(1)).deleteSpringGuild("123")
 
         assertThat(result.success, equalTo(true))
     }
@@ -215,12 +214,12 @@ internal class AdministratorServiceTest {
     fun shouldNotDeleteSpringGuildWithInsufficientPerms() {
         val stubSpringGuild = Success(SpringGuild("123"))
 
-        Mockito.`when`(guildService.getGuild("123")).thenReturn(stubSpringGuild)
+        Mockito.`when`(springGuildService.getGuild("123")).thenReturn(stubSpringGuild)
 
         val result = administratorService.getSpringGuild("892", "123")
 
-        Mockito.verify(guildService, times(1)).getGuild("123")
-        Mockito.verify(guildService, times(0)).deleteSpringGuild("123")
+        Mockito.verify(springGuildService, times(1)).getGuild("123")
+        Mockito.verify(springGuildService, times(0)).deleteSpringGuild("123")
 
         assertThat(result.failure, equalTo(true))
     }
@@ -246,14 +245,14 @@ internal class AdministratorServiceTest {
         Mockito.`when`(owner2.user).thenReturn(user2)
         Mockito.`when`(stubGuild2.owner).thenReturn(owner2)
 
-        Mockito.`when`(guildService.getGuildsWithoutModerators()).thenReturn(stubSpringGuilds)
+        Mockito.`when`(springGuildService.getGuildsWithoutModerators()).thenReturn(stubSpringGuilds)
         Mockito.`when`(discordService.getGuild("123")).thenReturn(stubGuild1)
         Mockito.`when`(discordService.getGuild("456")).thenReturn(stubGuild2)
 
         val result = administratorService.syncGuildAdmins()
 
-        Mockito.verify(guildService, times(1)).addModerator("123","8910")
-        Mockito.verify(guildService, times(1)).addModerator("456","8911")
+        Mockito.verify(springGuildService, times(1)).addModerator("123","8910")
+        Mockito.verify(springGuildService, times(1)).addModerator("456","8911")
         Mockito.verify(discordService, times(2)).sendUserMessage(Mockito.anyString(), Mockito.anyString())
 
         assertThat(result.success, equalTo(true))

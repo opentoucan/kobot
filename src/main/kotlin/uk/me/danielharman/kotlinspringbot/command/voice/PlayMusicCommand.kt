@@ -9,12 +9,12 @@ import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IVoiceCommand
 import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getBotVoiceChannel
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
 class PlayMusicCommand(
     private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
-    private val guildService: GuildService
+    private val springGuildService: SpringGuildService
 ) : IVoiceCommand {
 
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
@@ -76,7 +76,7 @@ class PlayMusicCommand(
         guildMusicPlayerProvider.playerManager.loadItemOrdered(
             musicManager,
             split[1],
-            NewAudioResultHandler(voiceChannel, musicManager, event.channel, guildService)
+            NewAudioResultHandler(voiceChannel, musicManager, event.channel, springGuildService)
         )
     }
 }

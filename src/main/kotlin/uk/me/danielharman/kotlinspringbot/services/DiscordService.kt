@@ -3,7 +3,6 @@ package uk.me.danielharman.kotlinspringbot.services
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.entities.TextChannel
-import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -19,7 +18,7 @@ import uk.me.danielharman.kotlinspringbot.models.DiscordChannelMessage
 
 @Service
 class DiscordService(
-    private val guildService: GuildService,
+    private val springGuildService: SpringGuildService,
     private val xkcdService: XkcdService,
     private val properties: KotlinBotProperties
 ) {
@@ -29,7 +28,7 @@ class DiscordService(
     fun sendLatestXkcd() {
         logger.info("[Discord Actor] Checking for new XKCD comic")
 
-        val xkcdChannels = guildService.getXkcdChannels() as Success
+        val xkcdChannels = springGuildService.getXkcdChannels() as Success
 
         if (xkcdChannels.value.isEmpty())
             return
