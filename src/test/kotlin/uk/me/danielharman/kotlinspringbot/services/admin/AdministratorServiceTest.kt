@@ -16,9 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.MongoOperations
 import org.springframework.test.context.ActiveProfiles
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
-import uk.me.danielharman.kotlinspringbot.helpers.Failure
-import uk.me.danielharman.kotlinspringbot.helpers.OperationResult
-import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.helpers.*
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.models.admin.Administrator
 import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
@@ -49,26 +47,6 @@ internal class AdministratorServiceTest {
 
     @Mock
     lateinit var mongoOperations: MongoOperations
-
-    private fun assertSuccess(
-        op: OperationResult<*, *>,
-        msg: String = "Expected success result was failure"
-    ): Success<*> {
-        if (op is Failure) {
-            fail(msg)
-        }
-        return op as Success<*>
-    }
-
-    private fun assertFailure(
-        op: OperationResult<*, *>,
-        msg: String = "Expected failure result was success"
-    ): Failure<*> {
-        if (op is Success) {
-            fail(msg)
-        }
-        return op as Failure<*>
-    }
 
     @Test
     fun shouldCreateAdmin() {
