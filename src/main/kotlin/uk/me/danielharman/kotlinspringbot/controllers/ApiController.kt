@@ -30,18 +30,18 @@ class ApiController(
 
     @GetMapping("/api/admin/bot/startTime", produces = ["application/json"])
     fun getBotStartTime(): ResponseEntity<String>{
-        val botStartTime = administratorService.getBotStartTime()
-        if(botStartTime.failure)
-            return badRequest().body(mapper.writeValueAsString(botStartTime))
-        return ok(mapper.writeValueAsString(botStartTime))
+        return when (val botStartTime = administratorService.getBotStartTime()){
+            is Failure -> badRequest().body(mapper.writeValueAsString(botStartTime))
+            is Success -> ok(mapper.writeValueAsString(botStartTime))
+        }
     }
 
     @GetMapping("/api/admin/discord/startTime", produces = ["application/json"])
     fun getDiscordStartTime(): ResponseEntity<String>{
-        val botStartTime = administratorService.getDiscordStartTime()
-        if(botStartTime.failure)
-            return badRequest().body(mapper.writeValueAsString(botStartTime))
-        return ok(mapper.writeValueAsString(botStartTime))
+        return when (val botStartTime = administratorService.getDiscordStartTime()){
+            is Failure -> badRequest().body(mapper.writeValueAsString(botStartTime))
+            is Success -> ok(mapper.writeValueAsString(botStartTime))
+        }
     }
 
     @GetMapping("/api/guilds", produces = ["application/json"])

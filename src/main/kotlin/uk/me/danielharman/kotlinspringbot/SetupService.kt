@@ -10,6 +10,8 @@ import org.springframework.core.env.Environment
 import org.springframework.data.mongodb.core.MongoOperations
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
 import uk.me.danielharman.kotlinspringbot.objects.ApplicationInfo
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
@@ -76,13 +78,20 @@ class SetupService(
         if (!activeProfiles.contains("discordDisabled")) {
             //Injecting listeners here otherwise we'll get circular dependencies
             DiscordObject.registerListeners(listeners)
-            logger.info(discordService.startDiscordConnection().value)
-            Timer().scheduleAtFixedRate(object : TimerTask() {
-                override fun run() {
-                    discordService.sendLatestXkcd()
+
+            when(val dc = discordService.startDiscordConnection())
+            {
+                is Failure -> logger.error("Discord connection failed to start ${dc.reason}")
+                is Success -> {
+                    logger.info(dc.value)
+                    Timer().scheduleAtFixedRate(object : TimerTask() {
+                        override fun run() {
+                            discordService.sendLatestXkcd()
+                        }
+                    }, 3000, 10800000) // Start after 3 seconds, check every 3hrs
+                    administratorService.logToAdmins("Bot started")
                 }
-            }, 3000, 10800000) // Start after 3 seconds, check every 3hrs
-            administratorService.logToAdmins("Bot started")
+            }
         } else {
             logger.info("Running with Discord disabled")
         }
@@ -95,7 +104,10 @@ class SetupService(
     @PreDestroy
     fun destroy() {
         logger.info("Cleaning up for shutdown")
-        logger.info(discordService.closeDiscordConnection().message)
+        when(val c = discordService.closeDiscordConnection()){
+            is Failure -> logger.error(c.reason)
+            is Success -> logger.info(c.value)
+        }
         logger.info("Cleanup complete")
     }
 

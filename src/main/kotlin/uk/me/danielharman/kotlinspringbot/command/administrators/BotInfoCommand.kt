@@ -7,6 +7,8 @@ import org.joda.time.format.PeriodFormat
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
 
 @Component
@@ -16,9 +18,14 @@ class BotInfoCommand(private val administratorService: AdministratorService) : I
 
     override fun execute(event: PrivateMessageReceivedEvent) {
 
-        val botStartTime = administratorService.getBotStartTime().value ?: DateTime.now()
-        val botVersion = administratorService.getBotVersion().value
-
+        val botStartTime = when(val r = administratorService.getBotStartTime()){
+            is Failure -> DateTime.now()
+            is Success -> r.value
+        }
+        val botVersion = when(val r = administratorService.getBotVersion()){
+            is Failure -> r.reason
+            is Success -> r.value
+        }
         val duration = Interval(botStartTime, DateTime.now()).toPeriod()
 
         val build = Embeds.infoEmbedBuilder()

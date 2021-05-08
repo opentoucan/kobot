@@ -10,9 +10,7 @@ import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
-import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult
-import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult.Companion.failResult
-import uk.me.danielharman.kotlinspringbot.helpers.OperationHelpers.OperationResult.Companion.successResult
+import uk.me.danielharman.kotlinspringbot.helpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelEmbedMessage
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelMessage
@@ -26,20 +24,26 @@ class DiscordService(
 
     private val logger = LoggerFactory.getLogger(DiscordService::class.java)
 
-    fun sendLatestXkcd() {
+    fun sendLatestXkcd(): OperationResult<String, String> {
         logger.info("Checking for new XKCD comic")
 
         val xkcdChannels = springGuildService.getXkcdChannels() as Success
 
         if (xkcdChannels.value.isEmpty())
-            return
+            return Success("Nothing to do")
 
 
         when (val latestComic = xkcdService.getLatestComic()) {
-            is Failure -> logger.error(latestComic.reason)
+            is Failure -> {
+                logger.error(latestComic.reason)
+                return latestComic
+            }
             is Success -> {
                 when (val last = xkcdService.getLast()) {
-                    is Failure -> logger.error(last.reason)
+                    is Failure -> {
+                        logger.error(last.reason)
+                        return last
+                    }
                     is Success -> {
                         logger.info("XKCD last comic recorded #${last}. Current #${latestComic.value.num}")
                         if (last.value.num < latestComic.value.num) {
@@ -57,6 +61,7 @@ class DiscordService(
                 }
             }
         }
+        return Success(xkcdChannels.value.joinToString(" "))
     }
 
     fun sendUserMessage(msg: String, userId: String): PrivateChannel? {
@@ -66,35 +71,41 @@ class DiscordService(
         return privateChannel
     }
 
-    fun sendChannelMessage(msg: DiscordChannelMessage): TextChannel? {
-        val channel = DiscordObject.jda.getTextChannelById(msg.channelId)
-        channel?.sendMessage(msg.msg)?.queue() ?: logger.error("Could not send message $msg")
-        return channel
+    fun sendChannelMessage(msg: DiscordChannelMessage): OperationResult<TextChannel, String> {
+        val channel = DiscordObject.jda.getTextChannelById(msg.channelId) ?: return Failure("No such channel ${msg.channelId}")
+        channel.sendMessage(msg.msg).queue()
+        return Success(channel)
     }
 
-    fun sendChannelMessage(msg: DiscordChannelEmbedMessage): TextChannel? {
-        val channel = DiscordObject.jda.getTextChannelById(msg.channelId)
-        channel?.sendMessage(msg.msg)?.queue() ?: logger.error("Could not send message $msg")
-        return channel
+    fun sendChannelMessage(msg: DiscordChannelEmbedMessage): OperationResult<TextChannel, String> {
+        val channel = DiscordObject.jda.getTextChannelById(msg.channelId) ?: return Failure("No such channel ${msg.channelId}")
+        channel.sendMessage(msg.msg).queue()
+        return Success(channel)
     }
 
-    fun getGuild(id: String): Guild? = DiscordObject.jda.getGuildById(id)
+    fun getGuild(id: String): OperationResult<Guild, String> {
+        val guild = DiscordObject.jda.getGuildById(id) ?: return Failure("No such guild $id")
+        return Success(guild)
+    }
 
-    fun getBotName(): String = DiscordObject.jda.selfUser.name
+    fun getBotName(): OperationResult<String,String> = Success(DiscordObject.jda.selfUser.name)
 
-    fun closeDiscordConnection(): OperationResult<String?> {
+    fun closeDiscordConnection(): OperationResult<String, String> {
         DiscordObject.teardown()
-        return successResult("Discord connection down at ${DateTime.now()}")
+        return Success("Discord connection down at ${DateTime.now()}")
     }
 
-    fun startDiscordConnection(): OperationResult<String?> {
+    fun startDiscordConnection(): OperationResult<String, String> {
         if (!DiscordObject.initialised) {
             DiscordObject.init(properties)
-            return successResult("Discord connection up at ${DiscordObject.startTime?.toString() ?: "????"}")
+            return Success("Discord connection up at ${DiscordObject.startTime?.toString() ?: "????"}")
         }
-        return failResult("Discord connection is already up. Started at ${DiscordObject.startTime?.toString()}")
+        return Failure("Discord connection is already up. Started at ${DiscordObject.startTime?.toString()}")
     }
 
-    fun getDiscordStartTime(): OperationResult<DateTime?> = successResult(DiscordObject.startTime)
+    fun getDiscordStartTime(): OperationResult<DateTime, String> {
+        val startTime = DiscordObject.startTime ?: return Failure("Failed to get start time")
+        return Success(startTime)
+    }
 
 }
