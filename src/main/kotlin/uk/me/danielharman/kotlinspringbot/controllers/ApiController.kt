@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
-import uk.me.danielharman.kotlinspringbot.services.RequestService
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
 import java.text.SimpleDateFormat
 import java.util.stream.Collectors
@@ -16,7 +15,6 @@ import java.util.stream.Collectors
 @RestController
 @CrossOrigin(origins = ["https://localhost:5001"])
 class ApiController(
-    private val requestService: RequestService,
     private val springGuildService: SpringGuildService,
     private val administratorService: AdministratorService
 ) {
@@ -92,11 +90,6 @@ class ApiController(
             return badRequest().build()
 
         return ok(mapper.writeValueAsString(guild.customCommands.values.shuffled().take(1)[0]))
-    }
-
-    @GetMapping("/api/requests", produces = ["application/json"])
-    fun getRequests(): ResponseEntity<String> {
-        return ok(ObjectMapper().writeValueAsString(requestService.getRequests()))
     }
 
 }
