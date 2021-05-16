@@ -15,6 +15,9 @@ dockerbuild:
   stage: dockerbuild
   tags:
     - k8s-executor
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "master"'
+      when: on_success
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
@@ -29,7 +32,7 @@ deploy:
     - k8s
   rules:
     - if: '$CI_COMMIT_REF_NAME == "master"'
-      when: always
+      when: on_success
   variables:
     GIT_STRATEGY: none
   before_script:
