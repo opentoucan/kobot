@@ -32,35 +32,40 @@ class RandomDiscordCommand(
 
     override fun execute(event: GuildMessageReceivedEvent) {
 
-        when(val getGuild = springGuildService.getGuild(event.guild.id)){
+        when (val getGuild = springGuildService.getGuild(event.guild.id)) {
             is Failure -> event.channel.sendMessage(Embeds.createErrorEmbed("Guild not found")).queue()
             is Success -> {
                 val guild = getGuild.value
-                val customCommand = commandService.getRandomCommand(guild.guildId)
+                when (val customCommand = commandService.getRandomCommand(guild.guildId)) {
+                    is Failure -> event.channel.sendMessage(Embeds.createErrorEmbed("No commands found"))
+                    is Success -> {
 
-                if (customCommand != null) {
+                        val complete = event.jda.retrieveUserById(customCommand.value.creatorId).complete()
+                        val member = event.guild.getMember(complete)
+                        val name = member?.nickname ?: complete.name
 
-                    val complete = event.jda.retrieveUserById(customCommand.creatorId).complete()
-                    val member = event.guild.getMember(complete)
-                    val name = member?.nickname ?: complete.name
+                        event.channel.sendMessage(
+                            EmbedBuilder()
+                                .setAuthor(name, complete.effectiveAvatarUrl, complete.effectiveAvatarUrl)
+                                .appendDescription(customCommand.value.content ?: customCommand.value.fileName ?: "")
+                                .setTitle(customCommand.value.key)
+                                .setTimestamp(customCommand.value.created.toJavaZonedDateTime())
+                                .setColor(Color.YELLOW)
+                                .build()
+                        ).queue()
 
-                    event.channel.sendMessage(
-                        EmbedBuilder()
-                            .setAuthor(name, complete.effectiveAvatarUrl, complete.effectiveAvatarUrl)
-                            .appendDescription(customCommand.content ?: customCommand.fileName ?: "")
-                            .setTitle(customCommand.key)
-                            .setTimestamp(customCommand.created.toJavaZonedDateTime())
-                            .setColor(Color.YELLOW)
-                            .build()
-                    ).queue()
-
-                    if (customCommand.type === FILE) {
-                        val file = attachmentService.getFile(event.guild.id, customCommand.fileName ?: "", customCommand.key)
-                        event.channel.sendFile(file, customCommand.fileName ?: "").queue()
+                        if (customCommand.value.type === FILE) {
+                            when (val file = attachmentService.getFile(
+                                event.guild.id,
+                                customCommand.value.fileName ?: "",
+                                customCommand.value.key
+                            )) {
+                                is Failure -> event.channel.sendMessage(file.reason).queue()
+                                is Success -> event.channel.sendFile(file.value, customCommand.value.fileName ?: "")
+                                    .queue()
+                            }
+                        }
                     }
-
-                } else {
-                    event.channel.sendMessage(Embeds.createErrorEmbed("No commands found"))
                 }
             }
         }

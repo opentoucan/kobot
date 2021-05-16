@@ -4,6 +4,8 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
 
 @Component
@@ -28,11 +30,9 @@ class DeleteCommand(private val commandService: DiscordCommandService) : IComman
             return
         }
 
-        if (commandService.deleteCommand(event.guild.id, split[1])) {
-            event.channel.sendMessage(Embeds.infoEmbedBuilder().setDescription("Command deleted").build()).queue()
-        } else {
-            event.channel.sendMessage(Embeds.createErrorEmbed("Command not found")).queue()
+        when(commandService.deleteCommand(event.guild.id, split[1])){
+            is Failure -> event.channel.sendMessage(Embeds.createErrorEmbed("Command not found")).queue()
+            is Success -> event.channel.sendMessage(Embeds.infoEmbedBuilder().setDescription("Command deleted").build()).queue()
         }
-
     }
 }
