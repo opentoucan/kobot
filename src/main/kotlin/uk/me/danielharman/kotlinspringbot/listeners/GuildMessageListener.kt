@@ -22,13 +22,15 @@ import uk.me.danielharman.kotlinspringbot.models.Meme
 import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.VoiceCommandFactory
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
 import java.util.regex.Pattern
 
 @Component
 class GuildMessageListener(
-    private val guildService: GuildService,
+    private val springGuildService: SpringGuildService,
     private val moderatorCommandFactory: ModeratorCommandFactory,
     private val commandFactory: CommandFactory,
     private val voiceCommandFactory: VoiceCommandFactory,
@@ -47,11 +49,12 @@ class GuildMessageListener(
     override fun onGuildJoin(event: GuildJoinEvent) {
         logger.info("Joined guild ${event.guild.name}")
 
-        val guild = guildService.getGuild(event.guild.id)
-        if (guild == null || guild.privilegedUsers.isEmpty()) {
+        val getGuild = springGuildService.getGuild(event.guild.id)
+
+        if ((getGuild is Failure) || (getGuild as Success).value.privilegedUsers.isEmpty()) {
             val owner = event.guild.retrieveOwner().complete()
             logger.info("Adding ${owner.nickname} as admin of guild")
-            guildService.addPrivileged(event.guild.id, owner.id)
+            springGuildService.addModerator(event.guild.id, owner.id)
         }
 
         val defaultChannel = event.guild.defaultChannel ?: return
@@ -69,7 +72,13 @@ class GuildMessageListener(
 
         if (event.reactionEmote.isEmoji) {
             val emoji = event.reactionEmote.asCodepoints
-            val guild = guildService.getGuild(event.guild.id) ?: return
+
+            val getGuild = springGuildService.getGuild(event.guild.id)
+            if (getGuild is Failure) {
+                logger.error("onMessageReactionAdd: ${getGuild.reason}")
+                return
+            }
+            val guild = (getGuild as Success).value
 
             if (guild.memeChannels.contains(event.channel.id)) {
 
@@ -128,7 +137,12 @@ class GuildMessageListener(
 
         if (event.reactionEmote.isEmoji) {
             val emoji = event.reactionEmote.asCodepoints
-            val guild = guildService.getGuild(event.guild.id) ?: return
+            val getGuild = springGuildService.getGuild(event.guild.id)
+            if (getGuild is Failure) {
+                logger.error("onMessageReactionRemove: ${getGuild.reason}")
+                return
+            }
+            val guild = (getGuild as Success).value
 
             if (guild.memeChannels.contains(event.channel.id)) {
 
@@ -150,7 +164,12 @@ class GuildMessageListener(
 
     override fun onMessageDelete(event: MessageDeleteEvent) {
 
-        val guild = guildService.getGuild(event.guild.id) ?: return
+        val getGuild = springGuildService.getGuild(event.guild.id)
+        if (getGuild is Failure) {
+            logger.error("onMessageDelete: ${getGuild.reason}")
+            return
+        }
+        val guild = (getGuild as Success).value
 
         if (guild.memeChannels.contains(event.channel.id)) {
             memeService.deleteMeme(guild.guildId, event.messageId)
@@ -163,6 +182,7 @@ class GuildMessageListener(
         val message = event.message
         val guild = event.guild
         val member: Member?
+
         try {
             member = guild.retrieveMember(author).complete()
         } catch (e: ErrorResponseException) {
@@ -175,7 +195,13 @@ class GuildMessageListener(
         if (author.isBot)
             return
 
-        val isDeafened = guildService.getDeafenedChannels(guild.id).contains(event.channel.id)
+        val getDeafenedChannels = springGuildService.getDeafenedChannels(guild.id)
+        var deafenedChannels = listOf<String>()
+        if(getDeafenedChannels is Success){
+            deafenedChannels = getDeafenedChannels.value
+        }
+
+        val isDeafened = deafenedChannels.contains(event.channel.id)
 
         if (!isDeafened && event.message.isMentioned(event.jda.selfUser, Message.MentionType.USER)) {
             val emotesByName = guild.getEmotesByName("piing", true)
@@ -199,7 +225,13 @@ class GuildMessageListener(
             }
             else -> {
 
-                if (guildService.getMemeChannels(event.guild.id).contains(event.channel.id)) {
+                val getMemeChannels = springGuildService.getMemeChannels(guild.id)
+                var memeChannels = listOf<String>()
+                if(getMemeChannels is Success){
+                    memeChannels = getMemeChannels.value
+                }
+
+                if (memeChannels.contains(event.channel.id)) {
                     createMeme(event.message, event.guild.id, event.author.id, event.channel.id)
                 }
 
@@ -213,7 +245,7 @@ class GuildMessageListener(
                     event.message.addReaction(EmojiCodes.Rofl).queue()
                 }
 
-                guildService.updateUserCount(guild.id, author.id, words.size)
+                springGuildService.updateUserCount(guild.id, author.id, words.size)
             }
         }
     }
@@ -305,9 +337,9 @@ class GuildMessageListener(
         val cmd = event.message.contentStripped.split(" ")[0].removePrefix(properties.privilegedCommandPrefix)
         val channel = event.channel
 
-        if (event.author.id != properties.primaryPrivilegedUserId
-            && !guildService.isPrivileged(event.guild.id, event.author.id)
-        ) {
+        val isModerator = springGuildService.isModerator(event.guild.id, event.author.id)
+
+        if (event.author.id != properties.primaryPrivilegedUserId && isModerator is Failure) {
             channel.sendMessage("You are not an admin!").queue()
             return
         }

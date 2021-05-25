@@ -5,6 +5,8 @@ import org.joda.time.format.ISODateTimeFormat
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.objects.ApplicationInfo
 import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
 
@@ -25,24 +27,21 @@ class InfoCommand(private val commandService: DiscordCommandService) : ICommand 
 
         if (split.size > 1){
 
-            val command = commandService.getCommand(event.guild.id, split[1])
+            when(val command = commandService.getCommand(event.guild.id, split[1])){
+                is Failure -> event.channel.sendMessage(Embeds.createErrorEmbed("Command not found")).queue()
+                is Success -> {
+                    val creatorName = if(command.value.creatorId.isEmpty())
+                        "Unknown"
+                    else
+                        event.jda.retrieveUserById(command.value.creatorId).complete()?.asTag ?: "Unknown"
 
-            if (command == null){
-                event.channel.sendMessage(Embeds.createErrorEmbed("Command not found")).queue()
-                return
+                    event.channel.sendMessage(Embeds.infoEmbedBuilder(title = "Command: ${split[1]}")
+                        .appendDescription(command.value.content ?: command.value.fileName ?: "No Content")
+                        .addField("Creator", creatorName, false)
+                        .addField("Created", command.value.created.toString(ISODateTimeFormat.dateTimeNoMillis()), false)
+                        .build()).queue()
+                }
             }
-
-            val creatorName = if(command.creatorId.isEmpty())
-                "Unknown"
-            else
-                event.jda.retrieveUserById(command.creatorId).complete()?.asTag ?: "Unknown"
-
-            event.channel.sendMessage(Embeds.infoEmbedBuilder(title = "Command: ${split[1]}")
-                    .appendDescription(command.content ?: command.fileName ?: "No Content")
-                    .addField("Creator", creatorName, false)
-                    .addField("Created", command.created.toString(ISODateTimeFormat.dateTimeNoMillis()), false)
-                    .build()).queue()
-
         }
         else {
 

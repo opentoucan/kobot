@@ -5,12 +5,12 @@ import uk.me.danielharman.kotlinspringbot.command.SendCustomCommand
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
 import uk.me.danielharman.kotlinspringbot.services.AttachmentService
 import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Service
 class CommandFactory(
     private val commands: List<ICommand>,
-    private val guildService: GuildService,
+    private val springGuildService: SpringGuildService,
     private val attachmentService: AttachmentService,
     private val commandService: DiscordCommandService
 ) {
@@ -19,7 +19,7 @@ class CommandFactory(
         for (command in commands) {
             if (command.matchCommandString(commandString)) return command
         }
-        return SendCustomCommand(guildService, attachmentService, commandService, commandString)
+        return SendCustomCommand(springGuildService, attachmentService, commandService, commandString)
     }
 
 }
