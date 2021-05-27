@@ -1,5 +1,6 @@
 stages:
   - test
+  - visualize
   - dockerbuild
   - deploy
   
@@ -10,6 +11,22 @@ test:
     - k8s-executor
   script: 
     - 'gradle check jacocoTestReport'
+  artifacts:
+    paths:
+      - build/reports/jacoco/test/jacocoTestReport.xml
+
+coverage:
+  stage: visualize
+  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
+  needs: ["test"]
+  script:
+    # convert report from jacoco to cobertura, using relative project path
+    - python /opt/cover2cover.py build/reports/jacoco/test/jacocoTestReport.xml $CI_PROJECT_DIR/src/main/kotlin/ > build/cobertura.xml
+  dependencies:
+    - test-jdk11
+  artifacts:
+    reports:
+      cobertura: build/cobertura.xml
 
 dockerbuild:
   stage: dockerbuild
@@ -21,6 +38,7 @@ dockerbuild:
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
+  needs: ["test"]
   script:
     - mkdir -p /kaniko/.docker
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
@@ -33,6 +51,7 @@ deploy:
   rules:
     - if: '$CI_COMMIT_REF_NAME == "master"'
       when: on_success
+  needs: ["dockerbuild"]
   variables:
     GIT_STRATEGY: none
   before_script:
