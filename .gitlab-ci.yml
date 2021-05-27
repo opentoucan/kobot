@@ -3,7 +3,10 @@ stages:
   - visualize
   - dockerbuild
   - deploy
-  
+
+variables:
+  FF_GITLAB_REGISTRY_HELPER_IMAGE: 1
+
 test:
   stage: test
   image: gradle:jdk15
