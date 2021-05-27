@@ -14,7 +14,7 @@ test:
   tags:
     - k8s-executor
   script: 
-    - 'gradle check jacocoTestReport'
+    - 'gradle --no-daemon check jacocoTestReport'
   artifacts:
     reports:
       junit: build/test-results/test/**/TEST-*.xml
@@ -25,6 +25,8 @@ test:
 pages:
   stage: coverage-deploy
   image: gradle:jdk15
+  tags:
+    - k8s-executor
   dependencies:
     - test
   needs: ["test"]
