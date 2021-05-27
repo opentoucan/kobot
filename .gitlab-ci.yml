@@ -15,7 +15,7 @@ test:
   script: 
     - 'gradle check jacocoTestReport'
   after_script:
-    - 'mv build/reports/jacoco/test/html/ public/
+    - 'mv build/reports/jacoco/test/html/ public/''
   artifacts:
     reports:
       junit: build/test-results/test/**/TEST-*.xml
