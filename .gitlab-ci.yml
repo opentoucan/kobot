@@ -1,5 +1,6 @@
 stages:
   - test
+  - coverage-deploy
   - visualize
   - dockerbuild
   - deploy
@@ -14,20 +15,33 @@ test:
     - k8s-executor
   script: 
     - 'gradle check jacocoTestReport'
-  after_script:
-    - 'mv build/reports/jacoco/test/html/ public/'
   artifacts:
     reports:
       junit: build/test-results/test/**/TEST-*.xml
     paths: 
       - build/reports/jacoco/test/jacocoTestReport.xml
-      - public/
+      - build/reports/jacoco/test/html/
 
-coverage:
+pages:
+  stage: coverage-deploy
+  image: gradle:jdk15
+  dependencies:
+    - test
+  needs: ["test"]
+  script:
+    - mv build/reports/jacoco/test/html/ public/
+  artifacts:
+    paths:
+      - public
+    expire_in: 30 days
+
+cobertura:
   stage: visualize
   image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
   tags:
     - k8s-executor
+  dependencies:
+    - test
   needs: ["test"]
   script:
     # convert report from jacoco to cobertura, using relative project path
