@@ -8,7 +8,8 @@ test:
   image: gradle:jdk15
   tags:
     - k8s-executor
-  script: gradle check --info
+  script: 
+    - 'gradle check jacocoTestReport'
 
 dockerbuild:
   stage: dockerbuild
