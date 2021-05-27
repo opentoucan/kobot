@@ -18,6 +18,8 @@ test:
 coverage:
   stage: visualize
   image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
+  tags:
+    - k8s-executor
   needs: ["test"]
   script:
     # convert report from jacoco to cobertura, using relative project path
