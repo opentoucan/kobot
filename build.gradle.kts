@@ -10,6 +10,7 @@ plugins {
     kotlin("kapt") version "1.4.30"
     kotlin("plugin.serialization") version "1.4.30"
     id("me.qoomon.git-versioning") version "4.2.0"
+    jacoco
 }
 
 group = "uk.me.danielharman"
@@ -27,6 +28,22 @@ gitVersioning.apply(closureOf<GitVersioningPluginConfig> {
 
 springBoot {
     buildInfo()
+}
+
+jacoco {
+    toolVersion = "0.8.6"
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+}
+tasks.jacocoTestReport {
+    dependsOn(tasks.test) // tests are required to run before generating the report
+    reports {
+        xml.isEnabled = true
+        csv.isEnabled = false
+        html.isEnabled = false
+    }
 }
 
 repositories {
