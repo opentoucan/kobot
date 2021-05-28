@@ -10,6 +10,7 @@ plugins {
     kotlin("kapt") version "1.4.30"
     kotlin("plugin.serialization") version "1.4.30"
     id("me.qoomon.git-versioning") version "4.2.0"
+    id("org.barfuin.gradle.jacocolog") version "1.2.4"
     jacoco
 }
 
