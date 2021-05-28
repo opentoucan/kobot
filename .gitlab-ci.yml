@@ -16,7 +16,7 @@ test:
   before_script:
     - export GRADLE_USER_HOME=`pwd`/.gradle
   script: 
-    - 'gradle --no-daemon check --info'
+    - 'gradle --build-cache --no-daemon check --info'
   cache:
     paths:
       - .gradle/wrapper
