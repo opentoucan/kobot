@@ -19,7 +19,6 @@ test:
     - 'gradle --build-cache --no-daemon check --info'
   cache:
     paths:
-      - .gradle/wrapper
       - .gradle/caches
   artifacts:
     reports:
