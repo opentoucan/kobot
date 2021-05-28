@@ -13,8 +13,14 @@ test:
   image: gradle:jdk15
   tags:
     - k8s-executor
+  before_script:
+    - export GRADLE_USER_HOME=`pwd`/.gradle
   script: 
     - 'gradle --no-daemon check --info'
+  cache:
+  paths:
+    - .gradle/wrapper
+    - .gradle/caches
   artifacts:
     reports:
       junit: build/test-results/test/**/TEST-*.xml
