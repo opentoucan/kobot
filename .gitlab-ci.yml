@@ -18,9 +18,9 @@ test:
   script: 
     - 'gradle --no-daemon check --info'
   cache:
-  paths:
-    - .gradle/wrapper
-    - .gradle/caches
+    paths:
+      - .gradle/wrapper
+      - .gradle/caches
   artifacts:
     reports:
       junit: build/test-results/test/**/TEST-*.xml
