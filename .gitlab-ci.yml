@@ -14,7 +14,7 @@ test:
   tags:
     - k8s-executor
   script: 
-    - 'gradle --no-daemon check jacocoTestReport'
+    - 'gradle --no-daemon check --info'
   artifacts:
     reports:
       junit: build/test-results/test/**/TEST-*.xml
