@@ -27,6 +27,8 @@ pages:
   image: gradle:jdk15
   tags:
     - k8s-executor
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "master"'
   dependencies:
     - test
   needs: ["test"]
