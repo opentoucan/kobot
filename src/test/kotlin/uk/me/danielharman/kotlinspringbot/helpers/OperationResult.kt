@@ -7,7 +7,7 @@ fun <T, U> assertSuccess(
     msg: String = "Expected success result was failure"
 ): Success<T> {
     if (op is Failure) {
-        fail(msg)
+        fail(if(op.reason is String) op.reason as String else msg)
     }
     return op as Success<T>
 }

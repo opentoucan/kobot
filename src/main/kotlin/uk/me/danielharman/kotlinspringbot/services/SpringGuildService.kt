@@ -27,8 +27,10 @@ class SpringGuildService(private val guildRepository: GuildRepository, private v
     }
 
     fun createGuild(guildId: String): OperationResult<SpringGuild, String> {
-        if (getGuild(guildId) is Success) return Failure("Guild already exists")
-        return Success(guildRepository.save(SpringGuild(guildId)))
+        return when (getGuild(guildId)) {
+            is Failure -> Success(guildRepository.save(SpringGuild(guildId)))
+            is Success -> Failure("Guild already exists")
+        }
     }
 
     fun createGuildIfNotExists(guildId: String): OperationResult<SpringGuild, String> {
@@ -45,12 +47,8 @@ class SpringGuildService(private val guildRepository: GuildRepository, private v
         val guild = createGuildIfNotExists(guildId)
         if (guild is Failure) return guild
 
-        val result =
-            mongoTemplate.findAndModify(
-                query(where("_id").`is`((guild as Success).value.id)),
-                Update().inc("userWordCounts.$userId", count),
-                DATA_CLASS
-            ) ?: return Failure("No guild was found")
+        val result = guildRepository.increaseUserCount(guildId, userId, count) ?: return Failure("")
+
         return Success(result)
     }
 
@@ -64,56 +62,51 @@ class SpringGuildService(private val guildRepository: GuildRepository, private v
             else -> vol
         }
 
-        val findAndModify = mongoTemplate.findAndModify(
-            query(where("_id").`is`((guild as Success).value.id)),
-            Update.update("volume", newVol), DATA_CLASS
-        ) ?: return Failure("Failed to update guild")
+        val findAndModify = guildRepository.setGuildVolume(guildId, newVol) ?: return Failure("Failed to update guild")
 
         return Success(findAndModify.volume)
     }
 
     fun getVol(guildId: String): OperationResult<Int, String> {
-        val guild = getGuild(guildId)
-        if (guild is Failure) return Failure(guild.reason)
-        return Success((guild as Success).value.volume)
+        return when (val guild = getGuild(guildId)) {
+            is Failure -> guild
+            is Success -> Success(guild.value.volume)
+        }
     }
 
     fun isModerator(guildId: String, userId: String): OperationResult<String, String> {
-        val guild = getGuild(guildId)
-        if (guild is Failure) return guild
-
-        return if ((guild as Success).value.privilegedUsers.contains(userId)) {
-            Success(userId)
-        } else {
-            Failure("User is not a moderator")
+        return when (val guild = getGuild(guildId)) {
+            is Failure -> guild
+            is Success -> {
+                if (guild.value.privilegedUsers.contains(userId)) {
+                    Success(userId)
+                } else {
+                    Failure("User is not a moderator")
+                }
+            }
         }
     }
 
     fun addModerator(guildId: String, userId: String): OperationResult<String, String> {
-        val guild = createGuildIfNotExists(guildId)
-        if (guild is Failure) return guild
-
-        mongoTemplate.findAndModify(
-            query(where("guildId").`is`(guildId)),
-            Update().addToSet("privilegedUsers", userId), DATA_CLASS
-        ) ?: return Failure("Could not update guild")
-
-        return Success(userId)
+        return when (val guild = createGuildIfNotExists(guildId)) {
+            is Failure -> guild
+            is Success -> {
+                guildRepository.addModeratorId(guild.value.guildId, userId)
+                    ?: return Failure("Could not update guild")
+                Success(userId)
+            }
+        }
     }
 
     fun removeModerator(guildId: String, userId: String): OperationResult<String, String> {
-
-        val getGuild = getGuild(guildId)
-        if (getGuild is Failure) return getGuild
-        val guild = (getGuild as Success).value
-
-        mongoTemplate.findAndModify(
-            query(where("_id").`is`(guild.id)),
-            Update().set("privilegedUsers", guild.privilegedUsers.filter { s -> s != userId }),
-            DATA_CLASS
-        ) ?: return Failure("Could not update guild")
-
-        return Success(userId)
+        when (val guild = getGuild(guildId)) {
+            is Failure -> return guild
+            is Success -> {
+                guildRepository.removeModeratorId(guild.value.guildId, userId)
+                    ?: return Failure("Could not update guild")
+                return Success(userId)
+            }
+        }
     }
 
     fun addMemeChannel(guildId: String, channelId: String): OperationResult<String, String> {
