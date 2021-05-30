@@ -1,11 +1,9 @@
 package uk.me.danielharman.kotlinspringbot.services
 
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.containsInAnyOrder
-import org.hamcrest.Matchers.not
+import org.hamcrest.Matchers.*
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -37,6 +35,20 @@ internal class SpringGuildServiceTest(
     fun shouldNotCreateIfExistsGuild() {
         repo.save(SpringGuild("1234"))
         assertFailure(service.createGuild("1234"))
+    }
+
+    @Test
+    fun shouldDeleteSpringGuild() {
+        repo.save(SpringGuild("1234"))
+        assertSuccess(service.deleteSpringGuild("1234"))
+        assertNull(repo.findByGuildId("1234"))
+    }
+
+    @Test
+    fun shouldGetAllGuilds() {
+        val guilds = listOf(SpringGuild("1"), SpringGuild("2"), SpringGuild("3"))
+        repo.saveAll(guilds)
+        assertSuccess(service.getGuilds())
     }
 
     @Test
@@ -133,6 +145,128 @@ internal class SpringGuildServiceTest(
         assertNotNull(guild)
         assertThat(guild?.privilegedUsers, containsInAnyOrder("1234", "8910"))
         assertThat(guild?.privilegedUsers, not(containsInAnyOrder("4567")))
+    }
+
+    @Test
+    fun shouldAddMemeChannel() {
+        val stub = SpringGuild("1234")
+        repo.save(stub)
+
+        assertSuccess(service.addMemeChannel("1234", "456"))
+
+        val guild = repo.findByGuildId("1234")
+        assertNotNull(guild)
+        assertEquals(1, guild?.memeChannels?.size)
+        assertThat(guild?.memeChannels, contains("456"))
+    }
+
+    @Test
+    fun shouldRemoveMemeChannel() {
+        val stub = SpringGuild("1234")
+        stub.memeChannels = listOf("1234", "456", "789")
+        repo.save(stub)
+
+        assertSuccess(service.removeMemeChannel("1234", "456"))
+
+        val guild = repo.findByGuildId("1234")
+        assertNotNull(guild)
+        assertEquals(2, guild?.memeChannels?.size)
+        assertThat(guild?.memeChannels, containsInAnyOrder("1234", "789"))
+        assertThat(guild?.memeChannels, not(containsInAnyOrder("456")))
+    }
+
+    @Test
+    fun shouldGetMemeChannels() {
+        val stub = SpringGuild("1234")
+        stub.memeChannels = listOf("1", "2", "3", "4")
+        repo.save(stub)
+
+        val result = assertSuccess(service.getMemeChannels("1234"))
+        assertThat(result.value, containsInAnyOrder("1", "2", "3", "4"))
+    }
+
+    @Test
+    fun shouldSetXkcdChannel() {
+        repo.save(SpringGuild("1234"))
+        assertSuccess(service.setXkcdChannel("1234", "456"))
+        val guild = repo.findByGuildId("1234")
+        assertNotNull(guild)
+        assertEquals("456", guild?.xkcdChannelId)
+    }
+
+    @Test
+    fun shouldGetXkcdChannel() {
+        val stub = SpringGuild("1234")
+        stub.xkcdChannelId = "456"
+        repo.save(stub)
+
+        val result = assertSuccess(service.getXkcdChannel("1234"))
+        assertEquals("456", result.value)
+    }
+
+    @Test
+    fun shouldGetXkcdChannels() {
+        val stub1 = SpringGuild("1")
+        stub1.xkcdChannelId = "1"
+        repo.save(stub1)
+        val stub2 = SpringGuild("2")
+        stub2.xkcdChannelId = "2"
+        repo.save(stub2)
+        val stub3 = SpringGuild("3")
+        stub3.xkcdChannelId = "3"
+        repo.save(stub3)
+
+        val result = assertSuccess(service.getXkcdChannels())
+        assertEquals(3, result.value.size)
+        assertThat(result.value, containsInAnyOrder("1", "2", "3"))
+    }
+
+    @Test
+    fun shouldDeafenChannel() {
+        repo.save(SpringGuild("1234"))
+        assertSuccess(service.deafenChannel("1234", "456"))
+        val guild = repo.findByGuildId("1234")
+        assertNotNull(guild)
+        assertThat(guild?.deafenedChannels, containsInAnyOrder("456"))
+    }
+
+    @Test
+    fun shouldUnDeafenChannel() {
+        val stub = SpringGuild("1234")
+        stub.deafenedChannels = listOf("1", "2", "3")
+        repo.save(stub)
+        assertSuccess(service.unDeafenChannel("1234", "2"))
+        val guild = repo.findByGuildId("1234")
+        assertNotNull(guild)
+        assertThat(guild?.deafenedChannels, containsInAnyOrder("1", "3"))
+        assertThat(guild?.deafenedChannels, not(containsInAnyOrder("2")))
+    }
+
+    @Test
+    fun shouldGetDeafenedChannels() {
+        val stub = SpringGuild("1234")
+        stub.deafenedChannels = listOf("1", "2", "3")
+        repo.save(stub)
+
+        val result = assertSuccess(service.getDeafenedChannels("1234"))
+        assertEquals(3, result.value.size)
+        assertThat(result.value, containsInAnyOrder("1", "2", "3"))
+    }
+
+    @Test
+    fun getGuildsWithoutModerators() {
+        val stub1 = SpringGuild("1")
+        stub1.privilegedUsers = listOf("1")
+        repo.save(stub1)
+        val stub2 = SpringGuild("2")
+        repo.save(stub2)
+        val stub3 = SpringGuild("3")
+        stub3.privilegedUsers = listOf("3", "4")
+        repo.save(stub3)
+
+        val result = assertSuccess(service.getGuildsWithoutModerators())
+        assertEquals(1, result.value.size)
+        assertThat(result.value, containsInAnyOrder(stub2))
     }
 
 }
