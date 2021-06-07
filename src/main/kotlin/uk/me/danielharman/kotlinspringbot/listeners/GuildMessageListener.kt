@@ -6,6 +6,7 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
@@ -44,6 +45,18 @@ class GuildMessageListener(
     init {
         AudioSourceManagers.registerRemoteSources(playerManager)
         AudioSourceManagers.registerLocalSource(playerManager)
+    }
+
+    //Leave a voice channel once everyone has left
+    override fun onGuildVoiceLeave(event: GuildVoiceLeaveEvent) {
+        val vc = event.oldValue
+        //Return if the event is triggered by the bot or by someone leaving a channel in a guild we don't have a audio manager for
+        if(event.member.id == event.jda.selfUser.id || vc.jda.audioManagers.firstOrNull { vc.guild.id == event.guild.id} == null) return
+        val members = vc.members
+        //If the channel is just us bots
+        if((members.firstOrNull { m -> !m.user.isBot} == null) && members.firstOrNull{ m -> m.id == vc.jda.selfUser.id} != null) {
+            vc.jda.audioManagers.firstOrNull { vc.guild.id == event.guild.id }?.closeAudioConnection()
+        }
     }
 
     override fun onGuildJoin(event: GuildJoinEvent) {
