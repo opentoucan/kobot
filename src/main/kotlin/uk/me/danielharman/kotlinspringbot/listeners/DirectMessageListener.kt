@@ -31,6 +31,8 @@ class DirectMessageListener(
             return
         }
 
+        event.channel
+
         val cmd = event.message.contentStripped.split(" ")[0].removePrefix(properties.privilegedCommandPrefix)
         val command = commandFactory.getCommand(cmd)
         command.execute(event)

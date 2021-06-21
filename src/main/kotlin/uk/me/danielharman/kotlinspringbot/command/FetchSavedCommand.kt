@@ -3,10 +3,12 @@ package uk.me.danielharman.kotlinspringbot.command
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
+import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
+import uk.me.danielharman.kotlinspringbot.command.interfaces.Param
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.messages.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import kotlin.math.ceil
@@ -15,26 +17,22 @@ import kotlin.math.ceil
 class FetchSavedCommand(
     private val springGuildService: SpringGuildService,
     private val commandService: DiscordCommandService
-) : ICommand {
+) : Command("saved",
+    "Get a list of saved commands",
+    listOf(Param(0, "Page", Param.ParamType.Int, "Page number to view", false))) {
 
     private val MAX_PAGE_SIZE = 20
-    private val commandString = "saved"
-    private val description = "Get a list of saved commands "
 
-    override fun matchCommandString(str: String): Boolean = str == commandString
+    private fun truncate(str: String, limit: Int): String =
+        if (str.length <= limit) str else str.slice(IntRange(0, limit))
 
-    override fun getCommandString(): String = commandString
-
-    override fun getCommandDescription(): String = description
-
-    override fun execute(event: GuildMessageReceivedEvent) {
-
-        val message = when (val getGuild = springGuildService.getGuild(event.guild.id)) {
+    override fun execute(event: DiscordMessageEvent) {
+        val message = when (val getGuild = springGuildService.getGuild(event.guild?.id ?: "")) {
             is Failure -> Embeds.createErrorEmbed("Guild not found")
             is Success -> {
 
                 val guild = getGuild.value
-                val split = event.message.contentStripped.split(" ")
+                val split = event.content.split(" ")
                 val page = if (split.size < 2) 1 else split[1].toIntOrNull() ?: 1
 
                 when (val commandCount = commandService.commandCount(guild.guildId)) {
@@ -75,9 +73,5 @@ class FetchSavedCommand(
 
         event.channel.sendMessage(message).queue()
     }
-
-
-    private fun truncate(str: String, limit: Int): String =
-        if (str.length <= limit) str else str.slice(IntRange(0, limit))
 
 }

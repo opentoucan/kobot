@@ -2,29 +2,26 @@ package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
+import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
+import uk.me.danielharman.kotlinspringbot.command.interfaces.Param
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds.createXkcdComicEmbed
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.messages.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.services.XkcdService
 import java.lang.NumberFormatException
 
 @Component
-class XkcdComicCommand(private val xkcdService: XkcdService) : ICommand {
+class XkcdComicCommand(private val xkcdService: XkcdService) : Command(
+    "xkcd",
+    "Get the latest XKCD comic or a particular comic by number",
+    listOf(Param(0, "ComicNumber", Param.ParamType.Int, "Comic number", false))
+) {
 
-    private val commandString = "xkcd"
-    private val description = "Get the latest XKCD comic or a particular comic by number"
+    override fun execute(event: DiscordMessageEvent){
 
-    override fun matchCommandString(str: String): Boolean = str == commandString
-
-    override fun getCommandString(): String = commandString
-
-    override fun getCommandDescription(): String = description
-
-    override fun execute(event: GuildMessageReceivedEvent) {
-
-        val split = event.message.contentStripped.split(" ")
+        val split = event.content.split(" ")
 
         if (split.size < 2) {
             val message = when (val xkcd = xkcdService.getLatestComic()) {
@@ -39,18 +36,19 @@ class XkcdComicCommand(private val xkcdService: XkcdService) : ICommand {
         try {
             comicNumber = Integer.parseInt(split[1])
         } catch (e: NumberFormatException) {
-            event.message.channel.sendMessage("No number was given.").queue()
+            event.reply("No number was given.")
             return
         }
 
         if (comicNumber <= 0) {
-            event.message.channel.sendMessage("Not a valid comic number.").queue()
+            event.reply("Not a valid comic number.")
             return
         }
 
         when (val xkcd = xkcdService.getComic(comicNumber)) {
-            is Failure -> event.message.channel.sendMessage("Comic not found.").queue()
+            is Failure -> event.reply("Comic not found.")
             is Success -> event.channel.sendMessage(createXkcdComicEmbed(xkcd.value)).queue()
         }
     }
+
 }

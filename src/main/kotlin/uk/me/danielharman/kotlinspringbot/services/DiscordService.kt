@@ -3,10 +3,12 @@ package uk.me.danielharman.kotlinspringbot.services
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.User
 import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
@@ -19,7 +21,8 @@ import uk.me.danielharman.kotlinspringbot.models.DiscordChannelMessage
 class DiscordService(
     private val springGuildService: SpringGuildService,
     private val xkcdService: XkcdService,
-    private val properties: KotlinBotProperties
+    private val properties: KotlinBotProperties,
+    private val commands: List<Command>
 ) {
 
     private val logger = LoggerFactory.getLogger(DiscordService::class.java)
@@ -72,13 +75,15 @@ class DiscordService(
     }
 
     fun sendChannelMessage(msg: DiscordChannelMessage): OperationResult<TextChannel, String> {
-        val channel = DiscordObject.jda.getTextChannelById(msg.channelId) ?: return Failure("No such channel ${msg.channelId}")
+        val channel =
+            DiscordObject.jda.getTextChannelById(msg.channelId) ?: return Failure("No such channel ${msg.channelId}")
         channel.sendMessage(msg.msg).queue()
         return Success(channel)
     }
 
     fun sendChannelMessage(msg: DiscordChannelEmbedMessage): OperationResult<TextChannel, String> {
-        val channel = DiscordObject.jda.getTextChannelById(msg.channelId) ?: return Failure("No such channel ${msg.channelId}")
+        val channel =
+            DiscordObject.jda.getTextChannelById(msg.channelId) ?: return Failure("No such channel ${msg.channelId}")
         channel.sendMessage(msg.msg).queue()
         return Success(channel)
     }
@@ -88,7 +93,7 @@ class DiscordService(
         return Success(guild)
     }
 
-    fun getBotName(): OperationResult<String,String> = Success(DiscordObject.jda.selfUser.name)
+    fun getBotName(): OperationResult<String, String> = Success(DiscordObject.jda.selfUser.name)
 
     fun closeDiscordConnection(): OperationResult<String, String> {
         DiscordObject.teardown()
@@ -97,7 +102,7 @@ class DiscordService(
 
     fun startDiscordConnection(): OperationResult<String, String> {
         if (!DiscordObject.initialised) {
-            DiscordObject.init(properties)
+            DiscordObject.init(properties, commands)
             return Success("Discord connection up at ${DiscordObject.startTime?.toString() ?: "????"}")
         }
         return Failure("Discord connection is already up. Started at ${DiscordObject.startTime?.toString()}")
@@ -106,6 +111,14 @@ class DiscordService(
     fun getDiscordStartTime(): OperationResult<DateTime, String> {
         val startTime = DiscordObject.startTime ?: return Failure("Failed to get start time")
         return Success(startTime)
+    }
+
+    fun getSelfUser(): OperationResult<User, String> {
+        return Success(DiscordObject.jda.selfUser)
+    }
+
+    fun getUserById(creatorId: String): OperationResult<User, String> {
+        return Success(DiscordObject.jda.retrieveUserById(creatorId).complete())
     }
 
 }

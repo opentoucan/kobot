@@ -1,10 +1,10 @@
 package uk.me.danielharman.kotlinspringbot.command
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
-import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
+import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.messages.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand.CommandType.FILE
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand.CommandType.STRING
 import uk.me.danielharman.kotlinspringbot.services.AttachmentService
@@ -16,31 +16,27 @@ class SendCustomCommand(
     private val attachmentService: AttachmentService,
     private val commandService: DiscordCommandService,
     private val command: String
-) : ICommand {
+) : Command("", "") {
 
     override fun matchCommandString(str: String): Boolean = false
 
-    override fun getCommandString(): String = ""
+    override fun execute(event: DiscordMessageEvent) {
 
-    override fun getCommandDescription(): String = ""
-
-    override fun execute(event: GuildMessageReceivedEvent) {
-
-        when (val getGuild = springGuildService.getGuild(event.guild.id)) {
-            is Failure -> event.channel.sendMessage(Embeds.createErrorEmbed("Guild not found")).queue()
+        when (val getGuild = springGuildService.getGuild(event.guild?.id ?: "")) {
+            is Failure -> event.reply(Embeds.createErrorEmbed("Guild not found"))
             is Success -> {
                 when (val customCommand = commandService.getCommand(getGuild.value.guildId, command)) {
-                    is Failure -> event.channel.sendMessage(Embeds.createErrorEmbed("Command not found")).queue()
+                    is Failure -> event.reply(Embeds.createErrorEmbed("Command not found"))
                     is Success -> {
                         when (customCommand.value.type) {
-                            STRING -> event.channel.sendMessage(customCommand.value.content ?: "").queue()
+                            STRING -> event.reply(customCommand.value.content ?: "")
                             FILE -> {
                                 when (val file = attachmentService.getFile(
-                                    event.guild.id,
+                                    event.guild?.id ?: "",
                                     customCommand.value.fileName ?: "",
                                     command
                                 )) {
-                                    is Failure -> event.channel.sendMessage(file.reason).queue()
+                                    is Failure -> event.reply(file.reason)
                                     is Success -> event.channel.sendFile(file.value, customCommand.value.fileName ?: "")
                                         .queue()
                                 }

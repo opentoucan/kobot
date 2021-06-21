@@ -13,6 +13,7 @@ object JDAHelperFunctions {
     fun getAuthorIdFromMessageId(textChannel: TextChannel?, msgId: String): String =
             textChannel?.retrieveMessageById(msgId)?.complete()?.author?.id ?: ""
 
+    @Deprecated("Use DiscordService")
     fun getChannelName(jda: JDA, id: String): String = jda.getGuildChannelById(id)?.name ?: id
 
 }
