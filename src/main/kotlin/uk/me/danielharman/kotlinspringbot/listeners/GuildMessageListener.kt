@@ -27,9 +27,8 @@ import uk.me.danielharman.kotlinspringbot.factories.VoiceCommandFactory
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.mappers.toMessageEvent
-import uk.me.danielharman.kotlinspringbot.messages.DiscordMessageEvent
-import uk.me.danielharman.kotlinspringbot.messages.MessageEvent
-import uk.me.danielharman.kotlinspringbot.services.DiscordService
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
 import java.util.*
@@ -43,7 +42,7 @@ class GuildMessageListener(
     private val voiceCommandFactory: VoiceCommandFactory,
     private val properties: KotlinBotProperties,
     private val memeService: MemeService,
-    private val discordService: DiscordService
+    private val discordService: DiscordActionService
 ) : ListenerAdapter() {
 
     private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
@@ -196,14 +195,8 @@ class GuildMessageListener(
         }
     }
 
-
     override fun onSlashCommand(event: SlashCommandEvent) {
-        event.channel.sendMessage("Command name: ${event.name}").queue()
-        event.reply("Haven't written the rest of it lol").setEphemeral(false).queue();
-
-        val command = commandFactory.getCommand(event.name)
-
-        command.execute(event.toMessageEvent())
+        commandFactory.getCommand(event.name).execute(event.toMessageEvent())
     }
 
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {

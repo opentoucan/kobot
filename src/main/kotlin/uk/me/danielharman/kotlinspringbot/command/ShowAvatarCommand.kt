@@ -1,32 +1,40 @@
 package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
-import uk.me.danielharman.kotlinspringbot.command.interfaces.Param
-import uk.me.danielharman.kotlinspringbot.messages.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
+import uk.me.danielharman.kotlinspringbot.models.CommandParameter
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 
 @Component
-class ShowAvatarCommand :
+class ShowAvatarCommand(private val discordActionService: DiscordActionService) :
     Command(
         "avatar",
         "Get a user's avatar",
-        listOf(Param(0, "Usertag", Param.ParamType.Mentionable, "User tag", true))
-    ) {
+        listOf(CommandParameter(0, "Usertag", CommandParameter.ParamType.Mentionable, "User tag", true))
+    ), ISlashCommand {
 
     override fun execute(event: DiscordMessageEvent) {
-        val mentionedUsers = event.mentionedUsers
 
-        if (mentionedUsers.size < 0) {
+        val paramValue = event.getParamValue(commandParameters[0])
+        val id = paramValue.asMentionable()
+
+        if (paramValue.error || id == null) {
             event.reply("No users specified")
         }
-        mentionedUsers.forEach { u ->
-            event.reply(
+
+        when (val member = discordActionService.getUserById(id ?: "")) {
+            is Failure -> event.reply(Embeds.createErrorEmbed(member.reason))
+            is Success -> event.reply(
                 EmbedBuilder()
                     .setTitle("Avatar")
-                    .setAuthor(u.asTag)
-                    .setImage("${u.avatarUrl}?size=512")
+                    .setAuthor(member.value.asTag)
+                    .setImage("${member.value.avatarUrl}?size=512")
                     .build()
             )
         }

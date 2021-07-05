@@ -1,32 +1,40 @@
 package uk.me.danielharman.kotlinspringbot.command
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
-import uk.me.danielharman.kotlinspringbot.command.interfaces.Param
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
+import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds.infoEmbedBuilder
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
-import uk.me.danielharman.kotlinspringbot.messages.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
 
 @Component
 class SavePhraseCommand(private val commandService: DiscordCommandService) : Command(
     "save", "Save a custom command", listOf(
-        Param(0, "Name", Param.ParamType.Text, "Command name", true),
-        Param(1, "Content", Param.ParamType.Text, "Text content only", true)
+        CommandParameter(0, "Name", CommandParameter.ParamType.Word, "Command name", true),
+        CommandParameter(1, "Content", CommandParameter.ParamType.String, "Text content only", true)
     )
-) {
+), ISlashCommand {
 
-    override fun execute(event: DiscordMessageEvent)  {
+    override fun execute(event: DiscordMessageEvent) {
 
-        val channel = event.channel
-        val content = event.content
-        val split = content.split(" ")
+        val nameParam = event.getParamValue(commandParameters[0])
+        val contentParam = event.getParamValue(commandParameters[1])
+
+        val content = contentParam.asString()
+        val name = nameParam.asString()
+
         val attachments = event.attachments
 
-        if (split.size < 3 && attachments.isEmpty()) {
+        if (nameParam.error || name == null) {
+            event.reply(Embeds.createErrorEmbed("Command name not given"))
+            return
+        }
+
+        if ((contentParam.error || content == null) && attachments.isEmpty()) {
             event.reply(Embeds.createErrorEmbed("Content missing"))
             return
         }
@@ -35,29 +43,32 @@ class SavePhraseCommand(private val commandService: DiscordCommandService) : Com
             val attachment = attachments[0]
             when (val result = commandService.createFileCommand(
                 event.guild?.id ?: "",
-                split[1],
+                name,
                 attachment.fileName,
                 event.author.id,
                 attachment.retrieveInputStream().get()
             )) {
-                is Failure -> channel.sendMessage(Embeds.createErrorEmbed(result.reason)).queue()
-                is Success -> channel.sendMessage(
+                is Failure -> event.reply(Embeds.createErrorEmbed(result.reason))
+                is Success -> event.reply(
                     infoEmbedBuilder().setDescription("Saved command as ${result.value.key}").build()
-                ).queue()
+                )
             }
         } else {
-            if (split[1].contains(Regex("[_.!,?$\\\\-]"))) {
-                channel.sendMessage(Embeds.createErrorEmbed("Cannot save with that phrase")).queue()
+            if (name.contains(Regex("[_.!,?$\\\\-]"))) {
+                event.reply(Embeds.createErrorEmbed("Cannot save with that phrase"))
                 return
             }
+
+            if (content == null) return
+
             when (val result = commandService.createStringCommand(
-                event.guild?.id ?: "", split[1],
-                split.subList(2, split.size).joinToString(" "), event.author.id, true
+                event.guild?.id ?: "", name,
+                content, event.author.id, true
             )) {
-                is Failure -> channel.sendMessage(Embeds.createErrorEmbed(result.reason)).queue()
-                is Success -> channel.sendMessage(
+                is Failure -> event.reply(Embeds.createErrorEmbed(result.reason))
+                is Success -> event.reply(
                     infoEmbedBuilder().setDescription("Saved command as ${result.value.key}").build()
-                ).queue()
+                )
             }
         }
     }

@@ -4,14 +4,16 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.requests.GatewayIntent
 import org.joda.time.DateTime
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
-import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
-import uk.me.danielharman.kotlinspringbot.command.interfaces.Param
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
+import uk.me.danielharman.kotlinspringbot.models.CommandParameter
+import uk.me.danielharman.kotlinspringbot.models.CommandParameter.ParamType
 import java.lang.RuntimeException
 
 object DiscordObject {
@@ -24,7 +26,7 @@ object DiscordObject {
 
     fun init(
         properties: KotlinBotProperties,
-        commands: List<Command>
+        commands: List<ISlashCommand>
     ) {
 
         logger.info("Starting discord")
@@ -52,19 +54,19 @@ object DiscordObject {
         startTime = DateTime.now()
         jda = builder.build().awaitReady()
 
-//        val updateCommands = jda.updateCommands()
-//
-//        val commandData = mutableListOf<CommandData>()
-//        for (command: Command in commands) {
-//            val data = CommandData(command.commandString, command.description)
-//
-//            for (param: Param in command.params)
-//            {
-//                data.addOption(param.type, param.name.lowercase(), param.description, param.required)
-//            }
-//            commandData.add(data)
-//        }
-//        updateCommands.addCommands(commandData).queue()
+        val updateCommands = jda.updateCommands()
+
+        val commandData = mutableListOf<CommandData>()
+        for (command: ISlashCommand in commands) {
+            val data = CommandData(command.commandString, command.description)
+
+            for (commandParameter: CommandParameter in command.commandParameters)
+            {
+                data.addOption(convertParamTypeToJdaOptionType(commandParameter.type), commandParameter.name.lowercase(), commandParameter.description, commandParameter.required)
+            }
+            commandData.add(data)
+        }
+        updateCommands.addCommands(commandData).queue()
 
     }
 
@@ -80,4 +82,15 @@ object DiscordObject {
         initialised = false
         startTime = null
     }
+
+    private fun convertParamTypeToJdaOptionType(type: ParamType): OptionType{
+        return when(type){
+            ParamType.Word -> OptionType.STRING
+            ParamType.String -> OptionType.STRING
+            ParamType.Long -> OptionType.INTEGER
+            ParamType.Boolean -> OptionType.BOOLEAN
+            ParamType.Mentionable -> OptionType.MENTIONABLE
+        }
+    }
+
 }

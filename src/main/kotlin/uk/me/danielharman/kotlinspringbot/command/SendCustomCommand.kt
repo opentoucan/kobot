@@ -4,7 +4,7 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
-import uk.me.danielharman.kotlinspringbot.messages.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand.CommandType.FILE
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand.CommandType.STRING
 import uk.me.danielharman.kotlinspringbot.services.AttachmentService
@@ -37,8 +37,7 @@ class SendCustomCommand(
                                     command
                                 )) {
                                     is Failure -> event.reply(file.reason)
-                                    is Success -> event.channel.sendFile(file.value, customCommand.value.fileName ?: "")
-                                        .queue()
+                                    is Success -> event.reply(file.value, customCommand.value.fileName ?: "")
                                 }
                             }
                         }

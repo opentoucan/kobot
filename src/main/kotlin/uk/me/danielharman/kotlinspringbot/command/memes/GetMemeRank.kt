@@ -1,28 +1,30 @@
 package uk.me.danielharman.kotlinspringbot.command.memes
 
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
-import net.dv8tion.jda.api.interactions.commands.OptionType
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
-import uk.me.danielharman.kotlinspringbot.command.interfaces.Param
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
+import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import uk.me.danielharman.kotlinspringbot.helpers.Success
-import uk.me.danielharman.kotlinspringbot.messages.DiscordMessageEvent
-import uk.me.danielharman.kotlinspringbot.services.DiscordService
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
 import java.awt.Color
 
 @Component
-class GetMemeRank(private val memeService: MemeService, private val discordService: DiscordService) : Command(
+class GetMemeRank(private val memeService: MemeService, private val discordService: DiscordActionService) : Command(
     "memeranking",
     "List server members by their meme score",
-    listOf(Param(0, "Sort", Param.ParamType.Text, "Sort direction"))
-) {
+    listOf(CommandParameter(0, "Sort", CommandParameter.ParamType.Word, "Sort direction"))
+), ISlashCommand {
 
     override fun execute(event: DiscordMessageEvent) {
 
-        val split = event.content.split(' ')
-        val asc = (split.size > 1 && split[1] == "asc")
+        val paramValue = event.getParamValue(commandParameters[0])
+        val sort = paramValue.asString()
+
+        val asc = (!paramValue.error && sort != null && sort.lowercase() == "asc")
+
         val memerIds = memeService.getMemerIds(event.guild?.id ?: "", asc)
         val des = StringBuilder()
 

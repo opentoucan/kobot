@@ -1,24 +1,25 @@
 package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Comparators
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
-import uk.me.danielharman.kotlinspringbot.messages.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
 class WordCountCommand(private val springGuildService: SpringGuildService) :
-    Command("wordcounts", "List member word counts") {
+    Command("wordcounts", "List member word counts"),
+    ISlashCommand {
 
-    fun execute(event: GuildMessageReceivedEvent) {
+    override fun execute(event: DiscordMessageEvent) {
 
-        val guildId = event.message.guild.id
-        val guildName = event.message.guild.name
+        val guildId = event.guild?.id ?: ""
+        val guildName = event.guild?.name ?: ""
 
         val message = when (val getSpringGuild = springGuildService.getGuild(guildId)) {
             is Failure -> EmbedBuilder().addField("error", "Could not find stats for server", false).build()
@@ -34,7 +35,7 @@ class WordCountCommand(private val springGuildService: SpringGuildService) :
                             try {
                                 stringBuilder.append(
                                     "${
-                                        event.message.guild.retrieveMemberById(s).complete()?.nickname ?: s
+                                        event.guild?.retrieveMemberById(s)?.complete()?.nickname ?: s
                                     } - $i words\n"
                                 )
                             } catch (e: ErrorResponseException) {
@@ -50,10 +51,7 @@ class WordCountCommand(private val springGuildService: SpringGuildService) :
                     .build()
             }
         }
-        event.channel.sendMessage(message).queue()
+        event.reply(message)
     }
 
-    override fun execute(event: DiscordMessageEvent) {
-        TODO("Not yet implemented")
-    }
 }

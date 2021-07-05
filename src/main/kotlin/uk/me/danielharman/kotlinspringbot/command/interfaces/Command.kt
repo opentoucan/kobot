@@ -2,10 +2,11 @@ package uk.me.danielharman.kotlinspringbot.command.interfaces
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import uk.me.danielharman.kotlinspringbot.messages.DiscordMessageEvent
-import uk.me.danielharman.kotlinspringbot.messages.MessageEvent
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.events.MessageEvent
+import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 
-abstract class Command(val commandString: String, val description: String, val params: List<Param> = listOf()) {
+abstract class Command(val commandString: String, val description: String, val commandParameters: List<CommandParameter> = listOf()) {
 
     protected val logger: Logger = LoggerFactory.getLogger(this::class.java)
 

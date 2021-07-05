@@ -1,33 +1,35 @@
 package uk.me.danielharman.kotlinspringbot.command
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.joda.time.format.ISODateTimeFormat
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
-import uk.me.danielharman.kotlinspringbot.command.interfaces.Param
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
+import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
-import uk.me.danielharman.kotlinspringbot.messages.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.objects.ApplicationInfo
+import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
-import uk.me.danielharman.kotlinspringbot.services.DiscordService
 
 @Component
-class InfoCommand(private val commandService: DiscordCommandService, private val discordService: DiscordService) :
+class InfoCommand(private val commandService: DiscordCommandService, private val discordService: DiscordActionService) :
     Command(
         "info",
         "Bot information",
-        listOf(Param(0, "Command", Param.ParamType.Text, "Name of command to inspect", false))
-    ) {
+        listOf(CommandParameter(0, "Command", CommandParameter.ParamType.Word, "Name of command to inspect", false))
+    ), ISlashCommand {
 
     override fun execute(event: DiscordMessageEvent) {
-        val split = event.content.split(" ")
 
-        if (split.size > 1) {
+        val paramValue = event.getParamValue(commandParameters[0])
+        val commandName = paramValue.asString()
 
-            when (val command = commandService.getCommand(event.guild?.id ?: "", split[1])) {
-                is Failure -> event.channel.sendMessage(Embeds.createErrorEmbed("Command not found")).queue()
+        if (!paramValue.error && commandName != null) {
+
+            when (val command = commandService.getCommand(event.guild?.id ?: "", commandName)) {
+                is Failure -> event.reply(Embeds.createErrorEmbed("Command not found"))
                 is Success -> {
                     val creatorName = if (command.value.creatorId.isEmpty())
                         "Unknown"
@@ -37,8 +39,8 @@ class InfoCommand(private val commandService: DiscordCommandService, private val
                             is Success -> user.value.asTag
                         }
                     }
-                    event.channel.sendMessage(
-                        Embeds.infoEmbedBuilder(title = "Command: ${split[1]}")
+                    event.reply(
+                        Embeds.infoEmbedBuilder(title = "Command: $commandName")
                             .appendDescription(command.value.content ?: command.value.fileName ?: "No Content")
                             .addField("Creator", creatorName, false)
                             .addField(
@@ -47,12 +49,12 @@ class InfoCommand(private val commandService: DiscordCommandService, private val
                                 false
                             )
                             .build()
-                    ).queue()
+                    )
                 }
             }
         } else {
 
-            event.channel.sendMessage(
+            event.reply(
                 Embeds.infoEmbedBuilder(title = "KotBot")
                     .appendDescription("This is a Discord bot written in Kotlin using Spring")
                     .addField("Version", ApplicationInfo.version, false)
@@ -61,7 +63,7 @@ class InfoCommand(private val commandService: DiscordCommandService, private val
                     .addField("Source", "https://gitlab.com/update-gitlab.yml/kotlinspringbot", false)
                     .addField("Licence", "https://www.apache.org/licenses/LICENSE-2.0", false)
                     .build()
-            ).queue()
+            )
         }
     }
 }
