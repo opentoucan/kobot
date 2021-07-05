@@ -1,22 +1,22 @@
 package uk.me.danielharman.kotlinspringbot.command.voice
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.command.interfaces.IVoiceCommand
+import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
-class GetVolumeCommand(private val springGuildService: SpringGuildService) : IVoiceCommand {
+class GetVolumeCommand(private val springGuildService: SpringGuildService) :
+    Command("getvol", "Get the bot's current volume level"), ISlashCommand {
 
-    private val commandString = listOf("getvol", "getvolume")
-    private val description = "Get the bot's current volume level"
+    override fun execute(event: DiscordMessageEvent) =
 
-    override fun matchCommandString(str: String): Boolean = commandString.contains(str)
-
-    override fun getCommandString(): String = commandString.joinToString(", ")
-
-    override fun getCommandDescription(): String = description
-
-    override fun execute(event: GuildMessageReceivedEvent) =
-        event.channel.sendMessage("${springGuildService.getVol(event.guild.id)}").queue()
+        when (val vol = springGuildService.getVol(event.guild?.id ?: "")) {
+            is Failure -> event.reply(Embeds.createErrorEmbed("Could not get volume for guild"))
+            is Success -> event.reply("Bot volume is ${vol.value}")
+        }
 }

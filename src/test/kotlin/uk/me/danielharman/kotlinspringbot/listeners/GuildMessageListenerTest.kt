@@ -16,7 +16,6 @@ import org.springframework.test.context.ActiveProfiles
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
-import uk.me.danielharman.kotlinspringbot.factories.VoiceCommandFactory
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
@@ -38,9 +37,6 @@ internal class GuildMessageListenerTest {
 
     @Mock
     private lateinit var commandFactory: CommandFactory
-
-    @Mock
-    private lateinit var voiceCommandFactory: VoiceCommandFactory
 
     @Mock
     private lateinit var properties: KotlinBotProperties

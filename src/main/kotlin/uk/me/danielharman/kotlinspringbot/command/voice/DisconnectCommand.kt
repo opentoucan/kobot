@@ -1,33 +1,34 @@
 package uk.me.danielharman.kotlinspringbot.command.voice
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.command.interfaces.IVoiceCommand
-import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getBotVoiceChannel
+import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 
 @Component
-class DisconnectCommand : IVoiceCommand {
+class DisconnectCommand(private val discordActionService: DiscordActionService) :
+    Command("disconnect", "Disconnect the bot from the current voice channel"), ISlashCommand {
 
-    private val commandString = "disconnect"
-    private val description = "Disconnect the bot from the current voice channel"
+    override fun execute(event: DiscordMessageEvent) {
+        val guild = event.guild
 
-    override fun matchCommandString(str: String): Boolean = str == commandString
-
-    override fun getCommandString(): String = commandString
-
-    override fun getCommandDescription(): String = description
-
-    override fun execute(event: GuildMessageReceivedEvent) {
-
-        val voiceChannel = getBotVoiceChannel(event)
-        if (voiceChannel != null) {
-            event.guild.audioManager.openAudioConnection(voiceChannel)
+        if (guild == null) {
+            event.reply(Embeds.createErrorEmbed("Could not find guild"))
+            return
         }
 
-        if (event.guild.audioManager.isConnected || event.guild.audioManager.queuedAudioConnection != null) {
-            event.channel.guild.audioManager.closeAudioConnection()
+        when (val channel = discordActionService.getBotVoiceChannel(event.guild.id)) {
+            is Success -> event.guild.audioManager.openAudioConnection(channel.value)
+        }
+
+        if (guild.audioManager.isConnected || event.guild.audioManager.queuedAudioConnection != null) {
+            guild.audioManager.closeAudioConnection()
         } else {
-            event.channel.sendMessage("I am not connected to an audio channel").queue()
+            event.reply("I am not connected to an audio channel")
         }
+
     }
 }

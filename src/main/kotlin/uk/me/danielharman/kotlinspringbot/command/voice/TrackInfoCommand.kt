@@ -1,34 +1,34 @@
 package uk.me.danielharman.kotlinspringbot.command.voice
 
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.joda.time.Period
 import org.joda.time.format.PeriodFormatterBuilder
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.command.interfaces.IVoiceCommand
+import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 import java.awt.Color
 
 @Component
-class TrackInfoCommand(private val guildMusicPlayerProvider: GuildMusicPlayerProvider) : IVoiceCommand {
+class TrackInfoCommand(private val guildMusicPlayerProvider: GuildMusicPlayerProvider) :
+    Command("trackinfo", "Get the currently playing track"), ISlashCommand {
 
-    private val commandString = "trackinfo"
-    private val description = "Get the currently playing track"
+    override fun execute(event: DiscordMessageEvent) {
 
-    override fun matchCommandString(str: String): Boolean = str == commandString
+        if (event.guild == null) {
+            event.reply(Embeds.createErrorEmbed("Could not find guild"))
+            return
+        }
 
-    override fun getCommandString(): String = commandString
-
-    override fun getCommandDescription(): String = description
-
-    override fun execute(event: GuildMessageReceivedEvent) {
-        val guildAudioPlayer = guildMusicPlayerProvider.getGuildAudioPlayer(event.channel.guild)
+        val guildAudioPlayer = guildMusicPlayerProvider.getGuildAudioPlayer(event.guild)
 
         if (guildAudioPlayer.player.playingTrack == null) {
-            event.channel.sendMessage(
+            event.reply(
                 EmbedBuilder().setTitle("Error").setColor(Color.red)
                     .setDescription("Not playing anything").build()
-            ).queue()
+            )
             return
         }
         val audioTrack = guildAudioPlayer.player.playingTrack
@@ -52,7 +52,7 @@ class TrackInfoCommand(private val guildMusicPlayerProvider: GuildMusicPlayerPro
 
         val durationStr = "${fmt.print(playedDuration)}/${fmt.print(trackDuration)}"
 
-        event.channel.sendMessage(
+        event.reply(
             EmbedBuilder()
                 .setTitle("Music")
                 .setColor(0x2e298f)
@@ -60,6 +60,6 @@ class TrackInfoCommand(private val guildMusicPlayerProvider: GuildMusicPlayerPro
                 .addField("Track Author", audioTrack.info.author, false)
                 .addField("Track Length", durationStr, false)
                 .build()
-        ).queue()
+        )
     }
 }

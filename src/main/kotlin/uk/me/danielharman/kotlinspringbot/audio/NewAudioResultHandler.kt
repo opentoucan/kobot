@@ -4,7 +4,8 @@ import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.slf4j.Logger
@@ -15,7 +16,7 @@ import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 //TODO re-write because dumb things because java inline class overrides
 class NewAudioResultHandler(
     private val voiceChannel: VoiceChannel?, private val musicManager: GuildMusicManager,
-    private val channel: TextChannel, private val springGuildService: SpringGuildService
+    private val channel: MessageChannel, private val springGuildService: SpringGuildService, private val guild: Guild
 ) : AudioLoadResultHandler {
 
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
@@ -49,14 +50,14 @@ class NewAudioResultHandler(
         if (voiceChannel == null)
             return
 
-        if (!channel.guild.audioManager.isConnected && !channel.guild.audioManager.isAttemptingToConnect) {
+        if (!guild.audioManager.isConnected && !guild.audioManager.isAttemptingToConnect) {
             try {
-                channel.guild.audioManager.openAudioConnection(voiceChannel)
+                guild.audioManager.openAudioConnection(voiceChannel)
             } catch (e: InsufficientPermissionException) {
                 logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
             }
         }
-        val vol = springGuildService.getVol(channel.guild.id)
+        val vol = springGuildService.getVol(guild.id)
         musicManager.scheduler.queue(track)
         musicManager.player.volume = (vol as Success).value
     }

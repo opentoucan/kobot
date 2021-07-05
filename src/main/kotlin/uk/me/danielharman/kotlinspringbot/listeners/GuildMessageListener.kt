@@ -23,7 +23,6 @@ import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getAuthorId
 import uk.me.danielharman.kotlinspringbot.models.Meme
 import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
-import uk.me.danielharman.kotlinspringbot.factories.VoiceCommandFactory
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.mappers.toMessageEvent
@@ -39,7 +38,6 @@ class GuildMessageListener(
     private val springGuildService: SpringGuildService,
     private val moderatorCommandFactory: ModeratorCommandFactory,
     private val commandFactory: CommandFactory,
-    private val voiceCommandFactory: VoiceCommandFactory,
     private val properties: KotlinBotProperties,
     private val memeService: MemeService,
     private val discordService: DiscordActionService
@@ -239,10 +237,6 @@ class GuildMessageListener(
                 if (!isDeafened)
                     runCommand(event.toMessageEvent())
             }
-            message.contentStripped.startsWith(properties.voiceCommandPrefix) -> {
-                if (!isDeafened)
-                    runVoiceCommand(event)
-            }
             message.contentStripped.startsWith(properties.privilegedCommandPrefix) -> {
                 runAdminCommand(event)
             }
@@ -327,7 +321,6 @@ class GuildMessageListener(
         }
     }
 
-    //TODO: Refactor
     private fun runCommand(event: DiscordMessageEvent) {
 
         val selfUser = discordService.getSelfUser() as Success
@@ -339,17 +332,6 @@ class GuildMessageListener(
 
         val cmd = event.content.split(" ")[0].removePrefix(properties.commandPrefix)
         val command = commandFactory.getCommand(cmd)
-        command.execute(event)
-    }
-
-    private fun runVoiceCommand(event: GuildMessageReceivedEvent) {
-        if (event.author.id == event.jda.selfUser.id || event.author.isBot) {
-            logger.info("Not running command as author is me or a bot")
-            return
-        }
-
-        val cmd = event.message.contentStripped.split(" ")[0].removePrefix(properties.voiceCommandPrefix)
-        val command = voiceCommandFactory.getCommand(cmd)
         command.execute(event)
     }
 
