@@ -10,7 +10,7 @@ variables:
 
 test:
   stage: test
-  image: gradle:jdk15
+  image: gradle:jdk16
   tags:
     - k8s-executor
   script: 
@@ -24,7 +24,7 @@ test:
 
 pages:
   stage: coverage-deploy
-  image: gradle:jdk15
+  image: gradle:jdk16
   tags:
     - k8s-executor
   rules:
