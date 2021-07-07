@@ -34,7 +34,7 @@ class XkcdService(private val mongoOperations: MongoOperations) {
         return getComic()
     }
 
-    fun getComic(number: Int? = null): OperationResult<XkcdComic, String> {
+    fun getComic(number: Long? = null): OperationResult<XkcdComic, String> {
         val client = HttpClient(CIO)
         val url = if(number == null) latestUrl else comicUrl.format(number)
         val response = runBlocking { client.get<HttpResponse>(url) }

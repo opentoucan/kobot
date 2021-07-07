@@ -1,25 +1,23 @@
 package uk.me.danielharman.kotlinspringbot.command.voice
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.command.interfaces.IVoiceCommand
+import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 
 @Component
-class SkipTrackCommand(private val guildMusicPlayerProvider: GuildMusicPlayerProvider) : IVoiceCommand {
+class SkipTrackCommand(private val guildMusicPlayerProvider: GuildMusicPlayerProvider) :
+    Command("skip", "Skip the currently playing track"), ISlashCommand {
 
-    private val commandString = "skip"
-    private val description = "Skip the currently playing track"
+    override fun execute(event: DiscordMessageEvent) {
+        if (event.guild == null) {
+            event.reply("Could not find guild")
+            return
+        }
 
-    override fun matchCommandString(str: String): Boolean = str == commandString
-
-    override fun getCommandString(): String = commandString
-
-    override fun getCommandDescription(): String = description
-
-    override fun execute(event: GuildMessageReceivedEvent) {
-        val musicManager = guildMusicPlayerProvider.getGuildAudioPlayer(event.channel.guild)
+        val musicManager = guildMusicPlayerProvider.getGuildAudioPlayer(event.guild)
         musicManager.scheduler.nextTrack()
-        event.channel.sendMessage("Skipped to next track.").queue()
+        event.reply("Skipped to next track.")
     }
 }

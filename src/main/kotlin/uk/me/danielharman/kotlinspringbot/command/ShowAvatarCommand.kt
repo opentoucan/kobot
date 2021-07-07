@@ -1,35 +1,43 @@
 package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
+import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
+import uk.me.danielharman.kotlinspringbot.models.CommandParameter
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 
 @Component
-class ShowAvatarCommand: ICommand {
+class ShowAvatarCommand(private val discordActionService: DiscordActionService) :
+    Command(
+        "avatar",
+        "Get a user's avatar",
+        listOf(CommandParameter(0, "Usertag", CommandParameter.ParamType.Mentionable, "User tag", true))
+    ), ISlashCommand {
 
-    private val commandString = "avatar"
-    private val description = "Get a user's avatar"
+    override fun execute(event: DiscordMessageEvent) {
 
-    override fun matchCommandString(str: String): Boolean = str == commandString
+        val paramValue = event.getParamValue(commandParameters[0])
+        val id = paramValue.asMentionable()
 
-    override fun getCommandString(): String = commandString
-
-    override fun getCommandDescription(): String = description
-
-    override fun execute(event: GuildMessageReceivedEvent) {
-        val mentionedUsers = event.message.mentionedUsers
-
-        if (mentionedUsers.size < 0) {
-            event.channel.sendMessage("No users specified").queue()
+        if (paramValue.error || id == null) {
+            event.reply("No users specified")
         }
-        mentionedUsers.forEach { u ->
-            event.channel.sendMessage(EmbedBuilder()
+
+        when (val member = discordActionService.getUserById(id ?: "")) {
+            is Failure -> event.reply(Embeds.createErrorEmbed(member.reason))
+            is Success -> event.reply(
+                EmbedBuilder()
                     .setTitle("Avatar")
-                    .setAuthor(u.asTag)
-                    .setImage("${u.avatarUrl}?size=512")
+                    .setAuthor(member.value.asTag)
+                    .setImage("${member.value.avatarUrl}?size=512")
                     .build()
-            ).queue()
+            )
         }
     }
+
 }

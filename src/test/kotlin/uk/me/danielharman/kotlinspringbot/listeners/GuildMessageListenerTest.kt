@@ -16,9 +16,9 @@ import org.springframework.test.context.ActiveProfiles
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
-import uk.me.danielharman.kotlinspringbot.factories.VoiceCommandFactory
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
+import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
 
@@ -40,13 +40,13 @@ internal class GuildMessageListenerTest {
     private lateinit var commandFactory: CommandFactory
 
     @Mock
-    private lateinit var voiceCommandFactory: VoiceCommandFactory
-
-    @Mock
     private lateinit var properties: KotlinBotProperties
 
     @Mock
     private lateinit var memeService: MemeService
+
+    @Mock
+    private lateinit var discordService: DiscordActionService
 
     @Test
     fun onGuildJoin() {

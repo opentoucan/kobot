@@ -1,8 +1,12 @@
 package uk.me.danielharman.kotlinspringbot.command.voice
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.command.interfaces.IVoiceCommand
+import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.models.CommandParameter
+import uk.me.danielharman.kotlinspringbot.models.CommandParameter.ParamType
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
@@ -10,28 +14,35 @@ import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 class SetVolumeCommand(
     private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
     private val springGuildService: SpringGuildService
-) : IVoiceCommand {
+) : Command(
+    "vol", "Set the bot's volume level (0-100)",
+    listOf(CommandParameter(0, "volume", ParamType.Long, "Volume to set the bot to (0-100)", true))
+), ISlashCommand {
 
-    private val commandString = listOf("vol", "volume")
-    private val description = "Set the bot's volume level (0-100)"
+    override fun execute(event: DiscordMessageEvent) {
 
-    override fun matchCommandString(str: String): Boolean = commandString.contains(str)
+        if (event.guild == null) {
+            event.reply(Embeds.createErrorEmbed("Could not find guild"))
+            return
+        }
 
-    override fun getCommandString(): String = commandString.joinToString(", ")
+        val paramValue = event.getParamValue(commandParameters[0])
+        val vol = paramValue.asLong()
 
-    override fun getCommandDescription(): String = description
+        if (vol == null || paramValue.error) {
+            event.reply(Embeds.createErrorEmbed("Invalid volume"))
+            return
+        }
 
-    override fun execute(event: GuildMessageReceivedEvent) {
-        val vol = event.message.contentStripped.split(" ")[1].toInt()
-        val musicManager = guildMusicPlayerProvider.getGuildAudioPlayer(event.channel.guild)
+        val musicManager = guildMusicPlayerProvider.getGuildAudioPlayer(event.guild)
 
         val newVol = when {
             vol > 100 -> 100
             vol < 0 -> 0
             else -> vol
         }
-        musicManager.player.volume = newVol
-        springGuildService.setVol(event.channel.guild.id, newVol)
-        event.channel.sendMessage("Setting volume to $newVol").queue()
+        musicManager.player.volume = newVol.toInt()
+        springGuildService.setVol(event.guild.id, newVol.toInt())
+        event.reply("Setting volume to $newVol")
     }
 }

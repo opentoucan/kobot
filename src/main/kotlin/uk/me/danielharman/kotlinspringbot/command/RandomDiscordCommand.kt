@@ -1,68 +1,66 @@
 package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.entities.Member
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
+import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.helpers.toJavaZonedDateTime
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand.CommandType.FILE
-import uk.me.danielharman.kotlinspringbot.services.AttachmentService
-import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
-import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
+import uk.me.danielharman.kotlinspringbot.services.*
 import java.awt.Color
 
 @Component
 class RandomDiscordCommand(
     private val springGuildService: SpringGuildService,
     private val attachmentService: AttachmentService,
-    private val commandService: DiscordCommandService
-) : ICommand {
+    private val commandService: DiscordCommandService,
+    private val discordService: DiscordActionService
+) : Command("random", "Send a random command"), ISlashCommand {
 
-    private val commandString = "random"
-    private val description = "Send a random command"
+    override fun execute(event: DiscordMessageEvent) {
 
-    override fun matchCommandString(str: String): Boolean = str == commandString
-
-    override fun getCommandString(): String = commandString
-
-    override fun getCommandDescription(): String = description
-
-    override fun execute(event: GuildMessageReceivedEvent) {
-
-        when (val getGuild = springGuildService.getGuild(event.guild.id)) {
-            is Failure -> event.channel.sendMessage(Embeds.createErrorEmbed("Guild not found")).queue()
+        when (val getGuild = springGuildService.getGuild(event.guild?.id ?: "")) {
+            is Failure -> event.reply(Embeds.createErrorEmbed("Guild not found"))
             is Success -> {
                 val guild = getGuild.value
                 when (val customCommand = commandService.getRandomCommand(guild.guildId)) {
-                    is Failure -> event.channel.sendMessage(Embeds.createErrorEmbed("No commands found"))
+                    is Failure -> event.reply(Embeds.createErrorEmbed("No commands found"))
                     is Success -> {
 
-                        val complete = event.jda.retrieveUserById(customCommand.value.creatorId).complete()
-                        val member = event.guild.getMember(complete)
-                        val name = member?.nickname ?: complete.name
+                        val user = when (val user = discordService.getUserById(customCommand.value.creatorId)) {
+                            is Failure -> null
+                            is Success -> user.value
+                        }
+                        val member: Member?
+                        var name = ""
 
-                        event.channel.sendMessage(
+                        if (user != null) {
+                            member = event.guild?.getMember(user)
+                            name = member?.nickname ?: user.name
+                        }
+                        event.reply(
                             EmbedBuilder()
-                                .setAuthor(name, complete.effectiveAvatarUrl, complete.effectiveAvatarUrl)
+                                .setAuthor(name, user?.effectiveAvatarUrl ?: "", user?.effectiveAvatarUrl ?: "")
                                 .appendDescription(customCommand.value.content ?: customCommand.value.fileName ?: "")
                                 .setTitle(customCommand.value.key)
                                 .setTimestamp(customCommand.value.created.toJavaZonedDateTime())
                                 .setColor(Color.YELLOW)
                                 .build()
-                        ).queue()
+                        )
 
                         if (customCommand.value.type === FILE) {
                             when (val file = attachmentService.getFile(
-                                event.guild.id,
+                                event.guild?.id ?: "",
                                 customCommand.value.fileName ?: "",
                                 customCommand.value.key
                             )) {
-                                is Failure -> event.channel.sendMessage(file.reason).queue()
-                                is Success -> event.channel.sendFile(file.value, customCommand.value.fileName ?: "")
-                                    .queue()
+                                is Failure -> event.reply(file.reason)
+                                is Success -> event.reply(file.value, customCommand.value.fileName ?: "")
                             }
                         }
                     }

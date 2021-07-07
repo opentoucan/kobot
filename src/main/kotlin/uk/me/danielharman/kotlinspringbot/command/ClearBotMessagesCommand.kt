@@ -1,30 +1,31 @@
 package uk.me.danielharman.kotlinspringbot.command
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
-import uk.me.danielharman.kotlinspringbot.command.interfaces.ICommand
+import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 
 @Component
-class ClearBotMessagesCommand(private val properties: KotlinBotProperties) : ICommand {
+class ClearBotMessagesCommand(
+    private val discordService: DiscordActionService,
+    private val properties: KotlinBotProperties
+) : Command("clear", "Clear command invocations and bot messages"), ISlashCommand {
 
-    private val logger = LoggerFactory.getLogger(this::class.java)
+    override fun execute(event: DiscordMessageEvent) {
 
-    private val commandString = "clear"
-    private val description = "Clear command invocations and bot messages"
+        val selfId = when(val selfUser = discordService.getSelfUser()){
+            is Failure -> ""
+            is Success -> selfUser.value.id
+        }
 
-    override fun matchCommandString(str: String): Boolean = str == commandString
-
-    override fun getCommandString(): String = commandString
-
-    override fun getCommandDescription(): String = description
-
-    override fun execute(event: GuildMessageReceivedEvent) {
         event.channel.history.retrievePast(50).complete().forEach { m ->
             if ((m.author.isBot)
-                || m.author.id == event.jda.selfUser.id
+                || m.author.id == selfId
                 || m.contentStripped.startsWith(properties.commandPrefix)
                 || m.contentStripped.startsWith(properties.privilegedCommandPrefix)
             ) {
@@ -35,5 +36,6 @@ class ClearBotMessagesCommand(private val properties: KotlinBotProperties) : ICo
                 }
             }
         }
+        event.reply("Deleting content", true)
     }
 }
