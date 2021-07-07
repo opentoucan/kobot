@@ -10,20 +10,22 @@ import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import uk.me.danielharman.kotlinspringbot.events.MessageEvent
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 //TODO re-write because dumb things because java inline class overrides
 class NewAudioResultHandler(
     private val voiceChannel: VoiceChannel?, private val musicManager: GuildMusicManager,
-    private val channel: MessageChannel, private val springGuildService: SpringGuildService, private val guild: Guild
+    private val event: MessageEvent, private val springGuildService: SpringGuildService, private val guild: Guild
 ) : AudioLoadResultHandler {
 
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun trackLoaded(track: AudioTrack) {
         play(track)
-        channel.sendMessage("Queued track").queue()
+        event.reply("Queued track")
     }
 
     override fun playlistLoaded(playlist: AudioPlaylist) {
@@ -33,17 +35,17 @@ class NewAudioResultHandler(
             firstTrack = playlist.tracks[0]
         }
 
-        channel.sendMessage("Adding to queue ${firstTrack.info.title} (first track of playlist ${playlist.name}")
+        event.reply("Adding to queue ${firstTrack.info.title} (first track of playlist ${playlist.name}")
         play(firstTrack)
 
     }
 
     override fun noMatches() {
-        channel.sendMessage("Nothing found by").queue()
+        event.reply("Nothing found for that url")
     }
 
     override fun loadFailed(exception: FriendlyException) {
-        channel.sendMessage("Could not play: ${exception.message}").queue()
+        event.reply("Could not play: ${exception.message}")
     }
 
     fun play(track: AudioTrack) {
@@ -57,8 +59,11 @@ class NewAudioResultHandler(
                 logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
             }
         }
-        val vol = springGuildService.getVol(guild.id)
+       when(val vol = springGuildService.getVol(guild.id)){
+           is Failure -> logger.error("Failed to get guild volume ${vol.reason}")
+           is Success -> musicManager.player.volume = vol.value
+       }
         musicManager.scheduler.queue(track)
-        musicManager.player.volume = (vol as Success).value
+
     }
 }

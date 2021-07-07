@@ -13,18 +13,33 @@ class DiscordSlashCommandEvent(private val event: SlashCommandEvent) : DiscordMe
     event.user,
     event.guild
 ) {
+
+    private var hasReplied = false
+
     override fun reply(embed: MessageEmbed, invokerOnly: Boolean) {
-        event.reply(embed.title ?: "").setEphemeral(invokerOnly).complete()
+        if(!hasReplied){
+            event.reply(embed.title ?: "").setEphemeral(invokerOnly).complete()
+            hasReplied = true;
+        }
         channel.sendMessageEmbeds(embed).queue()
     }
 
     override fun reply(file: InputStream, filename: String) {
-        event.reply(MessageBuilder().build()).setEphemeral(false).complete()
+        if(!hasReplied){
+            event.reply("Your file sir").setEphemeral(true).complete()
+            hasReplied = true
+        }
         channel.sendFile(file, filename).queue()
     }
 
     override fun reply(msg: String, invokerOnly: Boolean) {
-        event.reply(msg).setEphemeral(invokerOnly).queue()
+        if(!hasReplied) {
+            event.reply(msg).setEphemeral(invokerOnly).queue()
+            hasReplied = true;
+        }
+        else{
+            event.channel.sendMessage(msg).queue()
+        }
     }
 
     override fun getParamValue(commandParameter: CommandParameter): CommandParameter {

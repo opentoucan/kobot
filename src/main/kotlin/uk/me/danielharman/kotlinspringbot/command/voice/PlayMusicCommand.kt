@@ -80,7 +80,7 @@ class PlayMusicCommand(
         guildMusicPlayerProvider.playerManager.loadItemOrdered(
             musicManager,
             url,
-            NewAudioResultHandler(voiceChannel, musicManager, event.channel, springGuildService, event.guild)
+            NewAudioResultHandler(voiceChannel, musicManager, event, springGuildService, event.guild)
         )
     }
 }
