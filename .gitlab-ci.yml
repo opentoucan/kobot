@@ -1,45 +1,83 @@
 stages:
-  - build
   - test
+  - coverage-deploy
+  - visualize
   - dockerbuild
   - deploy
-  
+
+variables:
+  FF_GITLAB_REGISTRY_HELPER_IMAGE: 1
+
 test:
   stage: test
-  image: gradle:jdk14
+  image: gradle:jdk16
   tags:
-    - docker
-  script: gradle check --info
+    - k8s-executor
+  script: 
+    - 'gradle --no-daemon check --info'
+  artifacts:
+    reports:
+      junit: build/test-results/test/**/TEST-*.xml
+    paths: 
+      - build/reports/jacoco/test/jacocoTestReport.xml
+      - build/reports/jacoco/test/html/
+
+pages:
+  stage: coverage-deploy
+  image: gradle:jdk16
+  tags:
+    - k8s-executor
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "master"'
+  dependencies:
+    - test
+  needs: ["test"]
+  script:
+    - mv build/reports/jacoco/test/html/ public/
+  artifacts:
+    paths:
+      - public
+    expire_in: 30 days
+
+cobertura:
+  stage: visualize
+  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
+  tags:
+    - k8s-executor
+  dependencies:
+    - test
+  needs: ["test"]
+  script:
+    # convert report from jacoco to cobertura, using relative project path
+    - python /opt/cover2cover.py build/reports/jacoco/test/jacocoTestReport.xml $CI_PROJECT_DIR/src/main/kotlin/ > build/cobertura.xml
+  artifacts:
+    reports:
+      cobertura: build/cobertura.xml
 
 dockerbuild:
   stage: dockerbuild
-  image: docker:latest
-  services:
-    - docker:dind
   tags:
-    - dind 
+    - k8s-executor
   rules:
     - if: '$CI_COMMIT_REF_NAME == "master"'
-  variables:
-    DOCKER_TLS_CERTDIR: "/certs"
-  before_script:
-    - docker info
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+      when: on_success
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  needs: ["test"]
   script:
-    - docker pull ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest || true
-    - docker build --cache-from ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_SHA} --pull .
-    - docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_SHA}
-    - docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest
-  after_script:
-    - docker logout ${CI_REGISTRY}
-    
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE:latest
+
 deploy:
   stage: deploy
   tags:
     - k8s
   rules:
     - if: '$CI_COMMIT_REF_NAME == "master"'
-      when: always
+      when: on_success
+  needs: ["dockerbuild"]
   variables:
     GIT_STRATEGY: none
   before_script:

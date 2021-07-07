@@ -1,9 +1,11 @@
 package uk.me.danielharman.kotlinspringbot.command
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
+import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 
-class PingCommand : Command {
-    override fun execute(event: GuildMessageReceivedEvent) {
-        return event.channel.sendMessage("pong ${event.author.asMention}").queue()
-    }
+@Component
+class PingCommand : Command("ping", "pong"), ISlashCommand {
+    override fun execute(event: DiscordMessageEvent) = event.reply("pong ${event.author.asMention}")
 }

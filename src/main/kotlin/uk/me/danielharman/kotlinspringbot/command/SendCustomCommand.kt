@@ -1,41 +1,53 @@
 package uk.me.danielharman.kotlinspringbot.command
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand.CommandType.FILE
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand.CommandType.STRING
 import uk.me.danielharman.kotlinspringbot.services.AttachmentService
 import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
-import uk.me.danielharman.kotlinspringbot.services.GuildService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
-class SendCustomCommand(private val guildService: GuildService, private val attachmentService: AttachmentService,
-                        private val commandService: DiscordCommandService,
-                        private val command: String) : Command {
-    override fun execute(event: GuildMessageReceivedEvent) {
+class SendCustomCommand(
+    private val springGuildService: SpringGuildService,
+    private val attachmentService: AttachmentService,
+    private val commandService: DiscordCommandService,
+    private val command: String
+) : Command("", "") {
 
-        val guild = guildService.getGuild(event.guild.id)
+    override fun matchCommandString(str: String): Boolean = false
 
-        if (guild == null)
-        {
-            event.channel.sendMessage(Embeds.createErrorEmbed("Guild not found")).queue()
+    override fun execute(event: DiscordMessageEvent) {
+        if (event.guild == null) {
+            event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))
             return
         }
 
-        val customCommand = commandService.getCommand(guild.guildId, command)
-
-        if (customCommand != null) {
-
-            when (customCommand.type) {
-                STRING -> event.channel.sendMessage(customCommand.content?: "").queue()
-                FILE -> {
-                    val file = attachmentService.getFile(event.guild.id, customCommand.fileName?: "", command)
-                    event.channel.sendFile(file, customCommand.fileName?: "").queue()
+        when (val getGuild = springGuildService.getGuild(event.guild.id)) {
+            is Failure -> event.reply(Embeds.createErrorEmbed("Guild not found"))
+            is Success -> {
+                when (val customCommand = commandService.getCommand(getGuild.value.guildId, command)) {
+                    is Failure -> event.reply(Embeds.createErrorEmbed("Command not found"))
+                    is Success -> {
+                        when (customCommand.value.type) {
+                            STRING -> event.reply(customCommand.value.content ?: "")
+                            FILE -> {
+                                when (val file = attachmentService.getFile(
+                                    event.guild?.id ?: "",
+                                    customCommand.value.fileName ?: "",
+                                    command
+                                )) {
+                                    is Failure -> event.reply(file.reason)
+                                    is Success -> event.reply(file.value, customCommand.value.fileName ?: "")
+                                }
+                            }
+                        }
+                    }
                 }
             }
-
-        } else {
-            event.channel.sendMessage(Embeds.createErrorEmbed("Command not found")).queue()
         }
-
     }
 }

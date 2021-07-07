@@ -1,29 +1,36 @@
 package uk.me.danielharman.kotlinspringbot.services
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.gridfs.GridFsTemplate
 import org.springframework.stereotype.Service
-import uk.me.danielharman.kotlinspringbot.ApplicationLogger.logger
+import uk.me.danielharman.kotlinspringbot.helpers.OperationResult
+import uk.me.danielharman.kotlinspringbot.helpers.Success
 import java.io.InputStream
 
 @Service
-class AttachmentService(val gf: GridFsTemplate) {
+class AttachmentService(private val gf: GridFsTemplate) {
 
-    fun saveFile(inputStream: InputStream, guildId: String, fileName: String, id: String) {
-        logger.info("[AttachmentService] Saving $guildId:$fileName:$id")
-        gf.store(inputStream, "$guildId:$fileName:$id")
+    private val logger: Logger = LoggerFactory.getLogger(this::class.java)
+
+    fun saveFile(inputStream: InputStream, guildId: String, fileName: String, id: String): OperationResult<String, String> {
+        logger.info("Saving $guildId:$fileName:$id")
+        val store = gf.store(inputStream, "$guildId:$fileName:$id")
+        return Success(store.toHexString())
     }
 
-    fun getFile(guildId: String, fileName: String, id: String): InputStream {
-        logger.info("[AttachmentService] Getting $guildId:$fileName:$id")
+    fun getFile(guildId: String, fileName: String, id: String): OperationResult<InputStream, String> {
+        logger.info("Getting $guildId:$fileName:$id")
         val findOne = gf.findOne(Query(Criteria.where("filename").`is`("$guildId:$fileName:$id")))
-        return gf.getResource(findOne).inputStream
+        return Success(gf.getResource(findOne).inputStream)
     }
 
-    fun deleteAttachment(guildId: String, fileName: String, id: String) {
-        logger.info("[AttachmentService] Deleting attachment $guildId:$fileName")
+    fun deleteAttachment(guildId: String, fileName: String, id: String): OperationResult<String, String> {
+        logger.info("Deleting attachment $guildId:$fileName")
         gf.delete(Query(Criteria.where("filename").`is`("$guildId:$fileName:$id")))
+        return Success("Removed $guildId:$fileName")
     }
 
 }
