@@ -9,6 +9,7 @@ import uk.me.danielharman.kotlinspringbot.helpers.Comparators
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
@@ -17,9 +18,13 @@ class WordCountCommand(private val springGuildService: SpringGuildService) :
     ISlashCommand {
 
     override fun execute(event: DiscordMessageEvent) {
+        if (event.guild == null) {
+            event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))
+            return
+        }
 
-        val guildId = event.guild?.id ?: ""
-        val guildName = event.guild?.name ?: ""
+        val guildId = event.guild.id
+        val guildName = event.guild.name
 
         val message = when (val getSpringGuild = springGuildService.getGuild(guildId)) {
             is Failure -> EmbedBuilder().addField("error", "Could not find stats for server", false).build()

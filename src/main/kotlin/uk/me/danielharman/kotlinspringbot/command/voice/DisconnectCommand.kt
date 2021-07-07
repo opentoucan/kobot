@@ -16,7 +16,7 @@ class DisconnectCommand(private val discordActionService: DiscordActionService) 
         val guild = event.guild
 
         if (guild == null) {
-            event.reply(Embeds.createErrorEmbed("Could not find guild"))
+            event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))
             return
         }
 

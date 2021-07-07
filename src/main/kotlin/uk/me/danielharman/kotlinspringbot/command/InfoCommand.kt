@@ -26,9 +26,9 @@ class InfoCommand(private val commandService: DiscordCommandService, private val
         val paramValue = event.getParamValue(commandParameters[0])
         val commandName = paramValue.asString()
 
-        if (!paramValue.error && commandName != null) {
+        if (!paramValue.error && commandName != null && event.guild != null) {
 
-            when (val command = commandService.getCommand(event.guild?.id ?: "", commandName)) {
+            when (val command = commandService.getCommand(event.guild.id, commandName)) {
                 is Failure -> event.reply(Embeds.createErrorEmbed("Command not found"))
                 is Success -> {
                     val creatorName = if (command.value.creatorId.isEmpty())

@@ -23,8 +23,12 @@ class RandomDiscordCommand(
 ) : Command("random", "Send a random command"), ISlashCommand {
 
     override fun execute(event: DiscordMessageEvent) {
+        if (event.guild == null) {
+            event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))
+            return
+        }
 
-        when (val getGuild = springGuildService.getGuild(event.guild?.id ?: "")) {
+        when (val getGuild = springGuildService.getGuild(event.guild.id)) {
             is Failure -> event.reply(Embeds.createErrorEmbed("Guild not found"))
             is Success -> {
                 val guild = getGuild.value

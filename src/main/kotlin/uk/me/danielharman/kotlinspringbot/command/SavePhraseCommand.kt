@@ -20,6 +20,10 @@ class SavePhraseCommand(private val commandService: DiscordCommandService) : Com
 ), ISlashCommand {
 
     override fun execute(event: DiscordMessageEvent) {
+        if (event.guild == null) {
+            event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))
+            return
+        }
 
         val nameParam = event.getParamValue(commandParameters[0])
         val contentParam = event.getParamValue(commandParameters[1])
@@ -42,7 +46,7 @@ class SavePhraseCommand(private val commandService: DiscordCommandService) : Com
         if (attachments.isNotEmpty()) {
             val attachment = attachments[0]
             when (val result = commandService.createFileCommand(
-                event.guild?.id ?: "",
+                event.guild.id,
                 name,
                 attachment.fileName,
                 event.author.id,
@@ -62,7 +66,7 @@ class SavePhraseCommand(private val commandService: DiscordCommandService) : Com
             if (content == null) return
 
             when (val result = commandService.createStringCommand(
-                event.guild?.id ?: "", name,
+                event.guild.id, name,
                 content, event.author.id, true
             )) {
                 is Failure -> event.reply(Embeds.createErrorEmbed(result.reason))

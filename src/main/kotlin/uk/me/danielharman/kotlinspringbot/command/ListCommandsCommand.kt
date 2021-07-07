@@ -12,6 +12,11 @@ class ListCommandsCommand(private val commands: List<Command>, private val prope
     Command("help", "Get the list of inbuilt commands"), ISlashCommand {
 
     override fun execute(event: DiscordMessageEvent) {
+        if (event.guild == null) {
+            event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))
+            return
+        }
+
         val stringBuilder = StringBuilder()
         commands.sortedBy { c -> c.commandString }.forEach { c ->
             run {

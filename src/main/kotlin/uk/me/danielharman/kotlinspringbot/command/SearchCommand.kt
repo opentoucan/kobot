@@ -19,6 +19,10 @@ class SearchCommand(private val commandService: DiscordCommandService) : Command
 ), ISlashCommand {
 
     override fun execute(event: DiscordMessageEvent) {
+        if (event.guild == null) {
+            event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))
+            return
+        }
 
         val paramValue = event.getParamValue(commandParameters[0])
         val searchTerm = paramValue.asString()
@@ -32,7 +36,7 @@ class SearchCommand(private val commandService: DiscordCommandService) : Command
             .setTitle("Matched commands")
             .setColor(0x9d03fc)
 
-        when (val searchCommand = commandService.searchCommand(event.guild?.id ?: "", searchTerm)) {
+        when (val searchCommand = commandService.searchCommand(event.guild.id, searchTerm)) {
             is Failure -> builder.setDescription("No matching commands found.")
             is Success -> {
                 builder.appendDescription("Command - Closeness to $searchTerm\n\n")

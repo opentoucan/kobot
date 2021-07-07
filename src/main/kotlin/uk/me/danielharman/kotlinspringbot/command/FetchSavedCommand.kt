@@ -27,7 +27,12 @@ class FetchSavedCommand(
         if (str.length <= limit) str else str.slice(IntRange(0, limit))
 
     override fun execute(event: DiscordMessageEvent) {
-        val message = when (val getGuild = springGuildService.getGuild(event.guild?.id ?: "")) {
+        if (event.guild == null) {
+            event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))
+            return
+        }
+
+        val message = when (val getGuild = springGuildService.getGuild(event.guild.id)) {
             is Failure -> Embeds.createErrorEmbed("Guild not found")
             is Success -> {
 

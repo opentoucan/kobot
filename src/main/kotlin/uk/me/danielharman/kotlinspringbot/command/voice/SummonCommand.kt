@@ -11,9 +11,8 @@ import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 class SummonCommand : Command("summon", "Make the bot join the voice channel"), ISlashCommand {
 
     override fun execute(event: DiscordMessageEvent) {
-
         if (event.guild == null) {
-            event.reply(Embeds.createErrorEmbed("Could not find guild"))
+            event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))
             return
         }
 

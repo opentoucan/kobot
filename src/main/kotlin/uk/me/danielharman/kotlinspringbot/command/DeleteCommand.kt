@@ -17,6 +17,10 @@ class DeleteCommand(private val commandService: DiscordCommandService) : Command
 ) {
 
     override fun execute(event: DiscordMessageEvent) {
+        if (event.guild == null) {
+            event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))
+            return
+        }
 
         val paramValue = event.getParamValue(commandParameters[0])
 
@@ -25,7 +29,7 @@ class DeleteCommand(private val commandService: DiscordCommandService) : Command
             return
         }
 
-        when (commandService.deleteCommand(event.guild?.id ?: "", paramValue.asString() ?: "")) {
+        when (commandService.deleteCommand(event.guild.id, paramValue.asString() ?: "")) {
             is Failure -> event.reply(Embeds.createErrorEmbed("Command not found"))
             is Success -> event.reply(Embeds.infoEmbedBuilder().setDescription("Command deleted").build())
         }
