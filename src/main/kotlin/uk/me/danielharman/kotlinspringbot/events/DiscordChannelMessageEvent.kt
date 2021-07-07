@@ -20,7 +20,7 @@ class DiscordChannelMessageEvent(
     }
 
     override fun reply(file: InputStream, filename: String) {
-        this.channel.sendFile(file, filename)
+        this.channel.sendFile(file, filename).queue()
     }
 
     override fun reply(msg: String, invokerOnly: Boolean) {
