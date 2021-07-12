@@ -1,5 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.services
 
+import io.kotest.assertions.all
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.*
 import org.junit.jupiter.api.AfterEach
@@ -14,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.test.context.ActiveProfiles
 import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.helpers.assertFailure
 import uk.me.danielharman.kotlinspringbot.helpers.assertSuccess
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
@@ -75,7 +77,7 @@ internal class DiscordCommandServiceTest(
         val result1 = assertSuccess(service.getCommands("1", 0, 2))
         val result2 = assertSuccess(service.getCommands("1", 1, 2))
 
-        assertThat(     
+        assertThat(
             result1.value, containsInAnyOrder(
                 allOf(
                     hasProperty("key", equalTo("test")),
@@ -99,6 +101,16 @@ internal class DiscordCommandServiceTest(
                 )
             )
         )
+    }
+
+    @Test
+    fun shouldNotGetLeakRandomCommand(){
+        val springGuild = SpringGuild("1")
+        Mockito.`when`(springGuildService.getGuild("1")).thenReturn(Success(springGuild))
+
+        repo.save(DiscordCommand("2", "incorrect", null, null, DiscordCommand.CommandType.STRING, ""))
+
+        assertFailure(service.getRandomCommand("1"))
     }
 
 

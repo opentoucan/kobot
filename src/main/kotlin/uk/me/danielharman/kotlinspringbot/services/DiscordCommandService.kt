@@ -58,16 +58,25 @@ class DiscordCommandService(
         }
 
     fun getRandomCommand(guildId: String): OperationResult<DiscordCommand, String> {
-        val command = mongoTemplate.aggregate(
-            Aggregation.newAggregation(Aggregation.sample(1)),
-            "DiscordCommands",
-            DiscordCommand::class.java
-        ).uniqueMappedResult
+        return when (val guild = springGuildService.getGuild(guildId)) {
+            is Failure -> guild
+            is Success -> {
 
-        return if (command == null) {
-            Failure("Did not find any commands")
-        } else {
-            Success(command)
+                val command = mongoTemplate.aggregate(
+                    Aggregation.newAggregation(
+                        Aggregation.sample(1),
+                        Aggregation.match(Criteria.where(DiscordCommand::guildId.name).`is`(guild.value.guildId))
+                    ),
+                    "DiscordCommands",
+                    DiscordCommand::class.java
+                ).uniqueMappedResult
+
+                if (command == null) {
+                    Failure("Did not find any commands")
+                } else {
+                    Success(command)
+                }
+            }
         }
     }
 
@@ -112,12 +121,27 @@ class DiscordCommandService(
 
                     if (command is Success && overwrite) {
                         if (command.value.type == DiscordCommand.CommandType.FILE) {
-                            attachmentService.deleteAttachment(guildId, command.value.fileName ?: "", command.value.key)
+                            attachmentService.deleteAttachment(
+                                guildId,
+                                command.value.fileName ?: "",
+                                command.value.key
+                            )
                         }
                         repository.deleteById(command.value.id)
                     }
 
-                    return Success(repository.save(DiscordCommand(guildId, key, content, fileName, type, creatorId)))
+                    return Success(
+                        repository.save(
+                            DiscordCommand(
+                                guildId,
+                                key,
+                                content,
+                                fileName,
+                                type,
+                                creatorId
+                            )
+                        )
+                    )
                 }
                 return command
             }
@@ -133,7 +157,11 @@ class DiscordCommandService(
                     is Success -> {
                         repository.deleteById(command.value.id)
                         if (command.value.type == DiscordCommand.CommandType.FILE) {
-                            attachmentService.deleteAttachment(guildId, command.value.fileName ?: "", command.value.key)
+                            attachmentService.deleteAttachment(
+                                guildId,
+                                command.value.fileName ?: "",
+                                command.value.key
+                            )
                         }
                         Success("Deleted $key")
                     }
@@ -161,7 +189,8 @@ class DiscordCommandService(
                 //Paginated so that we aren't pulling 1000s of commands at a time if that ever happens
                 for (page in 0 until noOfPages) {
 
-                    val query = Query(Criteria.where("guildId").`is`(guildId)).with(PageRequest.of(page, CMD_PAGE_SIZE))
+                    val query =
+                        Query(Criteria.where("guildId").`is`(guildId)).with(PageRequest.of(page, CMD_PAGE_SIZE))
                     val cmds = mongoTemplate.find(query, DiscordCommand::class.java)
 
                     commandList.addAll(cmds
