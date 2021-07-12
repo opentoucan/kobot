@@ -34,11 +34,16 @@ class DiscordActionService {
     }
 
     fun getUserById(creatorId: String): OperationResult<User, String> {
+
+        if(creatorId.isEmpty()){
+            return Failure("Failed to get user: Id was empty")
+        }
+
         return try {
             Success(DiscordObject.jda.retrieveUserById(creatorId).complete())
         } catch (e: NumberFormatException) {
             logger.error(e.message)
-            Failure("Failed to get user")
+            Failure("Failed to get user: Invalid id number format")
         }
     }
 

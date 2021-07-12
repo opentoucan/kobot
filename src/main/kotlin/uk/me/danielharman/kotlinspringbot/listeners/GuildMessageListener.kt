@@ -55,10 +55,10 @@ class GuildMessageListener(
     override fun onGuildVoiceLeave(event: GuildVoiceLeaveEvent) {
         val vc = event.oldValue
         //Return if the event is triggered by the bot or by someone leaving a channel in a guild we don't have a audio manager for
-        if(event.member.id == event.jda.selfUser.id || vc.jda.audioManagers.firstOrNull { vc.guild.id == event.guild.id} == null) return
+        if (event.member.id == event.jda.selfUser.id || vc.jda.audioManagers.firstOrNull { vc.guild.id == event.guild.id } == null) return
         val members = vc.members
         //If the channel is just us bots
-        if((members.firstOrNull { m -> !m.user.isBot} == null) && members.firstOrNull{ m -> m.id == vc.jda.selfUser.id} != null) {
+        if ((members.firstOrNull { m -> !m.user.isBot } == null) && members.firstOrNull { m -> m.id == vc.jda.selfUser.id } != null) {
             vc.jda.audioManagers.firstOrNull { vc.guild.id == event.guild.id }?.closeAudioConnection()
         }
     }
@@ -120,8 +120,7 @@ class GuildMessageListener(
                         }
                     }
                     return
-                }
-                else if(emoji == EmojiCodes.Cross){
+                } else if (emoji == EmojiCodes.Cross) {
                     event.user?.let { event.reaction.removeReaction(it).queue() }
                 }
 
@@ -194,7 +193,16 @@ class GuildMessageListener(
     }
 
     override fun onSlashCommand(event: SlashCommandEvent) {
-        commandFactory.getCommand(event.name).execute(event.toMessageEvent())
+        val messageEvent = event.toMessageEvent()
+        try {
+            commandFactory.getCommand(event.name).execute(messageEvent)
+        } catch (e: Exception) {
+            messageEvent.reply(
+                "An internal error occurred while executing the command.",
+                true
+            )
+            throw e
+        }
     }
 
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
@@ -218,7 +226,7 @@ class GuildMessageListener(
 
         val getDeafenedChannels = springGuildService.getDeafenedChannels(guild.id)
         var deafenedChannels = listOf<String>()
-        if(getDeafenedChannels is Success){
+        if (getDeafenedChannels is Success) {
             deafenedChannels = getDeafenedChannels.value
         }
 
@@ -244,7 +252,7 @@ class GuildMessageListener(
 
                 val getMemeChannels = springGuildService.getMemeChannels(guild.id)
                 var memeChannels = listOf<String>()
-                if(getMemeChannels is Success){
+                if (getMemeChannels is Success) {
                     memeChannels = getMemeChannels.value
                 }
 
@@ -332,7 +340,15 @@ class GuildMessageListener(
 
         val cmd = event.content.split(" ")[0].removePrefix(properties.commandPrefix)
         val command = commandFactory.getCommand(cmd)
-        command.execute(event)
+        try {
+            command.execute(event)
+        } catch (e: Exception) {
+            event.reply(
+                "An internal error occurred while executing the command.",
+                true
+            )
+            throw e
+        }
     }
 
     private fun runAdminCommand(event: GuildMessageReceivedEvent) {
