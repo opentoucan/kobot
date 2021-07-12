@@ -47,15 +47,18 @@ class RandomDiscordCommand(
                             member = event.guild.getMember(user)
                             name = member?.nickname ?: user.name
                         }
-                        event.reply(
-                            EmbedBuilder()
-                                .setAuthor(name, user?.effectiveAvatarUrl ?: "", user?.effectiveAvatarUrl ?: "")
-                                .appendDescription(customCommand.value.content ?: customCommand.value.fileName ?: "")
-                                .setTitle(customCommand.value.key)
-                                .setTimestamp(customCommand.value.created.toJavaZonedDateTime())
-                                .setColor(Color.YELLOW)
-                                .build()
-                        )
+
+                        val embed = EmbedBuilder()
+                            .setTitle(customCommand.value.key)
+                            .setTimestamp(customCommand.value.created.toJavaZonedDateTime())
+                            .setColor(Color.YELLOW)
+                            .appendDescription(customCommand.value.content ?: customCommand.value.fileName ?: "")
+
+                        if(user != null){
+                            embed.setAuthor(name, user.effectiveAvatarUrl, user.effectiveAvatarUrl)
+                        }
+
+                        event.reply(embed.build())
 
                         if (customCommand.value.type === FILE) {
                             when (val file = attachmentService.getFile(
