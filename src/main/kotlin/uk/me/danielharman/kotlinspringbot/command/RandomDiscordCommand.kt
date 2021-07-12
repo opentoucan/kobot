@@ -44,7 +44,7 @@ class RandomDiscordCommand(
                         var name = ""
 
                         if (user != null) {
-                            member = event.guild?.getMember(user)
+                            member = event.guild.getMember(user)
                             name = member?.nickname ?: user.name
                         }
                         event.reply(
@@ -59,7 +59,7 @@ class RandomDiscordCommand(
 
                         if (customCommand.value.type === FILE) {
                             when (val file = attachmentService.getFile(
-                                event.guild?.id ?: "",
+                                event.guild.id,
                                 customCommand.value.fileName ?: "",
                                 customCommand.value.key
                             )) {
