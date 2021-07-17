@@ -323,7 +323,6 @@ class GuildMessageListener(
             ) {
                 message.addReaction(EmojiCodes.ThumbsUp).queue()
                 message.addReaction(EmojiCodes.ThumbsDown).queue()
-                message.addReaction(EmojiCodes.Cross).queue()
                 memeService.saveMeme(Meme(message.id, guildId, authorId, url, channelId, Meme.UrlType.Link))
             }
         }
