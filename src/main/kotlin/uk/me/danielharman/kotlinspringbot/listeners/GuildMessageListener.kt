@@ -92,7 +92,7 @@ class GuildMessageListener(
 
             val getGuild = springGuildService.getGuild(event.guild.id)
             if (getGuild is Failure) {
-                logger.error(getGuild.reason)
+                logger.error("onMessageReactionAdd: ${getGuild.reason}")
                 return
             }
             val guild = (getGuild as Success).value
@@ -104,7 +104,7 @@ class GuildMessageListener(
                     when (emoji) {
                         EmojiCodes.ThumbsDown, EmojiCodes.ThumbsUp -> {
                             val user = event.user ?: return
-                            logger.info("Removing reaction by posting user")
+                            logger.info("[Message Listener] Removing reaction by posting user")
                             event.reaction.removeReaction(user).queue()
                         }
                         EmojiCodes.Cross -> {
@@ -131,7 +131,7 @@ class GuildMessageListener(
                             event.messageId,
                             event.userId
                         )
-                    ) logger.error("Failed to upvote")
+                    ) logger.error("[MessageListener] Failed to upvote")
                 }
                 //Thumbs down
                 else if (emoji == EmojiCodes.ThumbsDown) {
@@ -140,7 +140,7 @@ class GuildMessageListener(
                             event.messageId,
                             event.userId
                         )
-                    ) logger.error("Failed to downvote")
+                    ) logger.error("[MessageListener] Failed to downvote")
                 }
             }
         }
@@ -180,13 +180,15 @@ class GuildMessageListener(
 
     override fun onMessageDelete(event: MessageDeleteEvent) {
 
-        when(val getGuild = springGuildService.getGuild(event.guild.id)){
-            is Failure -> logger.error(getGuild.reason)
-            is Success -> {
-                if (getGuild.value.memeChannels.contains(event.channel.id)) {
-                    memeService.deleteMeme(getGuild.value.guildId, event.messageId)
-                }
-            }
+        val getGuild = springGuildService.getGuild(event.guild.id)
+        if (getGuild is Failure) {
+            logger.error("onMessageDelete: ${getGuild.reason}")
+            return
+        }
+        val guild = (getGuild as Success).value
+
+        if (guild.memeChannels.contains(event.channel.id)) {
+            memeService.deleteMeme(guild.guildId, event.messageId)
         }
     }
 
