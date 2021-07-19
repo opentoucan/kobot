@@ -32,7 +32,7 @@ object DiscordObject {
         logger.info("Starting discord")
         logger.info("${listeners.size} listeners registered")
         logger.info("${commands.size} commands registered")
-        if(commands.size > 100){
+        if (commands.size > 100) {
             throw RuntimeException("Too many commands, discord limits slash commands to 100")
         }
         val builder: JDABuilder = JDABuilder.create(
@@ -54,23 +54,31 @@ object DiscordObject {
         startTime = DateTime.now()
         jda = builder.build().awaitReady()
 
-        val updateCommands = jda.updateCommands()
+        //Don't register commands when running in dev mode
+        if (!ApplicationInfo.isDev) {
+            logger.info("Registering slash commands with Discord.")
+            val updateCommands = jda.updateCommands()
 
-        val commandData = mutableListOf<CommandData>()
-        for (command: ISlashCommand in commands) {
-            val data = CommandData(command.commandString, command.description)
+            val commandData = mutableListOf<CommandData>()
+            for (command: ISlashCommand in commands) {
+                val data = CommandData(command.commandString, command.description)
 
-            for (commandParameter: CommandParameter in command.commandParameters)
-            {
-                data.addOption(convertParamTypeToJdaOptionType(commandParameter.type), commandParameter.name.lowercase(), commandParameter.description, commandParameter.required)
+                for (commandParameter: CommandParameter in command.commandParameters) {
+                    data.addOption(
+                        convertParamTypeToJdaOptionType(commandParameter.type),
+                        commandParameter.name.lowercase(),
+                        commandParameter.description,
+                        commandParameter.required
+                    )
+                }
+                commandData.add(data)
             }
-            commandData.add(data)
+            updateCommands.addCommands(commandData).queue()
         }
-        updateCommands.addCommands(commandData).queue()
 
     }
 
-    fun registerListeners(listeners: List<ListenerAdapter>){
+    fun registerListeners(listeners: List<ListenerAdapter>) {
         this.listeners = listeners
     }
 
@@ -83,8 +91,8 @@ object DiscordObject {
         startTime = null
     }
 
-    private fun convertParamTypeToJdaOptionType(type: ParamType): OptionType{
-        return when(type){
+    private fun convertParamTypeToJdaOptionType(type: ParamType): OptionType {
+        return when (type) {
             ParamType.Word -> OptionType.STRING
             ParamType.String -> OptionType.STRING
             ParamType.Long -> OptionType.INTEGER
