@@ -46,6 +46,12 @@ class SetupService(
 
         val activeProfiles = env.activeProfiles
 
+        ApplicationInfo.isDev = activeProfiles.contains("dev")
+
+        if(ApplicationInfo.isDev){
+            logger.info("Bot is running in development mode.")
+        }
+
         val defaultUser = userRepository.findByUsername("admin")
         //Setup dashboard user
         if (defaultUser == null) {
