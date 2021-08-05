@@ -6,5 +6,6 @@ object ApplicationInfo {
 
     var startTime: DateTime = DateTime.now()
     var version: String = "dev"
+    var isDev: Boolean = false;
 
 }
