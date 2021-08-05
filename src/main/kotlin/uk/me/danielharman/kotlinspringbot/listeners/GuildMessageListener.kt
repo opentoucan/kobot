@@ -292,7 +292,6 @@ class GuildMessageListener(
         if (message.attachments.isNotEmpty()) {
             message.addReaction(EmojiCodes.ThumbsUp).queue()
             message.addReaction(EmojiCodes.ThumbsDown).queue()
-            message.addReaction(EmojiCodes.Cross).queue()
             memeService.saveMeme(
                 Meme(
                     message.id,
@@ -306,7 +305,6 @@ class GuildMessageListener(
         } else if (force) {
             message.addReaction(EmojiCodes.ThumbsUp).queue()
             message.addReaction(EmojiCodes.ThumbsDown).queue()
-            message.addReaction(EmojiCodes.Cross).queue()
             memeService.saveMeme(Meme(message.id, guildId, authorId, message.jumpUrl, channelId, Meme.UrlType.Link))
         } else {
             var url: String? = null
