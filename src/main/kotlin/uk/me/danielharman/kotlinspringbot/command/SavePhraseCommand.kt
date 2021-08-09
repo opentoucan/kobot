@@ -47,7 +47,6 @@ class SavePhraseCommand(private val commandService: DiscordCommandService) : Com
             event.reply(Embeds.createErrorEmbed("$name already exists, delete the command first to overwrite."))
             return
         }
-
         if (attachments.isNotEmpty()) {
             val attachment = attachments[0]
             when (val result = commandService.createFileCommand(
