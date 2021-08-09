@@ -1,5 +1,7 @@
 package uk.me.danielharman.kotlinspringbot.services
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
@@ -13,12 +15,15 @@ import kotlin.math.max
 @Service
 class SpringGuildService(private val guildRepository: GuildRepository) {
 
+    private val logger: Logger = LoggerFactory.getLogger(this::class.java)
+
     fun getGuild(guildId: String): OperationResult<SpringGuild, String> {
         val guild = guildRepository.findByGuildId(guildId) ?: return Failure("Could not find guild $guildId")
         return Success(guild)
     }
 
     fun createGuild(guildId: String): OperationResult<SpringGuild, String> {
+        logger.info("Creating guild $guildId")
         return when (getGuild(guildId)) {
             is Failure -> Success(guildRepository.save(SpringGuild(guildId)))
             is Success -> Failure("Guild already exists")
