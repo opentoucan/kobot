@@ -114,7 +114,7 @@ class DiscordService(
     }
 
     fun syncGuildsWithDb(): OperationResult<List<SpringGuild>, String> {
-        logger.info("Syncing guilds with DB")
+        logger.info("Syncing guilds with Database")
         val guilds = DiscordObject.jda.guilds
         val result = mutableListOf<SpringGuild>()
         for (guild in guilds) {
