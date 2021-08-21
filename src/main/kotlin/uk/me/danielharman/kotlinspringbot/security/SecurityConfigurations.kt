@@ -37,6 +37,7 @@ class DefaultSecurityConfiguration(val userDetailsService: MongoUserDetailsServi
         http
                 .csrf().disable()
                 .authorizeRequests()
+                .antMatchers("/actuator/health").permitAll()
                 .antMatchers("/login*", "/css/*").permitAll()
                 .anyRequest().authenticated()
                 .and()
