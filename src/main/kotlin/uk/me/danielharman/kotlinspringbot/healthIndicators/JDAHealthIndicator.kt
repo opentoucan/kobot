@@ -12,7 +12,7 @@ import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 @Component
 class JDAHealthIndicator : HealthIndicator {
 
-    val logger: Logger = LoggerFactory.getLogger(this::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun health(): Health {
         val status = DiscordObject.jda.status
