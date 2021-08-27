@@ -14,6 +14,7 @@ import uk.me.danielharman.kotlinspringbot.helpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelEmbedMessage
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelMessage
+import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 
 @Service
@@ -83,7 +84,7 @@ class DiscordService(
     fun sendChannelMessage(msg: DiscordChannelEmbedMessage): OperationResult<TextChannel, String> {
         val channel =
             DiscordObject.jda.getTextChannelById(msg.channelId) ?: return Failure("No such channel ${msg.channelId}")
-        channel.sendMessage(msg.msg).queue()
+        channel.sendMessageEmbeds(msg.msg).queue()
         return Success(channel)
     }
 
@@ -110,6 +111,23 @@ class DiscordService(
     fun getDiscordStartTime(): OperationResult<DateTime, String> {
         val startTime = DiscordObject.startTime ?: return Failure("Failed to get start time")
         return Success(startTime)
+    }
+
+    fun syncGuildsWithDb(): OperationResult<List<SpringGuild>, String> {
+        logger.info("Syncing guilds with Database")
+        val guilds = DiscordObject.jda.guilds
+        val result = mutableListOf<SpringGuild>()
+        for (guild in guilds) {
+            when (val sg = springGuildService.createGuild(guild.id)) {
+                is Failure -> {
+                    logger.warn(sg.reason)
+                }
+                is Success -> {
+                    result.add(sg.value)
+                }
+            }
+        }
+        return Success(result)
     }
 
 }

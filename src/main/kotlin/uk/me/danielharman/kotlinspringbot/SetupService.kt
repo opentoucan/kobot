@@ -96,6 +96,8 @@ class SetupService(
                         }
                     }, 3000, 10800000) // Start after 3 seconds, check every 3hrs
                     administratorService.logToAdmins("Bot started")
+                    administratorService.logToAdmins("Syncing guilds with database")
+                    discordService.syncGuildsWithDb()
                 }
             }
         } else {
