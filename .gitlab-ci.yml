@@ -1,11 +1,18 @@
+stages:
+  - test
+  - coverage-deploy
+  - visualize
+  - dockerbuild
+  - deploy
+
 variables:
   FF_GITLAB_REGISTRY_HELPER_IMAGE: 1
 
 test:
+  stage: test
   image: gradle:jdk16
   tags:
     - k8s-executor
-  needs: []
   script: 
     - 'gradle --no-daemon check --info'
   artifacts:
@@ -22,6 +29,8 @@ pages:
     - k8s-executor
   rules:
     - if: '$CI_COMMIT_REF_NAME == "master"'
+  dependencies:
+    - test
   needs: ["test"]
   script:
     - mv build/reports/jacoco/test/html/ public/
@@ -31,9 +40,12 @@ pages:
     expire_in: 30 days
 
 cobertura:
+  stage: visualize
   image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
   tags:
     - k8s-executor
+  dependencies:
+    - test
   needs: ["test"]
   script:
     # convert report from jacoco to cobertura, using relative project path
@@ -43,6 +55,7 @@ cobertura:
       cobertura: build/cobertura.xml
 
 dockerbuild:
+  stage: dockerbuild
   tags:
     - k8s-executor
   rules:
@@ -58,6 +71,7 @@ dockerbuild:
     - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE:latest
 
 deploy:
+  stage: deploy
   tags:
     - k8s
   rules:
