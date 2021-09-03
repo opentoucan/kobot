@@ -63,6 +63,7 @@ class DiscordSlashCommandEvent(private val event: SlashCommandEvent) : DiscordMe
                 OptionType.CHANNEL -> get.asMessageChannel
                 OptionType.ROLE -> get.asRole
                 OptionType.MENTIONABLE -> get.asMentionable
+                else -> null
             }
             commandParameter.value = value
         }
