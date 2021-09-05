@@ -1,8 +1,5 @@
 package uk.me.danielharman.kotlinspringbot.listeners
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
-import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
-import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent
@@ -18,18 +15,18 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
-import uk.me.danielharman.kotlinspringbot.helpers.EmojiCodes
-import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getAuthorIdFromMessageId
-import uk.me.danielharman.kotlinspringbot.models.Meme
-import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
+import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
+import uk.me.danielharman.kotlinspringbot.helpers.EmojiCodes
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getAuthorIdFromMessageId
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.mappers.toMessageEvent
-import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.models.Meme
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
-import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import java.util.*
 import java.util.regex.Pattern
 
@@ -43,13 +40,7 @@ class GuildMessageListener(
     private val discordService: DiscordActionService
 ) : ListenerAdapter() {
 
-    private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
-
-    init {
-        AudioSourceManagers.registerRemoteSources(playerManager)
-        AudioSourceManagers.registerLocalSource(playerManager)
-    }
 
     //Leave a voice channel once everyone has left
     override fun onGuildVoiceLeave(event: GuildVoiceLeaveEvent) {
