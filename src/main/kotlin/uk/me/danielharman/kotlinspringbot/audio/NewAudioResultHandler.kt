@@ -5,20 +5,21 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import uk.me.danielharman.kotlinspringbot.events.MessageEvent
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.HelperFunctions.partialWrapper
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 //TODO re-write because dumb things because java inline class overrides
 class NewAudioResultHandler(
     private val voiceChannel: VoiceChannel?, private val musicManager: GuildMusicManager,
-    private val event: MessageEvent, private val springGuildService: SpringGuildService, private val guild: Guild
+    private val event: DiscordMessageEvent, private val springGuildService: SpringGuildService, private val guild: Guild
 ) : AudioLoadResultHandler {
 
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
@@ -52,6 +53,8 @@ class NewAudioResultHandler(
         if (voiceChannel == null)
             return
 
+        musicManager.registerCallback (track.identifier, partialWrapper(::onErrorEvent, event))
+
         if (!guild.audioManager.isConnected && !guild.audioManager.isAttemptingToConnect) {
             try {
                 guild.audioManager.openAudioConnection(voiceChannel)
@@ -66,4 +69,9 @@ class NewAudioResultHandler(
         musicManager.scheduler.queue(track)
 
     }
+
+    private fun onErrorEvent(event: DiscordMessageEvent, message: String){
+        event.reply(Embeds.createErrorEmbed(message), false)
+    }
+
 }
