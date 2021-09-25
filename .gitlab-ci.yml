@@ -22,7 +22,7 @@ pages:
     - if: '$CI_COMMIT_REF_NAME == "master"'
   dependencies:
     - test
-  needs: "test"
+  needs: test
   script:
     - mv build/reports/jacoco/test/html/ public/
   artifacts:
@@ -36,7 +36,7 @@ cobertura:
     - k8s-executor
   dependencies:
     - test
-  needs: "test"
+  needs: test
   script:
     # convert report from jacoco to cobertura, using relative project path
     - python /opt/cover2cover.py build/reports/jacoco/test/jacocoTestReport.xml $CI_PROJECT_DIR/src/main/kotlin/ > build/cobertura.xml
@@ -53,7 +53,7 @@ dockerbuild:
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
-  needs: "test"
+  needs: test
   script:
     - mkdir -p /kaniko/.docker
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
@@ -65,7 +65,7 @@ deploy:
   rules:
     - if: '$CI_COMMIT_REF_NAME == "master"'
       when: on_success
-  needs: "dockerbuild"
+  needs: dockerbuild
   variables:
     GIT_STRATEGY: none
   before_script:
