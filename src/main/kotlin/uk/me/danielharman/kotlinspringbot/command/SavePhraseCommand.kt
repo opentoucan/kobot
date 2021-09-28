@@ -49,17 +49,20 @@ class SavePhraseCommand(private val commandService: DiscordCommandService) : Com
         }
         if (attachments.isNotEmpty()) {
             val attachment = attachments[0]
-            when (val result = commandService.createFileCommand(
-                event.guild.id,
-                name,
-                attachment.fileName,
-                event.author.id,
-                attachment.retrieveInputStream().get()
-            )) {
-                is Failure -> event.reply(Embeds.createErrorEmbed(result.reason))
-                is Success -> event.reply(
-                    infoEmbedBuilder().setDescription("Saved command as ${result.value.key}").build()
-                )
+            //Don't allow files greater than 8MB
+            if(attachment.size < 8388608) {
+                when (val result = commandService.createFileCommand(
+                    event.guild.id,
+                    name,
+                    attachment.fileName,
+                    event.author.id,
+                    attachment.retrieveInputStream().get()
+                )) {
+                    is Failure -> event.reply(Embeds.createErrorEmbed(result.reason))
+                    is Success -> event.reply(infoEmbedBuilder().setDescription("Saved command as ${result.value.key}").build())
+                }
+            }else{
+                event.reply(Embeds.createErrorEmbed("Attachment must be less than 8MB in size"))
             }
         } else {
             if (name.contains(Regex("[_.!,?$\\\\-]"))) {
