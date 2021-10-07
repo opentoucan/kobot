@@ -3,7 +3,9 @@ package uk.me.danielharman.kotlinspringbot.events
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.interactions.commands.OptionType
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import java.io.InputStream
 
@@ -29,7 +31,15 @@ class DiscordSlashCommandEvent(private val event: SlashCommandEvent) : DiscordMe
             event.reply("Your file sir").setEphemeral(true).complete()
             hasReplied = true
         }
-        channel.sendFile(file, filename).queue()
+        try {
+            this.channel.sendFile(file, filename).complete()
+        } catch (e: ErrorResponseException){
+            if (e.message?.contains("40005") == true){
+                this.reply(Embeds.createErrorEmbed("File was too large to send"), true)
+            } else {
+                this.reply(Embeds.createErrorEmbed("Failed so send attachment"), true)
+            }
+        }
     }
 
     override fun reply(msg: String, invokerOnly: Boolean) {
@@ -63,6 +73,7 @@ class DiscordSlashCommandEvent(private val event: SlashCommandEvent) : DiscordMe
                 OptionType.CHANNEL -> get.asMessageChannel
                 OptionType.ROLE -> get.asRole
                 OptionType.MENTIONABLE -> get.asMentionable
+                else -> null
             }
             commandParameter.value = value
         }

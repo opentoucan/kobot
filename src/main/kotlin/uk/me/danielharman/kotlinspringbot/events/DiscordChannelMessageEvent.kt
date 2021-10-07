@@ -2,6 +2,8 @@ package uk.me.danielharman.kotlinspringbot.events
 
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.exceptions.ErrorResponseException
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import java.io.InputStream
 
@@ -20,7 +22,15 @@ class DiscordChannelMessageEvent(
     }
 
     override fun reply(file: InputStream, filename: String) {
-        this.channel.sendFile(file, filename).queue()
+        try {
+            this.channel.sendFile(file, filename).complete()
+        } catch (e: ErrorResponseException){
+            if (e.message?.contains("40005") == true){
+                this.reply(Embeds.createErrorEmbed("File was too large to send"));
+            } else {
+                this.reply(Embeds.createErrorEmbed("Failed so send attachment"))
+            }
+        }
     }
 
     override fun reply(msg: String, invokerOnly: Boolean) {
