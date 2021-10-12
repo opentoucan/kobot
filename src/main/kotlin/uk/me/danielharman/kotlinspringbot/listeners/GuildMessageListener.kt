@@ -51,7 +51,6 @@ class GuildMessageListener(
 
         if (event.member.id == event.jda.selfUser.id || audioManager == null) return
 
-        logger.info("${audioManager.guild.id} - ${voiceChannel.guild.id}")
 
         val members = voiceChannel.members
         //If the channel is just us bots
