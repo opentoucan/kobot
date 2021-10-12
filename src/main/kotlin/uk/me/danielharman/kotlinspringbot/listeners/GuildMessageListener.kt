@@ -44,13 +44,19 @@ class GuildMessageListener(
 
     //Leave a voice channel once everyone has left
     override fun onGuildVoiceLeave(event: GuildVoiceLeaveEvent) {
-        val vc = event.oldValue
-        //Return if the event is triggered by the bot or by someone leaving a channel in a guild we don't have a audio manager for
-        if (event.member.id == event.jda.selfUser.id || vc.jda.audioManagers.firstOrNull { vc.guild.id == event.guild.id } == null) return
-        val members = vc.members
+        val voiceChannel = event.oldValue
+
+        //Return if the event is triggered by the bot or by someone leaving a channel in a guild we don't have an audio manager for
+        val audioManager = voiceChannel.jda.audioManagers.firstOrNull { am -> am.guild.id == voiceChannel.guild.id }
+
+        if (event.member.id == event.jda.selfUser.id || audioManager == null) return
+
+        logger.info("${audioManager.guild.id} - ${voiceChannel.guild.id}")
+
+        val members = voiceChannel.members
         //If the channel is just us bots
-        if ((members.firstOrNull { m -> !m.user.isBot } == null) && members.firstOrNull { m -> m.id == vc.jda.selfUser.id } != null) {
-            vc.jda.audioManagers.firstOrNull { vc.guild.id == event.guild.id }?.closeAudioConnection()
+        if ((members.firstOrNull { m -> !m.user.isBot } == null) && members.firstOrNull { m -> m.id == voiceChannel.jda.selfUser.id } != null) {
+            audioManager.closeAudioConnection()
         }
     }
 
