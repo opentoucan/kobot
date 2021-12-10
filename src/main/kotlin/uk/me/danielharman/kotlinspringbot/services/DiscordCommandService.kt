@@ -133,8 +133,6 @@ class DiscordCommandService(
         type: DiscordCommand.CommandType, creatorId: String, overwrite: Boolean
     ): OperationResult<DiscordCommand, String> {
 
-        logger.info("$guildId, $key, $content")
-
         when (val guild = springGuildService.getGuild(guildId)) {
             is Failure -> return guild
             is Success -> {
