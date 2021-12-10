@@ -1,6 +1,8 @@
 package uk.me.danielharman.kotlinspringbot.services
 
 import me.xdrop.fuzzywuzzy.FuzzySearch
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.domain.Sort.Order
@@ -25,6 +27,8 @@ class DiscordCommandService(
     private val attachmentService: AttachmentService,
     private val mongoTemplate: MongoTemplate
 ) {
+
+    private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     fun commandCount(guildId: String): OperationResult<Long, String> =
         when (val guild = springGuildService.getGuild(guildId)) {
@@ -62,14 +66,31 @@ class DiscordCommandService(
             is Failure -> guild
             is Success -> {
 
-                val command = mongoTemplate.aggregate(
-                    Aggregation.newAggregation(
-                        Aggregation.sample(1),
-                        Aggregation.match(Criteria.where(DiscordCommand::guildId.name).`is`(guild.value.guildId))
-                    ),
-                    "DiscordCommands",
-                    DiscordCommand::class.java
-                ).uniqueMappedResult
+                val count = repository.countByGuildId(guild.value.guildId)
+
+                var command: DiscordCommand? = null
+
+                var triesCounter = 0
+
+                //The matching for the guild is done after the command is retrieved so guilds with fewer commands were less likely to
+                // be returned
+                if(count > 0) {
+                    while (command == null && triesCounter < 100) {
+                        command = mongoTemplate.aggregate(
+                            Aggregation.newAggregation(
+                                Aggregation.match(
+                                    Criteria.where(DiscordCommand::guildId.name).`is`(guild.value.guildId)
+                                ),
+                                Aggregation.sample(1)
+                            ),
+                            "DiscordCommands",
+                            DiscordCommand::class.java
+                        ).uniqueMappedResult
+                        triesCounter++
+                    }
+                }
+
+                logger.info("Got a command in $triesCounter iterations")
 
                 if (command == null) {
                     Failure("Did not find any commands")
