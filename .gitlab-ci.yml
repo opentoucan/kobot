@@ -2,7 +2,7 @@ variables:
   FF_GITLAB_REGISTRY_HELPER_IMAGE: 1
 
 test:
-  image: gradle:jdk16
+  image: gradle:jdk17
   tags:
     - k8s-executor
   script: 
@@ -15,7 +15,7 @@ test:
       - build/reports/jacoco/test/html/
 
 pages:
-  image: gradle:jdk16
+  image: gradle:jdk17
   tags:
     - k8s-executor
   rules:
