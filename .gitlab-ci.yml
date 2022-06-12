@@ -2,7 +2,7 @@ variables:
   FF_GITLAB_REGISTRY_HELPER_IMAGE: 1
 
 test:
-  image: gradle:jdk17
+  image: gradle:jdk17-focal
   tags:
     - k8s-executor
   script: 
