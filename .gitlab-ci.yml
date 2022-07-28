@@ -65,7 +65,7 @@ dev_build:
   tags:
     - k8s-executor
   rules:
-    - if: '$CI_COMMIT_REF_NAME == "dev"'
+    - if: '$CI_COMMIT_REF_NAME == "feature/jda5"'
       when: on_success
   image:
     name: gcr.io/kaniko-project/executor:debug
