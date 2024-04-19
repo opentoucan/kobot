@@ -17,4 +17,4 @@ jobs:
       uses: gradle/actions/setup-gradle@v3
 
     - name: test with Gradle Wrapper
-      run: ./gradlew gradle --no-daemon check --info
+      run: ./gradlew --no-daemon check --info
