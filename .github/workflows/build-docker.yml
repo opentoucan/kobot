@@ -1,12 +1,14 @@
-on: push
-#    branches:
-#      - 'main'
-#  workflow_run:
-#    workflows: [test]
-#    types: [completed]
+on:
+  push:
+    branches:
+      - 'main'
+  workflow_run:
+    workflows: [test]
+    types: [completed]
 
 jobs:
   build-push-docker:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
