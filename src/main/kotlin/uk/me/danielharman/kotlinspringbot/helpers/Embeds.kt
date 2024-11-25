@@ -15,12 +15,17 @@ object Embeds {
             .addField("Further help", "${commandPrefix}help <command>", true)
             .build()
 
-
     fun createErrorEmbed(message: String): MessageEmbed = EmbedBuilder()
             .setTitle("Error")
             .setDescription(message)
             .setColor(Color.RED)
             .build()
+
+    fun infoWithDescriptionEmbedBuilder(title: String = "Info", message: String, colour: Color = Color.blue): MessageEmbed = EmbedBuilder()
+                .setTitle(title)
+                .setDescription(message)
+                .setColor(colour)
+                .build()
 
     fun infoEmbedBuilder(title: String = "Info", colour: Color = Color.blue) = EmbedBuilder()
             .setTitle(title)

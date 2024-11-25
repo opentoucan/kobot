@@ -18,6 +18,7 @@ import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.EmojiCodes
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getAuthorIdFromMessageId
@@ -191,7 +192,7 @@ class GuildMessageListener(
     override fun onSlashCommand(event: SlashCommandEvent) {
         val messageEvent = event.toMessageEvent()
         try {
-            commandFactory.getCommand(event.name).execute(messageEvent)
+            commandFactory.getCommand(event.name)?.execute(messageEvent)
         } catch (e: Exception) {
             messageEvent.reply(
                 "An internal error occurred while executing the command.",
@@ -333,6 +334,11 @@ class GuildMessageListener(
 
         val cmd = event.content.split(" ")[0].removePrefix(properties.commandPrefix)
         val command = commandFactory.getCommand(cmd)
+
+        if(command == null){
+            event.reply(Embeds.infoWithDescriptionEmbedBuilder("Command not found", "If you are trying to use custom commands like save or saved these are now deprecated, use an alternative bot"), false)
+            return
+        }
         try {
             command.execute(event)
         } catch (e: Exception) {
