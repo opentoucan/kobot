@@ -20,52 +20,11 @@ import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 @Service
 class DiscordService(
     private val springGuildService: SpringGuildService,
-    private val xkcdService: XkcdService,
     private val properties: KotlinBotProperties,
     private val commands: List<ISlashCommand>
 ) {
 
     private val logger = LoggerFactory.getLogger(DiscordService::class.java)
-
-    fun sendLatestXkcd(): OperationResult<String, String> {
-        logger.info("Checking for new XKCD comic")
-
-        val xkcdChannels = springGuildService.getXkcdChannels() as Success
-
-        if (xkcdChannels.value.isEmpty())
-            return Success("Nothing to do")
-
-
-        when (val latestComic = xkcdService.getLatestComic()) {
-            is Failure -> {
-                logger.error(latestComic.reason)
-                return latestComic
-            }
-            is Success -> {
-                when (val last = xkcdService.getLast()) {
-                    is Failure -> {
-                        logger.error(last.reason)
-                        return last
-                    }
-                    is Success -> {
-                        logger.info("XKCD last comic recorded #${last}. Current #${latestComic.value.num}")
-                        if (last.value.num < latestComic.value.num) {
-                            xkcdService.setLast(latestComic.value.num)
-                            for (channel in xkcdChannels.value) {
-                                sendChannelMessage(
-                                    DiscordChannelEmbedMessage(
-                                        Embeds.createXkcdComicEmbed(latestComic.value, "Latest comic"),
-                                        channel
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return Success(xkcdChannels.value.joinToString(" "))
-    }
 
     fun sendUserMessage(msg: String, userId: String): PrivateChannel? {
         val user = DiscordObject.jda.retrieveUserById(userId).complete()
