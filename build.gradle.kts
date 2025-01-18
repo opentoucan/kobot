@@ -3,12 +3,12 @@ import me.qoomon.gradle.gitversioning.GitVersioningPluginConfig
 import me.qoomon.gradle.gitversioning.GitVersioningPluginConfig.*
 
 plugins {
-    id("org.springframework.boot") version "2.6.7"
-    id("io.spring.dependency-management") version "1.0.11.RELEASE"
-    kotlin("jvm") version "1.6.21"
-    kotlin("plugin.spring") version "1.6.21"
-    kotlin("kapt") version "1.6.21"
-    kotlin("plugin.serialization") version "1.6.21"
+    id("org.springframework.boot") version "2.6.15"
+    id("io.spring.dependency-management") version "1.1.7"
+    kotlin("jvm") version "2.1.0"
+    kotlin("plugin.spring") version "2.1.0"
+    kotlin("kapt") version "2.1.0"
+    kotlin("plugin.serialization") version "1.8.0"
     id("me.qoomon.git-versioning") version "4.2.1"
     id("org.barfuin.gradle.jacocolog") version "2.0.0"
     jacoco
@@ -49,6 +49,7 @@ tasks.jacocoTestReport {
 
 repositories {
     mavenCentral()
+    maven(url = "https://maven.lavalink.dev/releases")
     maven {
         name = "m2-dv8tion"
         url = uri("https://m2.dv8tion.net/releases")
@@ -56,24 +57,25 @@ repositories {
 }
 
 dependencies {
-    implementation(group = "joda-time", name = "joda-time", version = "2.10.14")
-    implementation(group="com.fasterxml.jackson.datatype", name="jackson-datatype-joda", version="2.13.2")
+    implementation(group = "joda-time", name = "joda-time", version = "2.13.0")
+    implementation(group="com.fasterxml.jackson.datatype", name="jackson-datatype-joda", version="2.18.2")
     implementation("net.dv8tion:JDA:4.4.1_353")
-    implementation("com.sedmelluq:lavaplayer:1.3.78")
-    implementation("org.springframework.boot:spring-boot-starter-security:2.6.7")
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:2.6.7")
-    implementation("org.springframework.boot:spring-boot-starter-web:2.6.7")
-    implementation("org.springframework.boot:spring-boot-starter-actuator:2.6.7")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.2")
+    implementation("dev.arbjerg:lavaplayer:2.2.2")
+    implementation("org.springframework.boot:spring-boot-starter-security:2.6.15")
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:2.6.15")
+    implementation("org.springframework.boot:spring-boot-starter-web:2.6.15")
+    implementation("org.springframework.boot:spring-boot-starter-actuator:2.6.15")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:1.0-M1-1.4.0-rc") // JVM dependency
-    implementation(group="io.ktor", name="ktor-client-cio", version="1.6.5")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    implementation("io.ktor:ktor-client-cio:3.0.3")
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
+    implementation("dev.lavalink.youtube:common:1.11.3")
 
-    developmentOnly("org.springframework.boot:spring-boot-devtools:2.6.7")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:2.5.6")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:2.5.6") {
+    developmentOnly("org.springframework.boot:spring-boot-devtools:2.6.15")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:2.6.15")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:2.6.15") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
     testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:3.4.6")
