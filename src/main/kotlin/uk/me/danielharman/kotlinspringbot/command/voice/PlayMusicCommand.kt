@@ -83,6 +83,8 @@ class PlayMusicCommand(
                 logger.info("Bot's voice channel: " + botVoiceChannel.value.id)
                 guild.audioManager.openAudioConnection(botVoiceChannel.value)
             }
+
+            is Failure<*> -> TODO()
         }
 
         if (voiceChannel != guild.audioManager.connectedChannel) {

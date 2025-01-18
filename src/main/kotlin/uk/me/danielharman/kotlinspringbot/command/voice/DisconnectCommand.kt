@@ -5,6 +5,7 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 
@@ -22,6 +23,7 @@ class DisconnectCommand(private val discordActionService: DiscordActionService) 
 
         when (val channel = discordActionService.getBotVoiceChannel(event.guild.id)) {
             is Success -> event.guild.audioManager.openAudioConnection(channel.value)
+            is Failure<*> -> TODO()
         }
 
         if (guild.audioManager.isConnected || event.guild.audioManager.queuedAudioConnection != null) {

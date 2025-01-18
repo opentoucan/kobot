@@ -3,6 +3,7 @@ package uk.me.danielharman.kotlinspringbot.provider
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
+import dev.lavalink.youtube.YoutubeAudioSourceManager
 import net.dv8tion.jda.api.entities.Guild
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.audio.GuildMusicManager
@@ -13,6 +14,7 @@ class GuildMusicPlayerProvider {
     private val musicManagers: HashMap<Long, GuildMusicManager> = hashMapOf()
 
     init {
+        playerManager.registerSourceManager(YoutubeAudioSourceManager())
         AudioSourceManagers.registerRemoteSources(playerManager)
         AudioSourceManagers.registerLocalSource(playerManager)
     }
