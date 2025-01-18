@@ -90,11 +90,6 @@ class SetupService(
                 is Failure -> logger.error("Discord connection failed to start ${dc.reason}")
                 is Success -> {
                     logger.info(dc.value)
-                    Timer().scheduleAtFixedRate(object : TimerTask() {
-                        override fun run() {
-                            discordService.sendLatestXkcd()
-                        }
-                    }, 3000, 10800000) // Start after 3 seconds, check every 3hrs
                     administratorService.logToAdmins("Bot started")
                     administratorService.logToAdmins("Syncing guilds with database")
                     discordService.syncGuildsWithDb()
