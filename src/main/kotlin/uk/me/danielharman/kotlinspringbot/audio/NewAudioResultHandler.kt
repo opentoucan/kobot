@@ -5,7 +5,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.VoiceChannel
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -55,7 +55,7 @@ class NewAudioResultHandler(
 
         musicManager.registerCallback (track.identifier, partialWrapper(::onErrorEvent, event))
 
-        if (!guild.audioManager.isConnected && !guild.audioManager.isAttemptingToConnect) {
+        if (!guild.audioManager.isConnected) {
             try {
                 guild.audioManager.openAudioConnection(voiceChannel)
             } catch (e: InsufficientPermissionException) {

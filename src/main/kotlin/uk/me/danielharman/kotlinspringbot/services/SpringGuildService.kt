@@ -145,30 +145,6 @@ class SpringGuildService(private val guildRepository: GuildRepository) {
         }
     }
 
-    fun setXkcdChannel(guildId: String, channelId: String): OperationResult<String, String> {
-        return when (val guild = createGuildIfNotExists(guildId)) {
-            is Failure -> guild
-            is Success -> {
-                guildRepository.setXkcdChannelId(guild.value.guildId, channelId)
-                    ?: return Failure("Could not update guild")
-                Success(channelId)
-            }
-        }
-    }
-
-    fun getXkcdChannel(guildId: String): OperationResult<String, String> {
-        return when (val guild = getGuild(guildId)) {
-            is Failure -> guild
-            is Success -> Success(guild.value.xkcdChannelId)
-        }
-    }
-
-    fun getXkcdChannels(): OperationResult<List<String>, String> {
-        val xkcdChannelIds = guildRepository.getXkcdChannelIds()
-        return Success(xkcdChannelIds.stream().map { g -> g.xkcdChannelId }.filter { s -> s.isNotEmpty() }
-            .collect(Collectors.toList()))
-    }
-
     fun deafenChannel(guildId: String, channelId: String): OperationResult<String, String> {
         return when (val guild = getGuild(guildId)) {
             is Failure -> guild

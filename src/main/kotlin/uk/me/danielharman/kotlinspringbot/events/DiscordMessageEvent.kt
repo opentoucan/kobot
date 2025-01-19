@@ -1,6 +1,7 @@
 package uk.me.danielharman.kotlinspringbot.events
 
 import net.dv8tion.jda.api.entities.*
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import java.io.InputStream
 
 abstract class DiscordMessageEvent(

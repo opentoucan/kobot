@@ -56,16 +56,12 @@ tasks.jacocoTestReport {
 repositories {
     mavenCentral()
     maven(url = "https://maven.lavalink.dev/releases")
-    maven {
-        name = "m2-dv8tion"
-        url = uri("https://m2.dv8tion.net/releases")
-    }
 }
 
 dependencies {
     implementation(group = "joda-time", name = "joda-time", version = "2.13.0")
     implementation(group="com.fasterxml.jackson.datatype", name="jackson-datatype-joda", version="2.18.2")
-    implementation("net.dv8tion:JDA:4.4.1_353")
+    implementation("net.dv8tion:JDA:5.2.2")
     implementation("dev.arbjerg:lavaplayer:2.2.2")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.4.1")
     implementation("org.springframework.boot:spring-boot-starter-web:3.4.1")

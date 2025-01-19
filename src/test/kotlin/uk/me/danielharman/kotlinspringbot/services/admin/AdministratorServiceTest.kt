@@ -1,6 +1,5 @@
 package uk.me.danielharman.kotlinspringbot.services.admin
 
-import io.kotest.assertions.fail
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
