@@ -8,7 +8,7 @@ plugins {
     kotlin("jvm") version "2.1.0"
     kotlin("plugin.spring") version "2.1.0"
     kotlin("kapt") version "2.1.0"
-    kotlin("plugin.serialization") version "1.8.0"
+    kotlin("plugin.serialization") version "2.1.0"
     id("me.qoomon.git-versioning") version "4.2.1"
     id("org.barfuin.gradle.jacocolog") version "2.0.0"
     jacoco
