@@ -1,6 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.command.moderators
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
@@ -14,7 +14,7 @@ class ListModeratorCommandsCommand(
 
     private val commandString = "commands"
 
-    override fun execute(event: GuildMessageReceivedEvent) {
+    override fun execute(event: MessageReceivedEvent) {
         val stringBuilder = StringBuilder()
 
         commands.sortedBy { c -> c.getCommandString() }.forEach { c ->
@@ -23,7 +23,7 @@ class ListModeratorCommandsCommand(
             }
         }
 
-        event.channel.sendMessage(
+        event.channel.sendMessageEmbeds(
             Embeds.infoEmbedBuilder().appendDescription(stringBuilder.toString()).setTitle("Moderator Commands").build()
         ).queue()
     }

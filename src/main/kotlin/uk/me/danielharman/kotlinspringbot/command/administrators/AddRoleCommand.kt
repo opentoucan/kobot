@@ -1,6 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.command.administrators
 
-import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
@@ -14,22 +14,22 @@ class AddRoleCommand(private val administratorService: AdministratorService) : I
 
     private val commandString = "addrole"
 
-    override fun execute(event: PrivateMessageReceivedEvent) {
+    override fun execute(event: MessageReceivedEvent) {
 
         when(administratorService.getBotAdministratorByDiscordId(event.author.id)){
-            is Failure -> event.channel.sendMessage(Embeds.createErrorEmbed("You are not an admin.")).queue()
+            is Failure -> event.channel.sendMessageEmbeds(Embeds.createErrorEmbed("You are not an admin.")).queue()
             is Success -> {
                 val split = event.message.contentRaw.split(' ')
 
                 if (split.size < 3) {
-                    event.channel.sendMessage(Embeds.createErrorEmbed("Not enough parameters")).queue()
+                    event.channel.sendMessageEmbeds(Embeds.createErrorEmbed("Not enough parameters")).queue()
                     return
                 }
 
                 val user = event.jda.getUserByTag(split[1])
 
                 if (user == null) {
-                    event.channel.sendMessage(Embeds.createErrorEmbed("User not found")).queue()
+                    event.channel.sendMessageEmbeds(Embeds.createErrorEmbed("User not found")).queue()
                     return
                 }
 
@@ -39,16 +39,16 @@ class AddRoleCommand(private val administratorService: AdministratorService) : I
                     val addRole = administratorService.addRole(event.author.id, user.id, role)
 
                     if (addRole is Failure) {
-                        event.channel.sendMessage(Embeds.createErrorEmbed(addRole.reason)).queue()
+                        event.channel.sendMessageEmbeds(Embeds.createErrorEmbed(addRole.reason)).queue()
                         return
                     }
                 }
                 catch (e: IllegalArgumentException){
-                    event.channel.sendMessage(Embeds.createErrorEmbed("No such role ${split[2]}. The current available roles are: ${Role.values().fold("") {acc, r -> "$acc $r" }}")).queue()
+                    event.channel.sendMessageEmbeds(Embeds.createErrorEmbed("No such role ${split[2]}. The current available roles are: ${Role.entries.fold("") { acc, r -> "$acc $r" }}")).queue()
                     return
                 }
 
-                event.channel.sendMessage(
+                event.channel.sendMessageEmbeds(
                     Embeds.infoEmbedBuilder().appendDescription("Added ${split[2]} to ${user.asTag}").build()
                 ).queue()
             }

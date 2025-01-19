@@ -1,6 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.command.administrators
 
-import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
@@ -13,22 +13,22 @@ class RemoveAdminCommand(private val administratorService: AdministratorService)
 
     private val commandString = "removeadmin"
 
-    override fun execute(event: PrivateMessageReceivedEvent) {
+    override fun execute(event: MessageReceivedEvent) {
 
         when (administratorService.getBotAdministratorByDiscordId(event.author.id)) {
-            is Failure -> event.channel.sendMessage(Embeds.createErrorEmbed("You are not an admin.")).queue()
+            is Failure -> event.channel.sendMessageEmbeds(Embeds.createErrorEmbed("You are not an admin.")).queue()
             is Success -> {
                 val split = event.message.contentRaw.split(' ')
 
                 if (split.size < 2) {
-                    event.channel.sendMessage(Embeds.createErrorEmbed("No enough parameters supplied")).queue()
+                    event.channel.sendMessageEmbeds(Embeds.createErrorEmbed("No enough parameters supplied")).queue()
                     return
                 }
 
                 val user = event.jda.getUserByTag(split[1])
 
                 if (user == null) {
-                    event.channel.sendMessage(Embeds.createErrorEmbed("User not found")).queue()
+                    event.channel.sendMessageEmbeds(Embeds.createErrorEmbed("User not found")).queue()
                     return
                 }
 
@@ -36,11 +36,11 @@ class RemoveAdminCommand(private val administratorService: AdministratorService)
                     administratorService.removeBotAdministrator(user.id)
 
                 if (removeAdministrator is Failure) {
-                    event.channel.sendMessage(Embeds.createErrorEmbed(removeAdministrator.reason)).queue()
+                    event.channel.sendMessageEmbeds(Embeds.createErrorEmbed(removeAdministrator.reason)).queue()
                     return
                 }
 
-                event.channel.sendMessage(
+                event.channel.sendMessageEmbeds(
                     Embeds.infoEmbedBuilder().appendDescription("Removed ${user.asTag}").build()
                 ).queue()
             }

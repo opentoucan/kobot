@@ -1,38 +1,33 @@
 package uk.me.danielharman.kotlinspringbot.events
 
-import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.interactions.commands.OptionType
+import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
+import net.dv8tion.jda.api.utils.FileUpload
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import java.io.InputStream
 
-class DiscordSlashCommandEvent(private val event: SlashCommandEvent) : DiscordMessageEvent(
+class DiscordSlashCommandEvent(private val event: SlashCommandInteraction) : DiscordMessageEvent(
     event.options.fold("") { acc, opt -> "$acc ${opt.asString}" },
     event.channel,
     event.user,
     event.guild
 ) {
 
-    private var hasReplied = false
-
     override fun reply(embed: MessageEmbed, invokerOnly: Boolean) {
-        if(!hasReplied){
-            event.reply(embed.title ?: "").setEphemeral(invokerOnly).complete()
-            hasReplied = true;
-        }
-        channel.sendMessageEmbeds(embed).queue()
+        val messageCreateBuilder = MessageCreateBuilder()
+        messageCreateBuilder.addEmbeds(embed)
+        event.reply(messageCreateBuilder.build()).setEphemeral(invokerOnly).complete()
     }
 
     override fun reply(file: InputStream, filename: String) {
-        if(!hasReplied){
-            event.reply("Your file sir").setEphemeral(true).complete()
-            hasReplied = true
-        }
+        val messageCreateBuilder = MessageCreateBuilder()
+        messageCreateBuilder.addFiles(FileUpload.fromData(file, filename))
         try {
-            this.channel.sendFile(file, filename).complete()
+            this.channel.sendMessage(messageCreateBuilder.build()).complete()
         } catch (e: ErrorResponseException){
             if (e.message?.contains("40005") == true){
                 this.reply(Embeds.createErrorEmbed("File was too large to send"), true)
@@ -43,13 +38,7 @@ class DiscordSlashCommandEvent(private val event: SlashCommandEvent) : DiscordMe
     }
 
     override fun reply(msg: String, invokerOnly: Boolean) {
-        if(!hasReplied) {
-            event.reply(msg).setEphemeral(invokerOnly).queue()
-            hasReplied = true;
-        }
-        else{
-            event.channel.sendMessage(msg).queue()
-        }
+        event.reply(msg).setEphemeral(invokerOnly).queue()
     }
 
     override fun getParamValue(commandParameter: CommandParameter): CommandParameter {
@@ -70,7 +59,7 @@ class DiscordSlashCommandEvent(private val event: SlashCommandEvent) : DiscordMe
                 OptionType.INTEGER -> get.asLong
                 OptionType.BOOLEAN -> get.asBoolean
                 OptionType.USER -> get.asUser
-                OptionType.CHANNEL -> get.asMessageChannel
+                OptionType.CHANNEL -> get.asChannel
                 OptionType.ROLE -> get.asRole
                 OptionType.MENTIONABLE -> get.asMentionable
                 else -> null

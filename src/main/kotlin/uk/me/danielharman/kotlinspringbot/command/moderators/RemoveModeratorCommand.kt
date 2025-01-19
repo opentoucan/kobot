@@ -1,6 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.command.moderators
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
@@ -14,9 +14,9 @@ class RemoveModeratorCommand(val springGuildService: SpringGuildService) : IMode
 
     override fun getCommandString(): String = commandString
 
-    override fun execute(event: GuildMessageReceivedEvent) {
+    override fun execute(event: MessageReceivedEvent) {
 
-        val mentionedUsers = event.message.mentionedUsers
+        val mentionedUsers = event.message.mentions.users
 
         if (mentionedUsers.size <= 0) {
             event.channel.sendMessage("No users were provided").queue()

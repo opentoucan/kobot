@@ -1,5 +1,7 @@
 package uk.me.danielharman.kotlinspringbot
 
+import jakarta.annotation.PostConstruct
+import jakarta.annotation.PreDestroy
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.joda.time.DateTime
 import org.slf4j.Logger
@@ -8,25 +10,18 @@ import org.springframework.boot.info.BuildProperties
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.data.mongodb.core.MongoOperations
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
 import uk.me.danielharman.kotlinspringbot.objects.ApplicationInfo
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
-import uk.me.danielharman.kotlinspringbot.security.DashboardUser
-import uk.me.danielharman.kotlinspringbot.security.DashboardUserRepository
 import uk.me.danielharman.kotlinspringbot.services.*
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
-import java.util.*
-import javax.annotation.PostConstruct
-import javax.annotation.PreDestroy
 
 @Component
 @Profile("!test")
 class SetupService(
-    private val userRepository: DashboardUserRepository,
     private val env: Environment,
     private val mongoOperations: MongoOperations,
     private val discordService: DiscordService,
@@ -50,32 +45,6 @@ class SetupService(
 
         if(ApplicationInfo.isDev){
             logger.info("Bot is running in development mode.")
-        }
-
-        val defaultUser = userRepository.findByUsername("admin")
-        //Setup dashboard user
-        if (defaultUser == null) {
-            logger.info("########################")
-            logger.info("No default user found. Creating a new user.")
-            val defaultUsername = "admin"
-            val randomUUID = UUID.randomUUID().toString()
-            logger.info("Username: $defaultUsername Password: $randomUUID")
-            userRepository.save(DashboardUser(defaultUsername, BCryptPasswordEncoder().encode(randomUUID)))
-            logger.info("########################")
-        }
-
-        if (activeProfiles.contains("dev")) {
-            val devUser = userRepository.findByUsername("dev")
-            //Setup dashboard user
-            if (devUser == null) {
-                logger.info("########################")
-                logger.info("No dev user found. Creating a new user.")
-                val defaultUsername = "dev"
-                val password = "password"
-                logger.info("Username: $defaultUsername Password: $password")
-                userRepository.save(DashboardUser(defaultUsername, BCryptPasswordEncoder().encode(password)))
-                logger.info("########################")
-            }
         }
 
         //Create default admin
