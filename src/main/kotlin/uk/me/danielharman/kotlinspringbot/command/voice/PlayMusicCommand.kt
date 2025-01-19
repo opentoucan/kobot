@@ -14,7 +14,6 @@ import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter.ParamType
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
-import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
@@ -22,7 +21,6 @@ class PlayMusicCommand(
     private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
     private val springGuildService: SpringGuildService,
     private val discordActionService: DiscordActionService,
-    private val discordCommandService: DiscordCommandService,
     private val kotlinBotProperties: KotlinBotProperties
 ) : Command(
     "play", "Play audio via Youtube, Vimeo etc.",
@@ -49,13 +47,6 @@ class PlayMusicCommand(
             val message = if (player.isPaused) "Paused" else "Playing"
             event.reply(message)
             return
-        }
-
-        if (url.startsWith(kotlinBotProperties.commandPrefix)){
-           url = when(val command = discordCommandService.getCommand(guild.id, url.drop(1))){
-               is Failure -> url
-               is Success -> command.value.content?.trim()
-           }
         }
 
         val member = guild.retrieveMember(event.author).complete()
