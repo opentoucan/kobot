@@ -1,6 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.command.administrators
 
-import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
@@ -12,7 +12,7 @@ class RestartCommand(private val administratorService: AdministratorService) : I
 
     private val commandString = "restart"
 
-    override fun execute(event: PrivateMessageReceivedEvent) {
+    override fun execute(event: MessageReceivedEvent) {
 
         when (val getAdmin = administratorService.getBotAdministratorByDiscordId(event.author.id)) {
             is Failure -> event.channel.sendMessage("You are not an admin").queue()

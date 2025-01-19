@@ -1,6 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.command.voice
 
-import net.dv8tion.jda.api.entities.VoiceChannel
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
@@ -63,7 +63,7 @@ class PlayMusicCommand(
             return
         }
 
-        voiceChannel = voiceState.channel
+        voiceChannel = voiceState.channel?.asVoiceChannel()
 
         if (voiceChannel == null) {
             event.reply("Can't find voice channel! Are you in a channel?")

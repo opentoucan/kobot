@@ -1,14 +1,13 @@
 package uk.me.danielharman.kotlinspringbot.services
 
 import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.PrivateChannel
-import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
-import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.Success
