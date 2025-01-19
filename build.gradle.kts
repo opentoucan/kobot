@@ -73,7 +73,6 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:3.0.3")
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
     implementation("dev.lavalink.youtube:common:1.11.3")
-
     developmentOnly("org.springframework.boot:spring-boot-devtools:3.4.1")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:3.4.1")
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.4.1") {
@@ -85,7 +84,6 @@ dependencies {
     testImplementation ("io.kotest:kotest-property-jvm:5.9.1")// for kotest property test
     testImplementation (group="org.mockito", name="mockito-core", version="5.15.2")
     testImplementation("org.hamcrest:hamcrest:3.0")
-
 }
 
 configurations {

@@ -48,7 +48,7 @@ class PlayMusicCommand(
             event.reply(message)
             return
         }
-
+        
         val member = guild.retrieveMember(event.author).complete()
 
         if (member == null) {
