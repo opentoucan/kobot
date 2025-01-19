@@ -16,7 +16,7 @@
   color: "B60205"
 - name: renovate/docker
   color: "0052CC"
-- name: renovate/gradle
+- name: renovate/gradle-version
   color: "006B75"
 
 # Semantic Types
