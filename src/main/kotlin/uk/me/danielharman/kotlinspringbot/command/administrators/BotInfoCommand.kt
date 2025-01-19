@@ -1,6 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.command.administrators
 
-import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.joda.time.DateTime
 import org.joda.time.Interval
 import org.joda.time.format.PeriodFormat
@@ -16,7 +16,7 @@ class BotInfoCommand(private val administratorService: AdministratorService) : I
 
     private val commandString = "info"
 
-    override fun execute(event: PrivateMessageReceivedEvent) {
+    override fun execute(event: MessageReceivedEvent) {
 
         val botStartTime = when(val r = administratorService.getBotStartTime()){
             is Failure -> DateTime.now()
@@ -31,7 +31,7 @@ class BotInfoCommand(private val administratorService: AdministratorService) : I
         val build = Embeds.infoEmbedBuilder()
             .appendDescription("Bot version: ${botVersion}\n Bot uptime: ${PeriodFormat.getDefault().print(duration)}")
             .build()
-        event.channel.sendMessage(build).queue()
+        event.channel.sendMessageEmbeds(build).queue()
 
     }
     override fun matchCommandString(str: String): Boolean = str == commandString

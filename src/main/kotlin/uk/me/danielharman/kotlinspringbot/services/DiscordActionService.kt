@@ -1,9 +1,9 @@
 package uk.me.danielharman.kotlinspringbot.services
 
 import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.GuildChannel
 import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.entities.VoiceChannel
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -61,7 +61,7 @@ class DiscordActionService {
                 return if (channel == null) {
                     Failure("Could not find channel")
                 } else {
-                    Success(channel)
+                    Success(channel.asVoiceChannel())
                 }
 
             }

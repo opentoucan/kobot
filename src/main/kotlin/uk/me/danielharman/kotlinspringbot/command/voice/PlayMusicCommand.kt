@@ -1,6 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.command.voice
 
-import net.dv8tion.jda.api.entities.VoiceChannel
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
@@ -14,7 +14,6 @@ import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter.ParamType
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
-import uk.me.danielharman.kotlinspringbot.services.DiscordCommandService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
@@ -22,7 +21,6 @@ class PlayMusicCommand(
     private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
     private val springGuildService: SpringGuildService,
     private val discordActionService: DiscordActionService,
-    private val discordCommandService: DiscordCommandService,
     private val kotlinBotProperties: KotlinBotProperties
 ) : Command(
     "play", "Play audio via Youtube, Vimeo etc.",
@@ -50,14 +48,7 @@ class PlayMusicCommand(
             event.reply(message)
             return
         }
-
-        if (url.startsWith(kotlinBotProperties.commandPrefix)){
-           url = when(val command = discordCommandService.getCommand(guild.id, url.drop(1))){
-               is Failure -> url
-               is Success -> command.value.content?.trim()
-           }
-        }
-
+        
         val member = guild.retrieveMember(event.author).complete()
 
         if (member == null) {
@@ -72,7 +63,7 @@ class PlayMusicCommand(
             return
         }
 
-        voiceChannel = voiceState.channel
+        voiceChannel = voiceState.channel?.asVoiceChannel()
 
         if (voiceChannel == null) {
             event.reply("Can't find voice channel! Are you in a channel?")

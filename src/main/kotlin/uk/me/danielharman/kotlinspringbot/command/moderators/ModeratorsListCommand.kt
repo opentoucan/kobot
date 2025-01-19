@@ -2,7 +2,7 @@ package uk.me.danielharman.kotlinspringbot.command.moderators
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
@@ -21,11 +21,11 @@ class ModeratorsListCommand(private val springGuildService: SpringGuildService,
 
     override fun getCommandString(): String = commandString
 
-    override fun execute(event: GuildMessageReceivedEvent) {
-        event.channel.sendMessage(createAdminUsersEmbed(event)).queue()
+    override fun execute(event: MessageReceivedEvent) {
+        event.channel.sendMessageEmbeds(createAdminUsersEmbed(event)).queue()
     }
 
-    private fun createAdminUsersEmbed(message: GuildMessageReceivedEvent): MessageEmbed {
+    private fun createAdminUsersEmbed(message: MessageReceivedEvent): MessageEmbed {
 
         return when (val guild = springGuildService.getGuild(message.guild.id)) {
             is Failure -> Embeds.createErrorEmbed("Could not find data for ${message.guild.name}")

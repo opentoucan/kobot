@@ -2,10 +2,12 @@ package uk.me.danielharman.kotlinspringbot.listeners
 
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.entities.channel.unions.DefaultGuildChannelUnion
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent
 import net.dv8tion.jda.api.requests.RestAction
-import net.dv8tion.jda.api.requests.restaction.MessageAction
+import net.dv8tion.jda.api.requests.restaction.CacheRestAction
+import net.dv8tion.jda.api.requests.restaction.MessageCreateAction
 import org.junit.jupiter.api.Test
 import org.mockito.InjectMocks
 import org.mockito.Mock
@@ -54,12 +56,14 @@ internal class GuildMessageListenerTest {
         val event = mock(GuildJoinEvent::class.java)
         val guild = mock(Guild::class.java)
         val springGuild = mock(SpringGuild::class.java)
-        val ownerRequest = mock(RestAction::class.java) as RestAction<Member>
-        val sendTyping = mock(RestAction::class.java) as RestAction<Void>
-        val messageRequest = mock(MessageAction::class.java)
+        val ownerRequest = mock(CacheRestAction::class.java) as CacheRestAction<Member>
+        val sendTyping = mock(CacheRestAction::class.java) as CacheRestAction<Void>
+        val messageRequest = mock(MessageCreateAction::class.java)
         val owner = mock(Member::class.java)
-        val defaultChannel = mock(TextChannel::class.java)
+        val defaultChannel = mock(DefaultGuildChannelUnion::class.java)
+        val textChannel = mock(TextChannel::class.java)
 
+        `when`(defaultChannel.asTextChannel()).thenReturn(textChannel)
         `when`(springGuild.privilegedUsers).thenReturn(listOf())
         `when`(event.guild).thenReturn(guild)
         `when`(guild.id).thenReturn("123")
@@ -72,9 +76,9 @@ internal class GuildMessageListenerTest {
         `when`(springGuildService.addModerator("123", "123")).thenReturn(Success(""))
 
         `when`(guild.defaultChannel).thenReturn(defaultChannel)
-        `when`(defaultChannel.canTalk()).thenReturn(true)
-        `when`(defaultChannel.sendTyping()).thenReturn(sendTyping)
-        `when`(defaultChannel.sendMessage(":wave:")).thenReturn(messageRequest)
+        `when`(textChannel.canTalk()).thenReturn(true)
+        `when`(textChannel.sendTyping()).thenReturn(sendTyping)
+        `when`(textChannel.sendMessage(":wave:")).thenReturn(messageRequest)
 
         listener.onGuildJoin(event)
 
@@ -84,10 +88,10 @@ internal class GuildMessageListenerTest {
         verify(ownerRequest, times(1)).complete()
         verify(springGuildService, times(1)).addModerator("123", "123")
         verify(guild, times(1)).defaultChannel
-        verify(defaultChannel, times(1)).canTalk()
-        verify(defaultChannel, times(1)).sendTyping()
+        verify(textChannel, times(1)).canTalk()
+        verify(textChannel, times(1)).sendTyping()
         verify(sendTyping, times(1)).queue()
-        verify(defaultChannel, times(1)).sendMessage(":wave:")
+        verify(textChannel, times(1)).sendMessage(":wave:")
         verify(messageRequest, times(1)).queue()
     }
 

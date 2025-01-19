@@ -1,6 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.command.moderators
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
@@ -16,7 +16,7 @@ class IsChannelDeafenedCommand(private val springGuildService: SpringGuildServic
 
     override fun getCommandString(): String = commandString
 
-    override fun execute(event: GuildMessageReceivedEvent) {
+    override fun execute(event: MessageReceivedEvent) {
 
         val message = when(val deafenedChannels = springGuildService.getDeafenedChannels(event.guild.id)){
             is Failure -> deafenedChannels.reason

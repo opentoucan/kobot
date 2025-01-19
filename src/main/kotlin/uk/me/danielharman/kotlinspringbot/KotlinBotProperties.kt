@@ -1,9 +1,7 @@
 package uk.me.danielharman.kotlinspringbot;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.ConstructorBinding;
 
-@ConstructorBinding
 @ConfigurationProperties("discord")
 data class KotlinBotProperties(
         var commandPrefix: String,

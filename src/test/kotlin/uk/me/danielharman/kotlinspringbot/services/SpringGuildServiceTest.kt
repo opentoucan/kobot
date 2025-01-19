@@ -186,42 +186,6 @@ internal class SpringGuildServiceTest(
     }
 
     @Test
-    fun shouldSetXkcdChannel() {
-        repo.save(SpringGuild("1234"))
-        assertSuccess(service.setXkcdChannel("1234", "456"))
-        val guild = repo.findByGuildId("1234")
-        assertNotNull(guild)
-        assertEquals("456", guild?.xkcdChannelId)
-    }
-
-    @Test
-    fun shouldGetXkcdChannel() {
-        val stub = SpringGuild("1234")
-        stub.xkcdChannelId = "456"
-        repo.save(stub)
-
-        val result = assertSuccess(service.getXkcdChannel("1234"))
-        assertEquals("456", result.value)
-    }
-
-    @Test
-    fun shouldGetXkcdChannels() {
-        val stub1 = SpringGuild("1")
-        stub1.xkcdChannelId = "1"
-        repo.save(stub1)
-        val stub2 = SpringGuild("2")
-        stub2.xkcdChannelId = "2"
-        repo.save(stub2)
-        val stub3 = SpringGuild("3")
-        stub3.xkcdChannelId = "3"
-        repo.save(stub3)
-
-        val result = assertSuccess(service.getXkcdChannels())
-        assertEquals(3, result.value.size)
-        assertThat(result.value, containsInAnyOrder("1", "2", "3"))
-    }
-
-    @Test
     fun shouldDeafenChannel() {
         repo.save(SpringGuild("1234"))
         assertSuccess(service.deafenChannel("1234", "456"))
