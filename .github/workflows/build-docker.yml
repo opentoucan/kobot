@@ -41,7 +41,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/kobot
           tags: |
             type=raw,value=latest
-            type=raw,value=RELEASE.${{ env.date }}
+            type=raw,value=${{ github.ref_name }}.${{ env.date }}
 
       - name: Build and push Docker image
         id: build-and-push
