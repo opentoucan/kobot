@@ -1,9 +1,9 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import me.qoomon.gradle.gitversioning.GitVersioningPluginConfig
 import me.qoomon.gradle.gitversioning.GitVersioningPluginConfig.*
 
 plugins {
-    id("org.springframework.boot") version "2.6.15"
+    `java-library`
+    id("org.springframework.boot") version "3.4.1"
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("jvm") version "2.1.0"
     kotlin("plugin.spring") version "2.1.0"
@@ -15,9 +15,9 @@ plugins {
 }
 
 group = "uk.me.danielharman"
-java.sourceCompatibility = JavaVersion.VERSION_17
 
 version = "Kobot"
+
 gitVersioning.apply(closureOf<GitVersioningPluginConfig> {
     tag(closureOf<VersionDescription>{
         versionFormat = "\${version} \${tag}"
@@ -27,12 +27,18 @@ gitVersioning.apply(closureOf<GitVersioningPluginConfig> {
     })
 })
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(23)
+    }
+}
+
 springBoot {
     buildInfo()
 }
 
 jacoco {
-    toolVersion = "0.8.7"
+    toolVersion = "0.8.12"
 }
 
 tasks.test {
@@ -61,10 +67,9 @@ dependencies {
     implementation(group="com.fasterxml.jackson.datatype", name="jackson-datatype-joda", version="2.18.2")
     implementation("net.dv8tion:JDA:4.4.1_353")
     implementation("dev.arbjerg:lavaplayer:2.2.2")
-    implementation("org.springframework.boot:spring-boot-starter-security:2.6.15")
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:2.6.15")
-    implementation("org.springframework.boot:spring-boot-starter-web:2.6.15")
-    implementation("org.springframework.boot:spring-boot-starter-actuator:2.6.15")
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.4.1")
+    implementation("org.springframework.boot:spring-boot-starter-web:3.4.1")
+    implementation("org.springframework.boot:spring-boot-starter-actuator:3.4.1")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
@@ -73,18 +78,24 @@ dependencies {
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
     implementation("dev.lavalink.youtube:common:1.11.3")
 
-    developmentOnly("org.springframework.boot:spring-boot-devtools:2.6.15")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:2.6.15")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:2.6.15") {
+    developmentOnly("org.springframework.boot:spring-boot-devtools:3.4.1")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:3.4.1")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:3.4.1") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
-    testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:3.4.6")
-    testImplementation("io.kotest:kotest-runner-junit5-jvm:4.6.3") // for kotest framework
-    testImplementation ("io.kotest:kotest-assertions-core-jvm:4.6.3")// for kotest core jvm assertions
-    testImplementation ("io.kotest:kotest-property-jvm:4.6.3")// for kotest property test
-    testImplementation (group="org.mockito", name="mockito-core", version="4.0.0")
-    testImplementation (group="org.mockito", name="mockito-inline", version="4.0.0")
-    testImplementation(group="org.hamcrest", name="hamcrest-all", version="1.3")
+    testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:4.18.1")
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:5.9.1") // for kotest framework
+    testImplementation ("io.kotest:kotest-assertions-core-jvm:5.9.1")// for kotest core jvm assertions
+    testImplementation ("io.kotest:kotest-property-jvm:5.9.1")// for kotest property test
+    testImplementation (group="org.mockito", name="mockito-core", version="5.15.2")
+    testImplementation("org.hamcrest:hamcrest:3.0")
+
+}
+
+configurations {
+    runtimeOnly {
+        exclude(group = "commons-logging", module = "commons-logging")
+    }
 }
 
 tasks.withType<Test> {
@@ -95,9 +106,8 @@ tasks.getByName<Jar>("jar") {
     enabled = false
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "17"
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
     }
 }
