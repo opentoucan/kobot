@@ -1,6 +1,5 @@
 package uk.me.danielharman.kotlinspringbot.services.admin
 
-import org.joda.time.DateTime
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.mongodb.core.MongoOperations
@@ -19,6 +18,7 @@ import uk.me.danielharman.kotlinspringbot.objects.ApplicationInfo
 import uk.me.danielharman.kotlinspringbot.repositories.admin.AdministratorRepository
 import uk.me.danielharman.kotlinspringbot.services.DiscordService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
+import java.time.LocalDateTime
 
 @Service
 class AdministratorService(
@@ -33,9 +33,9 @@ class AdministratorService(
 
     fun getBotVersion(): OperationResult<String, String> = Success(ApplicationInfo.version)
 
-    fun getBotStartTime(): OperationResult<DateTime, String> = Success(ApplicationInfo.startTime)
+    fun getBotStartTime(): OperationResult<LocalDateTime, String> = Success(ApplicationInfo.startTime)
 
-    fun getDiscordStartTime(): OperationResult<DateTime, String> = discordService.getDiscordStartTime()
+    fun getDiscordStartTime(): OperationResult<LocalDateTime, String> = discordService.getDiscordStartTime()
 
     fun getBotDiscordName(): OperationResult<String, String> = discordService.getBotName()
 

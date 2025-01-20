@@ -1,6 +1,5 @@
 package uk.me.danielharman.kotlinspringbot.services
 
-import org.joda.time.DateTime
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.mongodb.core.MongoTemplate
@@ -11,6 +10,7 @@ import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.models.Meme
 import uk.me.danielharman.kotlinspringbot.repositories.MemeRepository
+import java.time.LocalDateTime
 import java.util.stream.Collectors
 
 @Service
@@ -86,18 +86,18 @@ class MemeService(private val mongoTemplate: MongoTemplate,
 
     fun getTop3ByInterval(guildId: String, interval: MemeInterval): List<Meme> {
 
-        val now = DateTime.now()
+        val now = LocalDateTime.now()
 
         val lte: Criteria
         val gte: Criteria
         when (interval) {
             MemeInterval.WEEK -> {
-                lte = Criteria("created").lte(now.toDate())
-                gte = lte.gte(DateTime.now().minusDays(7))
+                lte = Criteria("created").lte(now)
+                gte = lte.gte(LocalDateTime.now().minusDays(7))
             }
             MemeInterval.MONTH -> {
-                lte = Criteria("created").lte(now.toDate())
-                gte = lte.gte(DateTime.now().minusMonths(1))
+                lte = Criteria("created").lte(now)
+                gte = lte.gte(LocalDateTime.now().minusMonths(1))
             }
         }
 

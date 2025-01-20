@@ -3,7 +3,6 @@ package uk.me.danielharman.kotlinspringbot.services
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
-import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
@@ -15,6 +14,7 @@ import uk.me.danielharman.kotlinspringbot.models.DiscordChannelEmbedMessage
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelMessage
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
+import java.time.LocalDateTime
 
 @Service
 class DiscordService(
@@ -55,7 +55,7 @@ class DiscordService(
 
     fun closeDiscordConnection(): OperationResult<String, String> {
         DiscordObject.teardown()
-        return Success("Discord connection down at ${DateTime.now()}")
+        return Success("Discord connection down at ${LocalDateTime.now()}")
     }
 
     fun startDiscordConnection(): OperationResult<String, String> {
@@ -66,7 +66,7 @@ class DiscordService(
         return Failure("Discord connection is already up. Started at ${DiscordObject.startTime?.toString()}")
     }
 
-    fun getDiscordStartTime(): OperationResult<DateTime, String> {
+    fun getDiscordStartTime(): OperationResult<LocalDateTime, String> {
         val startTime = DiscordObject.startTime ?: return Failure("Failed to get start time")
         return Success(startTime)
     }
