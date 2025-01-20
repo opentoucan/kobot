@@ -8,7 +8,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.requests.GatewayIntent
-import org.joda.time.DateTime
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
@@ -16,12 +15,13 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter.ParamType
 import java.lang.RuntimeException
+import java.time.LocalDateTime
 
 object DiscordObject {
 
     lateinit var jda: JDA
     var initialised: Boolean = false
-    var startTime: DateTime? = null
+    var startTime: LocalDateTime? = null
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
     var listeners: List<ListenerAdapter> = listOf()
 
@@ -53,7 +53,7 @@ object DiscordObject {
             builder.addEventListeners(listener)
         }
         initialised = true
-        startTime = DateTime.now()
+        startTime = LocalDateTime.now()
         jda = builder.build().awaitReady()
 
         //Don't register commands when running in dev mode

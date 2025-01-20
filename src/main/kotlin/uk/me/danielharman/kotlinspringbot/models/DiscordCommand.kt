@@ -1,12 +1,12 @@
 package uk.me.danielharman.kotlinspringbot.models
 
-import org.joda.time.DateTime
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import java.time.LocalDateTime
 
 @Document(collection = "DiscordCommands")
 class DiscordCommand(val guildId: String, val key: String, val content: String?, val fileName: String?,
-                     val type: CommandType, val creatorId: String, val created: DateTime = DateTime.now()) {
+                     val type: CommandType, val creatorId: String, val created: LocalDateTime = LocalDateTime.now()) {
 
     enum class CommandType { STRING, FILE }
 

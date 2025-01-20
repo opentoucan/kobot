@@ -1,8 +1,8 @@
 package uk.me.danielharman.kotlinspringbot.models
 
-import org.joda.time.DateTime
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import java.time.LocalDateTime
 
 @Document(collection = "memes")
 data class Meme(var messageId: String, var guildId: String, var userId: String, var url: String, var channelId: String, var urlType: UrlType = UrlType.Image) {
@@ -19,7 +19,7 @@ data class Meme(var messageId: String, var guildId: String, var userId: String, 
 
     var downvoters: List<String> =  listOf()
 
-    var created: DateTime =  DateTime.now()
+    var created: LocalDateTime =  LocalDateTime.now()
 
     val score: Int
         get() = upvoters.size - downvoters.size

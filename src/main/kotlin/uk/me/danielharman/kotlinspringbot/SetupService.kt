@@ -3,7 +3,6 @@ package uk.me.danielharman.kotlinspringbot
 import jakarta.annotation.PostConstruct
 import jakarta.annotation.PreDestroy
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import org.joda.time.DateTime
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.boot.info.BuildProperties
@@ -18,6 +17,7 @@ import uk.me.danielharman.kotlinspringbot.objects.ApplicationInfo
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 import uk.me.danielharman.kotlinspringbot.services.*
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
+import java.time.LocalDateTime
 
 @Component
 @Profile("!test")
@@ -69,7 +69,7 @@ class SetupService(
         }
 
         //Kotlin objects are lazy
-        ApplicationInfo.startTime = DateTime.now()
+        ApplicationInfo.startTime = LocalDateTime.now()
         ApplicationInfo.version = buildProperties.version
     }
 
