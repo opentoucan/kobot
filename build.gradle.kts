@@ -59,8 +59,6 @@ repositories {
 }
 
 dependencies {
-    implementation(group = "joda-time", name = "joda-time", version = "2.13.0")
-    implementation(group="com.fasterxml.jackson.datatype", name="jackson-datatype-joda", version="2.18.2")
     implementation("net.dv8tion:JDA:5.2.2")
     implementation("dev.arbjerg:lavaplayer:2.2.2")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.4.1")
@@ -73,6 +71,7 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:3.0.3")
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
     implementation("dev.lavalink.youtube:common:1.11.3")
+    implementation("org.apache.commons:commons-lang3:3.17.0")
     developmentOnly("org.springframework.boot:spring-boot-devtools:3.4.1")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:3.4.1")
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.4.1") {

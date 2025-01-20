@@ -1,10 +1,11 @@
 package uk.me.danielharman.kotlinspringbot.objects
 
-import org.joda.time.DateTime
+import java.time.LocalDateTime
+
 
 object ApplicationInfo {
 
-    var startTime: DateTime = DateTime.now()
+    var startTime: LocalDateTime = LocalDateTime.now()
     var version: String = "dev"
     var isDev: Boolean = false;
 
