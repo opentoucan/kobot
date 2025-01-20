@@ -1,8 +1,7 @@
 package uk.me.danielharman.kotlinspringbot.command.voice
 
 import net.dv8tion.jda.api.EmbedBuilder
-import org.joda.time.Period
-import org.joda.time.format.PeriodFormatterBuilder
+import org.apache.commons.lang3.time.DurationFormatUtils
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
@@ -32,24 +31,9 @@ class TrackInfoCommand(private val guildMusicPlayerProvider: GuildMusicPlayerPro
         }
         val audioTrack = guildAudioPlayer.player.playingTrack
 
-        val trackDuration = Period(audioTrack.duration)
-        val playedDuration = Period(audioTrack.position)
+        val fmt = "mm:ss"
 
-        val fmt = PeriodFormatterBuilder()
-            .printZeroAlways()
-            .minimumPrintedDigits(2)
-            .appendHours()
-            .appendSeparator(":")
-            .printZeroAlways()
-            .minimumPrintedDigits(2)
-            .appendMinutes()
-            .appendSeparator(":")
-            .printZeroAlways()
-            .minimumPrintedDigits(2)
-            .appendSeconds()
-            .toFormatter()
-
-        val durationStr = "${fmt.print(playedDuration)}/${fmt.print(trackDuration)}"
+        val durationStr = "${DurationFormatUtils.formatDuration(audioTrack.position, fmt)}/${DurationFormatUtils.formatDuration(audioTrack.duration, fmt)}"
 
         event.reply(
             EmbedBuilder()

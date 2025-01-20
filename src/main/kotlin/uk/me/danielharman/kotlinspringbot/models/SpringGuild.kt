@@ -1,9 +1,9 @@
 package uk.me.danielharman.kotlinspringbot.models
 
 import org.bson.types.ObjectId
-import org.joda.time.DateTime
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import java.time.LocalDateTime
 
 @Document(collection = "springGuild")
 data class SpringGuild(val guildId: String) {
@@ -15,7 +15,7 @@ data class SpringGuild(val guildId: String) {
 
     data class CustomCommand(
         val value: String, val type: CommandType,
-        val creatorId: String, val created: DateTime,
+        val creatorId: String, val created: LocalDateTime,
         var keyword: String = "", var id: String = ObjectId.get().toHexString()
     )
 
