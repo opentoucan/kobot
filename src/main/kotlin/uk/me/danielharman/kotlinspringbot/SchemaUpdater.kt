@@ -1,6 +1,5 @@
 package uk.me.danielharman.kotlinspringbot
 
-import org.joda.time.DateTime
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.mongodb.core.MongoOperations
@@ -10,6 +9,7 @@ import org.springframework.data.mongodb.core.query.Update
 import org.springframework.data.mongodb.core.query.Update.update
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
+import java.time.LocalDateTime
 
 class SchemaUpdater(private val mongoOperations: MongoOperations) {
 
@@ -58,7 +58,7 @@ class SchemaUpdater(private val mongoOperations: MongoOperations) {
                         update.set(
                             "customCommands.${cmd.key}", SpringGuild.CustomCommand(
                                 cmd.value,
-                                SpringGuild.CommandType.STRING, "", DateTime.now()
+                                SpringGuild.CommandType.STRING, "", LocalDateTime.now()
                             )
                         )
                     }
