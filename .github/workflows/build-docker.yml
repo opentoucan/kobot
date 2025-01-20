@@ -1,12 +1,12 @@
 on:
   push:
-    branches: [ 'main', 'dev' ]
+    branches: [ 'main', 'release' ]
     paths-ignore:
       - '.github/**'
       - 'docs/**'
       - '**.md'
   pull_request:
-    branches: [ 'main', 'dev' ]
+    branches: [ 'main', 'release' ]
     paths-ignore:
       - '.github/**'
       - 'docs/**'
@@ -49,6 +49,6 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          push: ${{ github.ref_name == 'main' || github.ref_name  == 'dev'  }}
+          push: ${{ github.ref_name == 'main' || github.ref_name  == 'release'  }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
