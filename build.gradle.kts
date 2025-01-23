@@ -3,7 +3,7 @@ import me.qoomon.gradle.gitversioning.GitVersioningPluginConfig.*
 
 plugins {
     `java-library`
-    id("org.springframework.boot") version "3.4.1"
+    id("org.springframework.boot") version "3.4.2"
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("jvm") version "2.1.0"
     kotlin("plugin.spring") version "2.1.0"
@@ -61,9 +61,9 @@ repositories {
 dependencies {
     implementation("net.dv8tion:JDA:5.2.2")
     implementation("dev.arbjerg:lavaplayer:2.2.2")
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.4.1")
-    implementation("org.springframework.boot:spring-boot-starter-web:3.4.1")
-    implementation("org.springframework.boot:spring-boot-starter-actuator:3.4.1")
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.4.2")
+    implementation("org.springframework.boot:spring-boot-starter-web:3.4.2")
+    implementation("org.springframework.boot:spring-boot-starter-actuator:3.4.2")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
@@ -72,9 +72,9 @@ dependencies {
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
     implementation("dev.lavalink.youtube:common:1.11.3")
     implementation("org.apache.commons:commons-lang3:3.17.0")
-    developmentOnly("org.springframework.boot:spring-boot-devtools:3.4.1")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:3.4.1")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:3.4.1") {
+    developmentOnly("org.springframework.boot:spring-boot-devtools:3.4.2")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:3.4.2")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:3.4.2") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
     testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:4.18.1")
