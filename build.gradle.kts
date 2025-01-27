@@ -59,7 +59,7 @@ repositories {
 }
 
 dependencies {
-    implementation("net.dv8tion:JDA:5.2.2")
+    implementation("net.dv8tion:JDA:5.2.3")
     implementation("dev.arbjerg:lavaplayer:2.2.2")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.4.2")
     implementation("org.springframework.boot:spring-boot-starter-web:3.4.2")
