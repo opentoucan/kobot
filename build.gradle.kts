@@ -5,10 +5,10 @@ plugins {
     `java-library`
     id("org.springframework.boot") version "3.4.2"
     id("io.spring.dependency-management") version "1.1.7"
-    kotlin("jvm") version "2.1.0"
-    kotlin("plugin.spring") version "2.1.0"
-    kotlin("kapt") version "2.1.0"
-    kotlin("plugin.serialization") version "2.1.0"
+    kotlin("jvm") version "2.1.10"
+    kotlin("plugin.spring") version "2.1.10"
+    kotlin("kapt") version "2.1.10"
+    kotlin("plugin.serialization") version "2.1.10"
     id("me.qoomon.git-versioning") version "4.3.0"
     id("org.barfuin.gradle.jacocolog") version "3.1.0"
     jacoco
