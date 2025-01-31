@@ -12,11 +12,14 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import org.apache.commons.io.IOUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
+import uk.me.danielharman.kotlinspringbot.events.integration.MemePostedIntegrationEvent
+import uk.me.danielharman.kotlinspringbot.events.integration.MemePostedIntegrationEventPublisher
 import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
@@ -29,8 +32,11 @@ import uk.me.danielharman.kotlinspringbot.models.Meme
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
+import java.awt.Color
+import java.net.URI
 import java.util.*
 import java.util.regex.Pattern
+
 
 @Component
 class GuildMessageListener(
@@ -39,7 +45,8 @@ class GuildMessageListener(
     private val commandFactory: CommandFactory,
     private val properties: KotlinBotProperties,
     private val memeService: MemeService,
-    private val discordService: DiscordActionService
+    private val discordService: DiscordActionService,
+    private val memePostedIntegrationEventPublisher: MemePostedIntegrationEventPublisher
 ) : ListenerAdapter() {
 
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
@@ -265,6 +272,31 @@ class GuildMessageListener(
 
                 if (memeChannels.contains(event.channel.id)) {
                     createMeme(event.message, event.guild.id, event.author.id, event.channel.id)
+
+                    if(event.message.attachments.isNotEmpty()){
+                        val memeFileUrl = URI(message.attachments[0].url).toURL()
+
+                        val content = memeFileUrl.openConnection().contentType
+                        if(content.startsWith("image")) {
+
+                            val authorName = event.author.effectiveName
+                            val rgb = event.member?.color?.rgb ?: Color.WHITE.rgb
+                            val colour = "#${Integer.toHexString(rgb).substring(2)}"
+                            val avatar = Base64.getEncoder().encodeToString(URI(event.author.effectiveAvatarUrl).toURL().openStream().readBytes())
+
+                            memePostedIntegrationEventPublisher.publish(
+                                MemePostedIntegrationEvent(
+                                    authorName,
+                                    colour,
+                                    avatar,
+                                    Base64.getEncoder().encodeToString(IOUtils.toByteArray((memeFileUrl).openStream())),
+                                    event.guild.id,
+                                    event.channel.id,
+                                    event.messageId
+                                )
+                            )
+                        }
+                    }
                 }
 
                 val words = message.contentStripped

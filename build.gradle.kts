@@ -59,24 +59,26 @@ repositories {
 }
 
 dependencies {
-    implementation("net.dv8tion:JDA:5.2.3")
-    implementation("dev.arbjerg:lavaplayer:2.2.2")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.4.2")
     implementation("org.springframework.boot:spring-boot-starter-web:3.4.2")
     implementation("org.springframework.boot:spring-boot-starter-actuator:3.4.2")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
-    implementation("io.ktor:ktor-client-cio:3.0.3")
-    implementation("me.xdrop:fuzzywuzzy:1.4.0")
-    implementation("dev.lavalink.youtube:common:1.11.3")
-    implementation("org.apache.commons:commons-lang3:3.17.0")
+    implementation("org.springframework.boot:spring-boot-starter-amqp:3.4.2")
     developmentOnly("org.springframework.boot:spring-boot-devtools:3.4.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:3.4.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.4.2") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
+    implementation("net.dv8tion:JDA:5.2.3")
+    implementation("dev.arbjerg:lavaplayer:2.2.2")
+    implementation("dev.lavalink.youtube:common:1.11.3")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.1.10")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.10")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    implementation("io.ktor:ktor-client-cio:3.0.3")
+    implementation("me.xdrop:fuzzywuzzy:1.4.0")
+    implementation("org.apache.commons:commons-lang3:3.17.0")
+    implementation("commons-io:commons-io:2.18.0")
     testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:4.18.1")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:5.9.1") // for kotest framework
     testImplementation ("io.kotest:kotest-assertions-core-jvm:5.9.1")// for kotest core jvm assertions
