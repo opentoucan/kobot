@@ -70,7 +70,7 @@ dependencies {
     }
     implementation("net.dv8tion:JDA:5.2.3")
     implementation("dev.arbjerg:lavaplayer:2.2.2")
-    implementation("dev.lavalink.youtube:common:1.11.3")
+    implementation("dev.lavalink.youtube:common:1.11.4")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2")
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.1.10")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.10")
