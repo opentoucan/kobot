@@ -3,6 +3,7 @@ package uk.me.danielharman.kotlinspringbot.services
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.utils.FileUpload
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
@@ -35,7 +36,12 @@ class DiscordService(
     fun sendChannelMessage(msg: DiscordChannelMessage): OperationResult<TextChannel, String> {
         val channel =
             DiscordObject.jda.getTextChannelById(msg.channelId) ?: return Failure("No such channel ${msg.channelId}")
-        channel.sendMessage(msg.msg).queue()
+        val fileUploads = mutableListOf<FileUpload>()
+        for (file in msg.attachments) {
+            fileUploads.add(FileUpload.fromData(file.content, file.fileName))
+        }
+
+        channel.sendMessage(msg.msg).addFiles(fileUploads).queue()
         return Success(channel)
     }
 
