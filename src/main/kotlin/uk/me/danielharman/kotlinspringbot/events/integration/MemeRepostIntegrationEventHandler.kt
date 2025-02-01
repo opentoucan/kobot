@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelAttachment
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelMessage
 import uk.me.danielharman.kotlinspringbot.services.DiscordService
+import java.text.DecimalFormat
 import java.util.*
 
 
@@ -43,9 +44,11 @@ class MemeRepostIntegrationEventHandler(
         val memeRepostEvent = format.decodeFromString<MemeRepostIntegrationEvent>(content)
         val bytes = Base64.getDecoder().decode(memeRepostEvent.replyImage)
 
-        val repostLink = memeRepostEvent.links.sortedBy { x -> x.score }.first()
+        val repostLink = memeRepostEvent.links.sortedBy { x -> x.score }
+        val scorePercentageFormat = DecimalFormat("##.##")
+
         val discordMessage = DiscordChannelMessage(
-            "Thou hath reposted! \n https://discord.com/channels/${repostLink.guildId}/${repostLink.channelId}/${repostLink.messageId}",
+            "Thou hath reposted! \n ${repostLink.joinToString("\n"){"https://discord.com/channels/${it.guildId}/${it.channelId}/${it.messageId} score: ${scorePercentageFormat.format(it.score * 100)}%"}}",
             memeRepostEvent.guildId,
             memeRepostEvent.channelId,
             attachments = listOf(DiscordChannelAttachment("repost.png", bytes)))
