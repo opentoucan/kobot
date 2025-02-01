@@ -71,7 +71,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
     implementation("io.ktor:ktor-client-cio:3.0.3")
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
-    implementation("dev.lavalink.youtube:common:1.11.3")
     implementation("org.apache.commons:commons-lang3:3.17.0")
     developmentOnly("org.springframework.boot:spring-boot-devtools:3.4.1")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:3.4.1")
