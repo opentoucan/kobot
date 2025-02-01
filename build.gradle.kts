@@ -64,6 +64,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.4.1")
     implementation("org.springframework.boot:spring-boot-starter-web:3.4.1")
     implementation("org.springframework.boot:spring-boot-starter-actuator:3.4.1")
+    implementation("dev.lavalink.youtube:common:1.11.4")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
