@@ -2,7 +2,6 @@ package uk.me.danielharman.kotlinspringbot.command.voice
 
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
@@ -12,6 +11,7 @@ import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter.ParamType
+import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
@@ -22,10 +22,12 @@ class PlayMusicCommand(
     private val springGuildService: SpringGuildService,
     private val discordActionService: DiscordActionService,
     private val kotlinBotProperties: KotlinBotProperties
-) : Command(
-    "play", "Play audio via Youtube, Vimeo etc.",
-    listOf(CommandParameter(0, "url", ParamType.Word, "Url to play music from"))
-), ISlashCommand {
+) :
+    Command(
+        "play",
+        "Play audio via Youtube, Vimeo etc.",
+        listOf(CommandParameter(0, "url", ParamType.Word, "Url to play music from"))),
+    ISlashCommand {
 
     override fun execute(event: DiscordMessageEvent) {
         val voiceChannel: VoiceChannel?
@@ -48,7 +50,7 @@ class PlayMusicCommand(
             event.reply(message)
             return
         }
-        
+
         val member = guild.retrieveMember(event.author).complete()
 
         if (member == null) {
@@ -83,12 +85,12 @@ class PlayMusicCommand(
             guild.audioManager.openAudioConnection(voiceChannel)
         }
 
-        logger.info("Connected voice channel from manager: " + guild.audioManager.connectedChannel?.id)
+        logger.info(
+            "Connected voice channel from manager: " + guild.audioManager.connectedChannel?.id)
         val musicManager = guildMusicPlayerProvider.getGuildAudioPlayer(voiceChannel.guild)
         guildMusicPlayerProvider.playerManager.loadItemOrdered(
             musicManager,
             url,
-            NewAudioResultHandler(voiceChannel, musicManager, event, springGuildService, guild)
-        )
+            NewAudioResultHandler(voiceChannel, musicManager, event, springGuildService, guild))
     }
 }

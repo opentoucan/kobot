@@ -41,9 +41,9 @@ class SummonCommand : Command("summon", "Make the bot join the voice channel"), 
         try {
             audioManager.openAudioConnection(voiceChannel)
         } catch (e: InsufficientPermissionException) {
-            logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
+            logger.error(
+                "Bot encountered an exception when attempting to join a voice channel ${e.message}")
             event.reply("I don't have permission to join.")
         }
     }
-
 }

@@ -48,16 +48,9 @@ class VoiceMoveCommand(private val discordActionService: DiscordActionService) :
             event.reply("Voice move enabled!")
             discordActionService.enableVoiceMove()
         } catch (e: InsufficientPermissionException) {
-            logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
+            logger.error(
+                "Bot encountered an exception when attempting to join a voice channel ${e.message}")
             event.channel.sendMessage("I don't have permission to join.").queue()
         }
-
     }
-
 }
-
-
-
-
-
-

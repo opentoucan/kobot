@@ -4,16 +4,17 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
-class ModeratorsListCommand(private val springGuildService: SpringGuildService,
-                            private val properties: KotlinBotProperties
+class ModeratorsListCommand(
+    private val springGuildService: SpringGuildService,
+    private val properties: KotlinBotProperties
 ) : IModeratorCommand {
 
     private val commandString: String = "moderators"
@@ -32,9 +33,11 @@ class ModeratorsListCommand(private val springGuildService: SpringGuildService,
             is Failure -> Embeds.createErrorEmbed("Could not find data for ${message.guild.name}")
             is Success -> {
                 val stringBuilder = StringBuilder()
-                val primaryAdmin = message.guild.retrieveMemberById(properties.primaryPrivilegedUserId).complete()
+                val primaryAdmin =
+                    message.guild.retrieveMemberById(properties.primaryPrivilegedUserId).complete()
 
-                stringBuilder.append("Bot controller:  ${primaryAdmin.nickname ?: primaryAdmin.user.asTag}\n")
+                stringBuilder.append(
+                    "Bot controller:  ${primaryAdmin.nickname ?: primaryAdmin.user.asTag}\n")
 
                 guild.value.privilegedUsers.forEach { s ->
                     run {
@@ -49,7 +52,6 @@ class ModeratorsListCommand(private val springGuildService: SpringGuildService,
                     .setTitle("Moderators for ${message.guild.name}")
                     .build()
             }
-
         }
     }
 }

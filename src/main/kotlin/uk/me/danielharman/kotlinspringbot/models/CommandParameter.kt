@@ -20,7 +20,7 @@ data class CommandParameter(
         Mentionable
     }
 
-    fun reset(){
+    fun reset() {
         value = null
         error = false
     }
@@ -71,5 +71,4 @@ data class CommandParameter(
         }
         return null
     }
-
 }

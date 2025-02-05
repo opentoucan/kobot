@@ -7,11 +7,8 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Service
 
-
 @Service
-class MemePostedIntegrationEventPublisher(
-    private val rabbitTemplate: RabbitTemplate
-) {
+class MemePostedIntegrationEventPublisher(private val rabbitTemplate: RabbitTemplate) {
 
     val topicExchangeName: String = "meme-posted-exchange"
 

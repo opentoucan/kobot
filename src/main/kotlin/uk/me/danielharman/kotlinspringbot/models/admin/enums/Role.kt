@@ -5,5 +5,5 @@ enum class Role {
     Global,
     InspectAdmin,
     ManageAdmin,
-    Logging //Send logs in PM (startup, restarting etc)
+    Logging // Send logs in PM (startup, restarting etc)
 }

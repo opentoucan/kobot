@@ -1,5 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.command.voice
 
+import java.awt.Color
 import net.dv8tion.jda.api.EmbedBuilder
 import org.apache.commons.lang3.time.DurationFormatUtils
 import org.springframework.stereotype.Component
@@ -8,7 +9,6 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
-import java.awt.Color
 
 @Component
 class TrackInfoCommand(private val guildMusicPlayerProvider: GuildMusicPlayerProvider) :
@@ -24,16 +24,19 @@ class TrackInfoCommand(private val guildMusicPlayerProvider: GuildMusicPlayerPro
 
         if (guildAudioPlayer.player.playingTrack == null) {
             event.reply(
-                EmbedBuilder().setTitle("Error").setColor(Color.red)
-                    .setDescription("Not playing anything").build()
-            )
+                EmbedBuilder()
+                    .setTitle("Error")
+                    .setColor(Color.red)
+                    .setDescription("Not playing anything")
+                    .build())
             return
         }
         val audioTrack = guildAudioPlayer.player.playingTrack
 
         val fmt = "mm:ss"
 
-        val durationStr = "${DurationFormatUtils.formatDuration(audioTrack.position, fmt)}/${DurationFormatUtils.formatDuration(audioTrack.duration, fmt)}"
+        val durationStr =
+            "${DurationFormatUtils.formatDuration(audioTrack.position, fmt)}/${DurationFormatUtils.formatDuration(audioTrack.duration, fmt)}"
 
         event.reply(
             EmbedBuilder()
@@ -42,7 +45,6 @@ class TrackInfoCommand(private val guildMusicPlayerProvider: GuildMusicPlayerPro
                 .addField("Track Title", audioTrack.info.title, false)
                 .addField("Track Author", audioTrack.info.author, false)
                 .addField("Track Length", durationStr, false)
-                .build()
-        )
+                .build())
     }
 }

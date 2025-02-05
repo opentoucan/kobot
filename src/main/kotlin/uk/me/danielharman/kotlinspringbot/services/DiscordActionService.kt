@@ -26,7 +26,6 @@ class DiscordActionService {
         } else {
             Success(channel)
         }
-
     }
 
     fun getSelfUser(): OperationResult<User, String> {
@@ -35,7 +34,7 @@ class DiscordActionService {
 
     fun getUserById(creatorId: String): OperationResult<User, String> {
 
-        if(creatorId.isEmpty()){
+        if (creatorId.isEmpty()) {
             return Failure("Failed to get user: Id was empty")
         }
 
@@ -57,13 +56,16 @@ class DiscordActionService {
             is Failure -> Failure(guild.reason)
             is Success -> {
                 val channel =
-                    guild.value.retrieveMemberById(DiscordObject.jda.selfUser.id).complete()?.voiceState?.channel
+                    guild.value
+                        .retrieveMemberById(DiscordObject.jda.selfUser.id)
+                        .complete()
+                        ?.voiceState
+                        ?.channel
                 return if (channel == null) {
                     Failure("Could not find channel")
                 } else {
                     Success(channel.asVoiceChannel())
                 }
-
             }
         }
     }
@@ -71,5 +73,4 @@ class DiscordActionService {
     fun enableVoiceMove() {
         DiscordObject.jda.addEventListener(MoveListener())
     }
-
 }

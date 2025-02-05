@@ -18,16 +18,14 @@ class AddModeratorCommand(private val springGuildService: SpringGuildService) : 
 
         val mentionedUsers = event.message.mentions.users
 
-        if(mentionedUsers.size <= 0)
-        {
+        if (mentionedUsers.size <= 0) {
             event.channel.sendMessage("No users were provided").queue()
             return
         }
-        
+
         mentionedUsers.forEach { u ->
-                springGuildService.addModerator(event.guild.id, u.id)
-                event.channel.sendMessage("Added ${u.asTag}").queue()
+            springGuildService.addModerator(event.guild.id, u.id)
+            event.channel.sendMessage("Added ${u.asTag}").queue()
         }
     }
-
 }

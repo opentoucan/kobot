@@ -18,6 +18,7 @@ class GuildMusicPlayerProvider {
         AudioSourceManagers.registerRemoteSources(playerManager)
         AudioSourceManagers.registerLocalSource(playerManager)
     }
+
     @Synchronized
     fun getGuildAudioPlayer(guild: Guild): GuildMusicManager {
         val guildId = guild.idLong

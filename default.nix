@@ -12,6 +12,9 @@ let
   unstable = import (fetchTarball https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz) { };
   jdk = unstable.jdk23;
   gradle = unstable.gradle;
+  ktfmt = unstable.ktfmt;
+  go-task = unstable.go-task;
+  pre-commit = unstable.pre-commit;
 in
 
 (
@@ -22,6 +25,9 @@ in
       pkgs_.jetbrains.idea-ultimate
       jdk
       gradle
+      ktfmt
+      go-task
+      pre-commit
     ];
   }
 ).env

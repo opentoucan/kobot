@@ -1,5 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.services
 
+import kotlin.math.max
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
@@ -9,8 +10,6 @@ import uk.me.danielharman.kotlinspringbot.helpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.repositories.GuildRepository
-import java.util.stream.Collectors
-import kotlin.math.max
 
 @Service
 class SpringGuildService(private val guildRepository: GuildRepository) {
@@ -18,7 +17,9 @@ class SpringGuildService(private val guildRepository: GuildRepository) {
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     fun getGuild(guildId: String): OperationResult<SpringGuild, String> {
-        val guild = guildRepository.findByGuildId(guildId) ?: return Failure("Could not find guild $guildId")
+        val guild =
+            guildRepository.findByGuildId(guildId)
+                ?: return Failure("Could not find guild $guildId")
         return Success(guild)
     }
 
@@ -49,8 +50,11 @@ class SpringGuildService(private val guildRepository: GuildRepository) {
     fun getGuilds(pageSize: Int = 10, page: Int = 0): OperationResult<List<SpringGuild>, String> =
         Success(guildRepository.findAll(PageRequest.of(max(page, 0), max(pageSize, 1))).toList())
 
-
-    fun updateUserCount(guildId: String, userId: String, count: Int): OperationResult<SpringGuild, String> {
+    fun updateUserCount(
+        guildId: String,
+        userId: String,
+        count: Int
+    ): OperationResult<SpringGuild, String> {
         val guild = createGuildIfNotExists(guildId)
         if (guild is Failure) return guild
 
@@ -63,13 +67,16 @@ class SpringGuildService(private val guildRepository: GuildRepository) {
         val guild = createGuildIfNotExists(guildId)
         if (guild is Failure) return guild
 
-        val newVol = when {
-            vol > 100 -> 100
-            vol < 0 -> 0
-            else -> vol
-        }
+        val newVol =
+            when {
+                vol > 100 -> 100
+                vol < 0 -> 0
+                else -> vol
+            }
 
-        val findAndModify = guildRepository.setGuildVolume(guildId, newVol) ?: return Failure("Failed to update guild")
+        val findAndModify =
+            guildRepository.setGuildVolume(guildId, newVol)
+                ?: return Failure("Failed to update guild")
 
         return Success(findAndModify.volume)
     }

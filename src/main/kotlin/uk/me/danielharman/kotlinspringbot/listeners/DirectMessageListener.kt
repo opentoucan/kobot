@@ -5,8 +5,8 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.factories.AdminCommandFactory
+import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 
 @Component
 class DirectMessageListener(
@@ -17,7 +17,7 @@ class DirectMessageListener(
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
-        if(event.isFromGuild || event.isWebhookMessage)return;
+        if (event.isFromGuild || event.isWebhookMessage) return
 
         when {
             event.message.contentStripped.startsWith(properties.privilegedCommandPrefix) -> {
@@ -35,9 +35,11 @@ class DirectMessageListener(
 
         event.channel
 
-        val cmd = event.message.contentStripped.split(" ")[0].removePrefix(properties.privilegedCommandPrefix)
+        val cmd =
+            event.message.contentStripped
+                .split(" ")[0]
+                .removePrefix(properties.privilegedCommandPrefix)
         val command = commandFactory.getCommand(cmd)
         command.execute(event)
     }
-
 }

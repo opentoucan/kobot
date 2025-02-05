@@ -39,8 +39,9 @@ class PurgeMessagesCommand : IModeratorCommand {
             return
         }
 
-        event.channel.sendMessage("https://cdn.discordapp.com/attachments/554379034750877707/650988065539620874/giphy_1.gif").queue()
-
+        event.channel
+            .sendMessage(
+                "https://cdn.discordapp.com/attachments/554379034750877707/650988065539620874/giphy_1.gif")
+            .queue()
     }
-
 }

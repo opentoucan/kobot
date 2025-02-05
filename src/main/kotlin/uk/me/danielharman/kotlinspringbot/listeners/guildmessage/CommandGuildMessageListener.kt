@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
@@ -13,6 +12,7 @@ import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.mappers.toMessageEvent
+import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
@@ -23,7 +23,7 @@ class CommandGuildMessageListener(
     private val properties: KotlinBotProperties,
     private val springGuildService: SpringGuildService,
     private val discordService: DiscordActionService
-): ListenerAdapter() {
+) : ListenerAdapter() {
 
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
@@ -33,8 +33,7 @@ class CommandGuildMessageListener(
 
         when {
             event.message.contentStripped.startsWith(properties.commandPrefix) -> {
-                if (!isDeafened)
-                    runCommand(event.toMessageEvent())
+                if (!isDeafened) runCommand(event.toMessageEvent())
             }
 
             event.message.contentStripped.startsWith(properties.privilegedCommandPrefix) -> {
@@ -59,18 +58,14 @@ class CommandGuildMessageListener(
             event.reply(
                 Embeds.infoWithDescriptionEmbedBuilder(
                     "Command not found",
-                    "If you are trying to use custom commands like save or saved these are now deprecated, use an alternative bot"
-                ), false
-            )
+                    "If you are trying to use custom commands like save or saved these are now deprecated, use an alternative bot"),
+                false)
             return
         }
         try {
             command.execute(event)
         } catch (e: Exception) {
-            event.reply(
-                "An internal error occurred while executing the command.",
-                true
-            )
+            event.reply("An internal error occurred while executing the command.", true)
             throw e
         }
     }
@@ -82,7 +77,10 @@ class CommandGuildMessageListener(
             return
         }
 
-        val cmd = event.message.contentStripped.split(" ")[0].removePrefix(properties.privilegedCommandPrefix)
+        val cmd =
+            event.message.contentStripped
+                .split(" ")[0]
+                .removePrefix(properties.privilegedCommandPrefix)
         val channel = event.channel
 
         val isModerator = springGuildService.isModerator(event.guild.id, event.author.id)
@@ -94,6 +92,5 @@ class CommandGuildMessageListener(
 
         val command = moderatorCommandFactory.getCommand(cmd)
         command.execute(event)
-
     }
 }

@@ -232,5 +232,4 @@ internal class SpringGuildServiceTest(
         assertEquals(1, result.value.size)
         assertThat(result.value, containsInAnyOrder(stub2))
     }
-
 }

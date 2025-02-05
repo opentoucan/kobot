@@ -14,10 +14,14 @@ import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 class SetVolumeCommand(
     private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
     private val springGuildService: SpringGuildService
-) : Command(
-    "vol", "Set the bot's volume level (0-100)",
-    listOf(CommandParameter(0, "volume", ParamType.Long, "Volume to set the bot to (0-100)", true))
-), ISlashCommand {
+) :
+    Command(
+        "vol",
+        "Set the bot's volume level (0-100)",
+        listOf(
+            CommandParameter(
+                0, "volume", ParamType.Long, "Volume to set the bot to (0-100)", true))),
+    ISlashCommand {
 
     override fun execute(event: DiscordMessageEvent) {
         if (event.guild == null) {
@@ -35,11 +39,12 @@ class SetVolumeCommand(
 
         val musicManager = guildMusicPlayerProvider.getGuildAudioPlayer(event.guild)
 
-        val newVol = when {
-            vol > 100 -> 100
-            vol < 0 -> 0
-            else -> vol
-        }
+        val newVol =
+            when {
+                vol > 100 -> 100
+                vol < 0 -> 0
+                else -> vol
+            }
         musicManager.player.volume = newVol.toInt()
         springGuildService.setVol(event.guild.id, newVol.toInt())
         event.reply("Setting volume to $newVol")

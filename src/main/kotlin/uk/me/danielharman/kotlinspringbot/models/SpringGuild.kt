@@ -1,9 +1,9 @@
 package uk.me.danielharman.kotlinspringbot.models
 
+import java.time.LocalDateTime
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
-import java.time.LocalDateTime
 
 @Document(collection = "springGuild")
 data class SpringGuild(val guildId: String) {
@@ -14,13 +14,15 @@ data class SpringGuild(val guildId: String) {
     }
 
     data class CustomCommand(
-        val value: String, val type: CommandType,
-        val creatorId: String, val created: LocalDateTime,
-        var keyword: String = "", var id: String = ObjectId.get().toHexString()
+        val value: String,
+        val type: CommandType,
+        val creatorId: String,
+        val created: LocalDateTime,
+        var keyword: String = "",
+        var id: String = ObjectId.get().toHexString()
     )
 
-    @Id
-    lateinit var id: String
+    @Id lateinit var id: String
 
     var wordCounts: HashMap<String, Int> = hashMapOf()
     var commandCounts: HashMap<String, Int> = hashMapOf()

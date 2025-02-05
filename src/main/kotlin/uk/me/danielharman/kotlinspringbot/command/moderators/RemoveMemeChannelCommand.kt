@@ -6,7 +6,8 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
-class RemoveMemeChannelCommand(private val springGuildService: SpringGuildService) : IModeratorCommand {
+class RemoveMemeChannelCommand(private val springGuildService: SpringGuildService) :
+    IModeratorCommand {
 
     private val commandString: String = "removememechannel"
 

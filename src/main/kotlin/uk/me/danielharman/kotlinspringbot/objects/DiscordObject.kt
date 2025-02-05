@@ -1,5 +1,7 @@
 package uk.me.danielharman.kotlinspringbot.objects
 
+import java.lang.RuntimeException
+import java.time.LocalDateTime
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
@@ -10,12 +12,10 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.requests.GatewayIntent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter.ParamType
-import java.lang.RuntimeException
-import java.time.LocalDateTime
+import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 
 object DiscordObject {
 
@@ -25,10 +25,7 @@ object DiscordObject {
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
     var listeners: List<ListenerAdapter> = listOf()
 
-    fun init(
-        properties: KotlinBotProperties,
-        commands: List<ISlashCommand>
-    ) {
+    fun init(properties: KotlinBotProperties, commands: List<ISlashCommand>) {
 
         logger.info("Starting discord")
         logger.info("${listeners.size} listeners registered")
@@ -36,18 +33,20 @@ object DiscordObject {
         if (commands.size > 100) {
             throw RuntimeException("Too many commands, discord limits slash commands to 100")
         }
-        val builder: JDABuilder = JDABuilder.create(
-            properties.token,
-            GatewayIntent.MESSAGE_CONTENT,
-            GatewayIntent.GUILD_MEMBERS,
-            GatewayIntent.GUILD_PRESENCES,
-            GatewayIntent.DIRECT_MESSAGES,
-            GatewayIntent.GUILD_MESSAGES,
-            GatewayIntent.GUILD_VOICE_STATES,
-            GatewayIntent.GUILD_EXPRESSIONS,
-            GatewayIntent.GUILD_MESSAGE_REACTIONS
-        )
-            .setActivity(Activity.of(Activity.ActivityType.CUSTOM_STATUS, "${properties.commandPrefix}help"))
+        val builder: JDABuilder =
+            JDABuilder.create(
+                    properties.token,
+                    GatewayIntent.MESSAGE_CONTENT,
+                    GatewayIntent.GUILD_MEMBERS,
+                    GatewayIntent.GUILD_PRESENCES,
+                    GatewayIntent.DIRECT_MESSAGES,
+                    GatewayIntent.GUILD_MESSAGES,
+                    GatewayIntent.GUILD_VOICE_STATES,
+                    GatewayIntent.GUILD_EXPRESSIONS,
+                    GatewayIntent.GUILD_MESSAGE_REACTIONS)
+                .setActivity(
+                    Activity.of(
+                        Activity.ActivityType.CUSTOM_STATUS, "${properties.commandPrefix}help"))
 
         for (listener: ListenerAdapter in listeners) {
             builder.addEventListeners(listener)
@@ -56,7 +55,7 @@ object DiscordObject {
         startTime = LocalDateTime.now()
         jda = builder.build().awaitReady()
 
-        //Don't register commands when running in dev mode
+        // Don't register commands when running in dev mode
         if (!ApplicationInfo.isDev) {
             logger.info("Registering slash commands with Discord.")
             val updateCommands = jda.updateCommands()
@@ -71,14 +70,12 @@ object DiscordObject {
                         convertParamTypeToJdaOptionType(commandParameter.type),
                         commandParameter.name.lowercase(),
                         commandParameter.description,
-                        commandParameter.required
-                    )
+                        commandParameter.required)
                 }
                 commandData.add(data)
             }
             updateCommands.addCommands(commandData).queue()
         }
-
     }
 
     fun registerListeners(listeners: List<ListenerAdapter>) {
@@ -103,5 +100,4 @@ object DiscordObject {
             ParamType.Mentionable -> OptionType.MENTIONABLE
         }
     }
-
 }

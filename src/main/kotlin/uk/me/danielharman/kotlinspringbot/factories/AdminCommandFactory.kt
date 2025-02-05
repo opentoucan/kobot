@@ -13,5 +13,4 @@ class AdminCommandFactory(private val commands: List<IAdminCommand>) {
         }
         return DefaultAdminCommand(commandString)
     }
-
 }

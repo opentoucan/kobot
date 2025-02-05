@@ -31,6 +31,5 @@ class DisconnectCommand(private val discordActionService: DiscordActionService) 
         } else {
             event.reply("I am not connected to an audio channel")
         }
-
     }
 }

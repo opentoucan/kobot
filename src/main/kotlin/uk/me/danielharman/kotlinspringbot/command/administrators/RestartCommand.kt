@@ -24,5 +24,6 @@ class RestartCommand(private val administratorService: AdministratorService) : I
     }
 
     override fun matchCommandString(str: String): Boolean = str == commandString
+
     override fun getCommandString(): String = commandString
 }

@@ -1,5 +1,7 @@
 package uk.me.danielharman.kotlinspringbot.services
 
+import java.time.LocalDateTime
+import java.util.stream.Collectors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.mongodb.core.MongoTemplate
@@ -10,13 +12,13 @@ import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.models.Meme
 import uk.me.danielharman.kotlinspringbot.repositories.MemeRepository
-import java.time.LocalDateTime
-import java.util.stream.Collectors
 
 @Service
-class MemeService(private val mongoTemplate: MongoTemplate,
-                  private val memeRepository: MemeRepository,
-                  private val springGuildService: SpringGuildService) {
+class MemeService(
+    private val mongoTemplate: MongoTemplate,
+    private val memeRepository: MemeRepository,
+    private val springGuildService: SpringGuildService
+) {
 
     enum class MemeInterval {
         WEEK,
@@ -35,9 +37,15 @@ class MemeService(private val mongoTemplate: MongoTemplate,
         memeRepository.deleteByGuildIdAndMessageId(guildId, messageId)
     }
 
-    fun getMeme(guildId: String, messageId: String): Meme? = memeRepository.findByGuildIdAndMessageId(guildId, messageId)
+    fun getMeme(guildId: String, messageId: String): Meme? =
+        memeRepository.findByGuildIdAndMessageId(guildId, messageId)
 
-    data class MemeRanking(val userId: String, var upvotes: Int, var downvotes: Int, var count: Int) {
+    data class MemeRanking(
+        val userId: String,
+        var upvotes: Int,
+        var downvotes: Int,
+        var count: Int
+    ) {
         val score: Int
             get() = upvotes - downvotes
     }
@@ -47,9 +55,9 @@ class MemeService(private val mongoTemplate: MongoTemplate,
 
         val idMap = HashMap<String, MemeRanking>()
 
-        mongoTemplate.find(Query(where("guildId").`is`(guildId)), Meme::class.java).forEach { meme ->
+        mongoTemplate.find(Query(where("guildId").`is`(guildId)), Meme::class.java).forEach { meme
+            ->
             run {
-
                 if (idMap.containsKey(meme.userId)) {
                     idMap[meme.userId]!!.upvotes += meme.upvotes
                     idMap[meme.userId]!!.downvotes += meme.downvotes
@@ -57,22 +65,19 @@ class MemeService(private val mongoTemplate: MongoTemplate,
                 } else {
                     idMap[meme.userId] = MemeRanking(meme.userId, meme.upvotes, meme.downvotes, 1)
                 }
-
             }
-
         }
 
         return if (asc) {
-            val filtered = idMap
-                    .toList()
-                    .sortedBy { (_, value) -> value.score }
+            val filtered = idMap.toList().sortedBy { (_, value) -> value.score }
             if (filtered.size > 10) {
                 filtered.subList(0, 10)
             } else {
                 filtered
             }
         } else {
-            val filtered = idMap
+            val filtered =
+                idMap
                     .toList()
                     .sortedByDescending { (_, value) -> value.score }
                     .filter { (_, value) -> value.score > 0 }
@@ -107,13 +112,14 @@ class MemeService(private val mongoTemplate: MongoTemplate,
 
         var memes = mongoTemplate.find(query, Meme::class.java)
 
-        memes = memes.stream()
+        memes =
+            memes
+                .stream()
                 .filter { m -> !(m.downvotes == 0 && m.upvotes == 0) }
                 .sorted { o1, o2 -> o2.score - o1.score }
                 .collect(Collectors.toList())
 
-        if (memes.size <= 3)
-            return memes
+        if (memes.size <= 3) return memes
 
         return memes.subList(0, 3)
     }

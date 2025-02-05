@@ -2,9 +2,9 @@ package uk.me.danielharman.kotlinspringbot.audio
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame
-import net.dv8tion.jda.api.audio.AudioSendHandler
 import java.nio.Buffer
 import java.nio.ByteBuffer
+import net.dv8tion.jda.api.audio.AudioSendHandler
 
 class AudioPlayerSendHandler(private val audioPlayer: AudioPlayer) : AudioSendHandler {
 

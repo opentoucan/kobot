@@ -1,0 +1,8 @@
+ # yaml-language-server: $schema=https://json.schemastore.org/pre-commit-config.json
+repos:
+- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+  rev: v2.14.0
+  hooks:
+  - id: pretty-format-kotlin
+    name: ktfmt
+    args: [--ktfmt, --autofix, --ktfmt-style=kotlinlang]

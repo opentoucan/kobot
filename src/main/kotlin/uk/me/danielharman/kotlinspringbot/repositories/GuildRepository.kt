@@ -14,23 +14,35 @@ import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 interface GuildRepository : MongoRepository<SpringGuild, String>, CustomGuildRepository {
 
     fun findByGuildId(guildId: String): SpringGuild?
-    fun deleteByGuildId(guildId: String)
 
+    fun deleteByGuildId(guildId: String)
 }
 
 interface CustomGuildRepository {
     fun addToSet(guildId: String, field: String, value: String): SpringGuild?
+
     fun removeFromSet(guildId: String, field: String, value: String): SpringGuild?
+
     fun increaseUserCount(guildId: String, userId: String, value: Int): SpringGuild?
+
     fun setGuildVolume(guildId: String, volume: Int): SpringGuild?
+
     fun addModeratorId(guildId: String, userId: String): SpringGuild?
+
     fun removeModeratorId(guildId: String, userId: String): SpringGuild?
+
     fun addMemeChannelId(guildId: String, channelId: String): SpringGuild?
+
     fun removeMemeChannelId(guildId: String, channelId: String): SpringGuild?
+
     fun setXkcdChannelId(guildId: String, channelId: String): SpringGuild?
+
     fun getXkcdChannelIds(): List<SpringGuild>
+
     fun addDeafenChannelId(guildId: String, channelId: String): SpringGuild?
+
     fun removeDeafenChannelId(guildId: String, channelId: String): SpringGuild?
+
     fun getGuildsWithModeratorCount(value: Int): List<SpringGuild>
 }
 
@@ -41,32 +53,28 @@ class CustomGuildRepositoryImpl(private val mongoTemplate: MongoTemplate) : Cust
         return mongoTemplate.findAndModify(
             query(where(SpringGuild::guildId.name).`is`(guildId)),
             Update().addToSet(field, value),
-            SpringGuild::class.java
-        )
+            SpringGuild::class.java)
     }
 
     override fun removeFromSet(guildId: String, field: String, value: String): SpringGuild? {
         return mongoTemplate.findAndModify(
             query(where(SpringGuild::guildId.name).`is`(guildId)),
             Update().pull(field, value),
-            SpringGuild::class.java
-        )
+            SpringGuild::class.java)
     }
 
     override fun increaseUserCount(guildId: String, userId: String, value: Int): SpringGuild? {
         return mongoTemplate.findAndModify(
             query(where(SpringGuild::guildId.name).`is`(guildId)),
             Update().inc("${SpringGuild::userWordCounts.name}.$userId", value),
-            SpringGuild::class.java
-        )
+            SpringGuild::class.java)
     }
 
     override fun setGuildVolume(guildId: String, volume: Int): SpringGuild? {
         return mongoTemplate.findAndModify(
             query(where(SpringGuild::guildId.name).`is`(guildId)),
             update(SpringGuild::volume.name, volume),
-            SpringGuild::class.java
-        )
+            SpringGuild::class.java)
     }
 
     override fun addModeratorId(guildId: String, userId: String): SpringGuild? {
@@ -89,16 +97,12 @@ class CustomGuildRepositoryImpl(private val mongoTemplate: MongoTemplate) : Cust
         return mongoTemplate.findAndModify(
             query(where(SpringGuild::guildId.name).`is`(guildId)),
             Update().set(SpringGuild::xkcdChannelId.name, channelId),
-            SpringGuild::class.java
-        )
+            SpringGuild::class.java)
     }
 
     override fun getXkcdChannelIds(): List<SpringGuild> {
         val query = Query()
-        query
-            .fields()
-            .include(SpringGuild::xkcdChannelId.name)
-            .include(SpringGuild::guildId.name)
+        query.fields().include(SpringGuild::xkcdChannelId.name).include(SpringGuild::guildId.name)
         return mongoTemplate.find(query, SpringGuild::class.java)
     }
 
@@ -111,8 +115,7 @@ class CustomGuildRepositoryImpl(private val mongoTemplate: MongoTemplate) : Cust
     }
 
     override fun getGuildsWithModeratorCount(value: Int): List<SpringGuild> {
-        return mongoTemplate.find(Query(where(SpringGuild::privilegedUsers.name).size(value)), SpringGuild::class.java)
+        return mongoTemplate.find(
+            Query(where(SpringGuild::privilegedUsers.name).size(value)), SpringGuild::class.java)
     }
-
-
 }

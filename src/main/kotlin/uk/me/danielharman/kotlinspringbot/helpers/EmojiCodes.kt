@@ -2,7 +2,7 @@ package uk.me.danielharman.kotlinspringbot.helpers
 
 import net.dv8tion.jda.api.entities.emoji.Emoji
 
-//Make sure these are lowercase
+// Make sure these are lowercase
 object EmojiCodes {
     val ThumbsUp = Emoji.fromUnicode("U+1f44d")
     val ThumbsDown = Emoji.fromUnicode("U+1f44e")

@@ -1,5 +1,7 @@
 package uk.me.danielharman.kotlinspringbot.events.integration
 
+import java.text.DecimalFormat
+import java.util.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNamingStrategy
@@ -14,14 +16,9 @@ import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelAttachment
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelMessage
 import uk.me.danielharman.kotlinspringbot.services.DiscordService
-import java.text.DecimalFormat
-import java.util.*
-
 
 @Service
-class MemeRepostIntegrationEventHandler(
-    private val discordService: DiscordService
-) {
+class MemeRepostIntegrationEventHandler(private val discordService: DiscordService) {
 
     @Bean
     fun queue(): Queue {
@@ -39,21 +36,22 @@ class MemeRepostIntegrationEventHandler(
     }
 
     @RabbitListener(queues = ["meme-repost-queue"])
-    @ConditionalOnProperty(name=["features.meme-repost"])
+    @ConditionalOnProperty(name = ["features.meme-repost"])
     fun handle(content: String) {
         @OptIn(ExperimentalSerializationApi::class)
-        val format = Json {namingStrategy = JsonNamingStrategy.SnakeCase}
+        val format = Json { namingStrategy = JsonNamingStrategy.SnakeCase }
         val memeRepostEvent = format.decodeFromString<MemeRepostIntegrationEvent>(content)
         val bytes = Base64.getDecoder().decode(memeRepostEvent.replyImage)
 
         val repostLink = memeRepostEvent.links.sortedBy { x -> x.score }
         val scorePercentageFormat = DecimalFormat("##.##")
 
-        val discordMessage = DiscordChannelMessage(
-            "Thou hath reposted! \n ${repostLink.joinToString("\n"){"https://discord.com/channels/${it.guildId}/${it.channelId}/${it.messageId} score: ${scorePercentageFormat.format(it.score * 100)}%"}}",
-            memeRepostEvent.guildId,
-            memeRepostEvent.channelId,
-            attachments = listOf(DiscordChannelAttachment("repost.png", bytes)))
+        val discordMessage =
+            DiscordChannelMessage(
+                "Thou hath reposted! \n ${repostLink.joinToString("\n"){"https://discord.com/channels/${it.guildId}/${it.channelId}/${it.messageId} score: ${scorePercentageFormat.format(it.score * 100)}%"}}",
+                memeRepostEvent.guildId,
+                memeRepostEvent.channelId,
+                attachments = listOf(DiscordChannelAttachment("repost.png", bytes)))
 
         discordService.sendChannelMessage(discordMessage)
     }

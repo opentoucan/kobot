@@ -3,8 +3,7 @@ package uk.me.danielharman.kotlinspringbot.services
 import org.springframework.stereotype.Component
 
 @Component
-class TestService{
+class TestService {
 
-    fun greet(name: String) = "Hello $name";
-
+    fun greet(name: String) = "Hello $name"
 }

@@ -25,6 +25,5 @@ class RemoveModeratorCommand(val springGuildService: SpringGuildService) : IMode
 
         mentionedUsers.forEach { u -> springGuildService.removeModerator(event.guild.id, u.id) }
         event.channel.sendMessage("Removed $mentionedUsers").queue()
-
     }
 }

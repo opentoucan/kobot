@@ -1,8 +1,8 @@
 package uk.me.danielharman.kotlinspringbot.factories
 
 import org.springframework.stereotype.Service
-import uk.me.danielharman.kotlinspringbot.command.moderators.DefaultModeratorCommand
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
+import uk.me.danielharman.kotlinspringbot.command.moderators.DefaultModeratorCommand
 
 @Service
 class ModeratorCommandFactory(private val commands: List<IModeratorCommand>) {
@@ -13,5 +13,4 @@ class ModeratorCommandFactory(private val commands: List<IModeratorCommand>) {
         }
         return DefaultModeratorCommand(commandString)
     }
-
 }

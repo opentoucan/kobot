@@ -15,38 +15,53 @@ class AddAdminCommand(private val administratorService: AdministratorService) : 
 
     override fun execute(event: MessageReceivedEvent) {
 
-        when (val thisAdmin = administratorService.getBotAdministratorByDiscordId(event.author.id)){
-            is Failure -> event.channel.sendMessageEmbeds(Embeds.createErrorEmbed("You are not an admin.")).queue()
+        when (val thisAdmin =
+            administratorService.getBotAdministratorByDiscordId(event.author.id)) {
+            is Failure ->
+                event.channel
+                    .sendMessageEmbeds(Embeds.createErrorEmbed("You are not an admin."))
+                    .queue()
             is Success -> {
                 val split = event.message.contentRaw.split(' ')
 
                 if (split.size < 2) {
-                    event.channel.sendMessageEmbeds(Embeds.createErrorEmbed("You are not an admin.")).queue()
+                    event.channel
+                        .sendMessageEmbeds(Embeds.createErrorEmbed("You are not an admin."))
+                        .queue()
                     return
                 }
 
                 val user = event.jda.getUserByTag(split[1])
 
                 if (user == null) {
-                    event.channel.sendMessageEmbeds(Embeds.createErrorEmbed("User not found")).queue()
+                    event.channel
+                        .sendMessageEmbeds(Embeds.createErrorEmbed("User not found"))
+                        .queue()
                     return
                 }
 
                 val createBotAdministrator =
-                    administratorService.createBotAdministrator(thisAdmin.value.id, user.id, setOf())
+                    administratorService.createBotAdministrator(
+                        thisAdmin.value.id, user.id, setOf())
 
                 if (createBotAdministrator is Failure) {
-                    event.channel.sendMessageEmbeds(Embeds.createErrorEmbed(createBotAdministrator.reason)).queue()
+                    event.channel
+                        .sendMessageEmbeds(Embeds.createErrorEmbed(createBotAdministrator.reason))
+                        .queue()
                     return
                 }
 
-                event.channel.sendMessageEmbeds(
-                    Embeds.infoEmbedBuilder().appendDescription("Added ${user.asTag} as an admin").build()
-                ).queue()
+                event.channel
+                    .sendMessageEmbeds(
+                        Embeds.infoEmbedBuilder()
+                            .appendDescription("Added ${user.asTag} as an admin")
+                            .build())
+                    .queue()
             }
         }
     }
 
     override fun matchCommandString(str: String): Boolean = str == commandString
+
     override fun getCommandString(): String = commandString
 }
