@@ -167,6 +167,13 @@ class SpringGuildService(private val guildRepository: GuildRepository) {
         }
     }
 
+    fun isChannelDeafened(guildId: String, channelId: String): Boolean {
+        return when (val guild = getGuild(guildId)) {
+            is Failure -> false
+            is Success -> guild.value.deafenedChannels.contains(channelId)
+        }
+    }
+
     fun getDeafenedChannels(guildId: String): OperationResult<List<String>, String> {
         return when (val guild = getGuild(guildId)) {
             is Failure -> guild

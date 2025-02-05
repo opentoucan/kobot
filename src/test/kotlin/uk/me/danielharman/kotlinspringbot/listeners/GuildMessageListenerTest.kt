@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.unions.DefaultGuildChannelUnion
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent
-import net.dv8tion.jda.api.requests.RestAction
 import net.dv8tion.jda.api.requests.restaction.CacheRestAction
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction
 import org.junit.jupiter.api.Test
@@ -15,10 +14,11 @@ import org.mockito.Mockito.*
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
-import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
 import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.listeners.guildmessage.GuildMessageListener
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService

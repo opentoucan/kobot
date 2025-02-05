@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.utils.FileUpload
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.OperationResult
