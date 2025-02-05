@@ -4,7 +4,7 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
@@ -13,7 +13,8 @@ import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
 class ModeratorsListCommand(private val springGuildService: SpringGuildService,
-                            private val properties: KotlinBotProperties) : IModeratorCommand {
+                            private val properties: KotlinBotProperties
+) : IModeratorCommand {
 
     private val commandString: String = "moderators"
 

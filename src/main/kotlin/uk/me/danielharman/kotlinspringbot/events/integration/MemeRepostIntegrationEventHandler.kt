@@ -8,6 +8,7 @@ import org.springframework.amqp.core.BindingBuilder
 import org.springframework.amqp.core.Queue
 import org.springframework.amqp.core.TopicExchange
 import org.springframework.amqp.rabbit.annotation.RabbitListener
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.models.DiscordChannelAttachment
@@ -38,6 +39,7 @@ class MemeRepostIntegrationEventHandler(
     }
 
     @RabbitListener(queues = ["meme-repost-queue"])
+    @ConditionalOnProperty(name=["features.meme-repost"])
     fun handle(content: String) {
         @OptIn(ExperimentalSerializationApi::class)
         val format = Json {namingStrategy = JsonNamingStrategy.SnakeCase}
