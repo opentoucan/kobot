@@ -26,7 +26,7 @@ jobs:
         run: brew install ktfmt
 
       - name: Check files are linted
-        run: ktfmt --kotlinlang-style --dry-run --set-exit-if-changed .
+        run: ktfmt --kotlinlang-style --dry-run --set-exit-if-changed ${{ github.workspace }}
 
   build-docker:
     runs-on: ubuntu-24.04
