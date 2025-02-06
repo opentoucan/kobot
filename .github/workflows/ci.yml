@@ -29,6 +29,9 @@ jobs:
       - name: Setup Workflow Tools
         run: brew install ktfmt
 
+      - name: Print build.gradle.kts
+        run: cat ${{ github.workspace }}/build.gradle.kts
+
       - name: Check files are linted
         run: ktfmt --kotlinlang-style --dry-run --set-exit-if-changed ${{ github.workspace }}
 
