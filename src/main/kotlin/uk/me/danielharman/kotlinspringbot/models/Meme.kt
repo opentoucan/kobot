@@ -35,6 +35,5 @@ data class Meme(
     val downvotes: Int
         get() = downvoters.size
 
-    override fun toString(): String =
-        "Meme(messageId='$messageId', guildId='$guildId', userId='$userId', upvoters=$upvoters, downvoters=$downvoters, url='$url', id='$id', created=$created)"
+    override fun toString(): String = "Meme(messageId='$messageId', guildId='$guildId', userId='$userId', upvoters=$upvoters, downvoters=$downvoters, url='$url', id='$id', created=$created)"
 }

@@ -23,10 +23,10 @@ class PlayMusicCommand(
     private val discordActionService: DiscordActionService,
     private val kotlinBotProperties: KotlinBotProperties,
 ) : Command(
-        "play",
-        "Play audio via Youtube, Vimeo etc.",
-        listOf(CommandParameter(0, "url", ParamType.Word, "Url to play music from")),
-    ),
+    "play",
+    "Play audio via Youtube, Vimeo etc.",
+    listOf(CommandParameter(0, "url", ParamType.Word, "Url to play music from")),
+),
     ISlashCommand {
     override fun execute(event: DiscordMessageEvent) {
         val voiceChannel: VoiceChannel?

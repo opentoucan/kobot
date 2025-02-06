@@ -91,44 +91,40 @@ class CustomGuildRepositoryImpl(
         guildId: String,
         field: String,
         value: String,
-    ): SpringGuild? =
-        mongoTemplate.findAndModify(
-            query(where(SpringGuild::guildId.name).`is`(guildId)),
-            Update().addToSet(field, value),
-            SpringGuild::class.java,
-        )
+    ): SpringGuild? = mongoTemplate.findAndModify(
+        query(where(SpringGuild::guildId.name).`is`(guildId)),
+        Update().addToSet(field, value),
+        SpringGuild::class.java,
+    )
 
     override fun removeFromSet(
         guildId: String,
         field: String,
         value: String,
-    ): SpringGuild? =
-        mongoTemplate.findAndModify(
-            query(where(SpringGuild::guildId.name).`is`(guildId)),
-            Update().pull(field, value),
-            SpringGuild::class.java,
-        )
+    ): SpringGuild? = mongoTemplate.findAndModify(
+        query(where(SpringGuild::guildId.name).`is`(guildId)),
+        Update().pull(field, value),
+        SpringGuild::class.java,
+    )
 
     override fun increaseUserCount(
         guildId: String,
         userId: String,
         value: Int,
-    ): SpringGuild? =
-        mongoTemplate.findAndModify(
-            query(where(SpringGuild::guildId.name).`is`(guildId)),
-            Update().inc("${SpringGuild::userWordCounts.name}.$userId", value),
-            SpringGuild::class.java,
-        )
+    ): SpringGuild? = mongoTemplate.findAndModify(
+        query(where(SpringGuild::guildId.name).`is`(guildId)),
+        Update().inc("${SpringGuild::userWordCounts.name}.$userId", value),
+        SpringGuild::class.java,
+    )
 
     override fun setGuildVolume(
         guildId: String,
         volume: Int,
-    ): SpringGuild? =
-        mongoTemplate.findAndModify(
-            query(where(SpringGuild::guildId.name).`is`(guildId)),
-            update(SpringGuild::volume.name, volume),
-            SpringGuild::class.java,
-        )
+    ): SpringGuild? = mongoTemplate.findAndModify(
+        query(where(SpringGuild::guildId.name).`is`(guildId)),
+        update(SpringGuild::volume.name, volume),
+        SpringGuild::class.java,
+    )
 
     override fun addModeratorId(
         guildId: String,
@@ -153,12 +149,11 @@ class CustomGuildRepositoryImpl(
     override fun setXkcdChannelId(
         guildId: String,
         channelId: String,
-    ): SpringGuild? =
-        mongoTemplate.findAndModify(
-            query(where(SpringGuild::guildId.name).`is`(guildId)),
-            Update().set(SpringGuild::xkcdChannelId.name, channelId),
-            SpringGuild::class.java,
-        )
+    ): SpringGuild? = mongoTemplate.findAndModify(
+        query(where(SpringGuild::guildId.name).`is`(guildId)),
+        Update().set(SpringGuild::xkcdChannelId.name, channelId),
+        SpringGuild::class.java,
+    )
 
     override fun getXkcdChannelIds(): List<SpringGuild> {
         val query = Query()
@@ -176,9 +171,8 @@ class CustomGuildRepositoryImpl(
         channelId: String,
     ): SpringGuild? = this.removeFromSet(guildId, SpringGuild::deafenedChannels.name, channelId)
 
-    override fun getGuildsWithModeratorCount(value: Int): List<SpringGuild> =
-        mongoTemplate.find(
-            Query(where(SpringGuild::privilegedUsers.name).size(value)),
-            SpringGuild::class.java,
-        )
+    override fun getGuildsWithModeratorCount(value: Int): List<SpringGuild> = mongoTemplate.find(
+        Query(where(SpringGuild::privilegedUsers.name).size(value)),
+        SpringGuild::class.java,
+    )
 }

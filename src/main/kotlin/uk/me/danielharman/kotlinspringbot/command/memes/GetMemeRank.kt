@@ -19,10 +19,10 @@ class GetMemeRank(
     private val memeService: MemeService,
     private val discordService: DiscordActionService,
 ) : Command(
-        "memeranking",
-        "List server members by their meme score",
-        listOf(CommandParameter(0, "Sort", CommandParameter.ParamType.Word, "Sort direction")),
-    ),
+    "memeranking",
+    "List server members by their meme score",
+    listOf(CommandParameter(0, "Sort", CommandParameter.ParamType.Word, "Sort direction")),
+),
     ISlashCommand {
     override fun execute(event: DiscordMessageEvent) {
         if (event.guild == null) {

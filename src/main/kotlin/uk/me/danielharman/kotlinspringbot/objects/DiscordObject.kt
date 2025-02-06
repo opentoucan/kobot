@@ -96,12 +96,11 @@ object DiscordObject {
         startTime = null
     }
 
-    private fun convertParamTypeToJdaOptionType(type: ParamType): OptionType =
-        when (type) {
-            ParamType.Word -> OptionType.STRING
-            ParamType.String -> OptionType.STRING
-            ParamType.Long -> OptionType.INTEGER
-            ParamType.Boolean -> OptionType.BOOLEAN
-            ParamType.Mentionable -> OptionType.MENTIONABLE
-        }
+    private fun convertParamTypeToJdaOptionType(type: ParamType): OptionType = when (type) {
+        ParamType.Word -> OptionType.STRING
+        ParamType.String -> OptionType.STRING
+        ParamType.Long -> OptionType.INTEGER
+        ParamType.Boolean -> OptionType.BOOLEAN
+        ParamType.Mentionable -> OptionType.MENTIONABLE
+    }
 }

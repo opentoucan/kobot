@@ -38,23 +38,20 @@ class AdministratorService(
 
     fun getBotDiscordName(): OperationResult<String, String> = discordService.getBotName()
 
-    fun closeDiscordConnection(userId: String): OperationResult<String, String> =
-        when (val admin = getBotAdministratorById(userId)) {
-            is Failure -> admin
-            is Success -> discordService.closeDiscordConnection()
-        }
+    fun closeDiscordConnection(userId: String): OperationResult<String, String> = when (val admin = getBotAdministratorById(userId)) {
+        is Failure -> admin
+        is Success -> discordService.closeDiscordConnection()
+    }
 
-    fun startDiscordConnection(userId: String): OperationResult<String, String> =
-        when (val admin = getBotAdministratorById(userId)) {
-            is Failure -> admin
-            is Success -> discordService.startDiscordConnection()
-        }
+    fun startDiscordConnection(userId: String): OperationResult<String, String> = when (val admin = getBotAdministratorById(userId)) {
+        is Failure -> admin
+        is Success -> discordService.startDiscordConnection()
+    }
 
-    fun restartDiscordConnection(userId: String): OperationResult<String, String> =
-        when (val closeDiscordConnection = closeDiscordConnection(userId)) {
-            is Failure -> closeDiscordConnection
-            is Success -> startDiscordConnection(userId)
-        }
+    fun restartDiscordConnection(userId: String): OperationResult<String, String> = when (val closeDiscordConnection = closeDiscordConnection(userId)) {
+        is Failure -> closeDiscordConnection
+        is Success -> startDiscordConnection(userId)
+    }
 
     fun getBotAdministratorById(id: String): OperationResult<Administrator, String> {
         val administrator = repository.findById(id)
@@ -71,25 +68,23 @@ class AdministratorService(
     fun createBotAdministrator(
         discordId: String,
         roles: Set<Role> = setOf(),
-    ): OperationResult<Administrator, String> =
-        when (val admin = getBotAdministratorByDiscordId(discordId)) {
-            is Failure -> Success(repository.save(Administrator(discordId, roles)))
-            is Success -> admin
-        }
+    ): OperationResult<Administrator, String> = when (val admin = getBotAdministratorByDiscordId(discordId)) {
+        is Failure -> Success(repository.save(Administrator(discordId, roles)))
+        is Success -> admin
+    }
 
     fun createBotAdministrator(
         userId: String,
         discordId: String,
         roles: Set<Role>,
-    ): OperationResult<Administrator, String> =
-        when (val admin = getBotAdministratorById(userId)) {
-            is Failure -> admin
-            is Success -> {
-                val administrator = repository.save(Administrator(discordId, roles))
-                logToAdmins("${administrator.discordId} added as admin by $userId")
-                Success(administrator)
-            }
+    ): OperationResult<Administrator, String> = when (val admin = getBotAdministratorById(userId)) {
+        is Failure -> admin
+        is Success -> {
+            val administrator = repository.save(Administrator(discordId, roles))
+            logToAdmins("${administrator.discordId} added as admin by $userId")
+            Success(administrator)
         }
+    }
 
     fun removeBotAdministrator(id: String): OperationResult<String, String> {
         if (id == properties.primaryPrivilegedUserId) {
@@ -167,16 +162,15 @@ class AdministratorService(
         }
     }
 
-    fun syncGuildAdmins(): OperationResult<String, String> =
-        when (val guildsWithoutAdmins = springGuildService.getGuildsWithoutModerators()) {
-            is Failure -> guildsWithoutAdmins
-            is Success -> {
-                for (guild in guildsWithoutAdmins.value) {
-                    syncGuildAdmin(guild)
-                }
-                Success("Updated ${guildsWithoutAdmins.value.size} guilds.")
+    fun syncGuildAdmins(): OperationResult<String, String> = when (val guildsWithoutAdmins = springGuildService.getGuildsWithoutModerators()) {
+        is Failure -> guildsWithoutAdmins
+        is Success -> {
+            for (guild in guildsWithoutAdmins.value) {
+                syncGuildAdmin(guild)
             }
+            Success("Updated ${guildsWithoutAdmins.value.size} guilds.")
         }
+    }
 
     private fun syncGuildAdmin(springGuild: SpringGuild): OperationResult<String, String> {
         when (val guild = discordService.getGuild(springGuild.guildId)) {

@@ -13,11 +13,11 @@ import java.io.InputStream
 class DiscordSlashCommandEvent(
     private val event: SlashCommandInteraction,
 ) : DiscordMessageEvent(
-        event.options.fold("") { acc, opt -> "$acc ${opt.asString}" },
-        event.channel,
-        event.user,
-        event.guild,
-    ) {
+    event.options.fold("") { acc, opt -> "$acc ${opt.asString}" },
+    event.channel,
+    event.user,
+    event.guild,
+) {
     override fun reply(
         embed: MessageEmbed,
         invokerOnly: Boolean,
@@ -92,10 +92,9 @@ class DiscordSlashCommandEvent(
     private fun matchType(
         type: OptionType,
         type2: CommandParameter.ParamType,
-    ): Boolean =
-        (type == OptionType.INTEGER && type2 == CommandParameter.ParamType.Long) ||
-            (type == OptionType.STRING && type2 == CommandParameter.ParamType.String) ||
-            (type == OptionType.STRING && type2 == CommandParameter.ParamType.Word) ||
-            (type == OptionType.MENTIONABLE && type2 == CommandParameter.ParamType.Mentionable) ||
-            (type == OptionType.BOOLEAN && type2 == CommandParameter.ParamType.Boolean)
+    ): Boolean = (type == OptionType.INTEGER && type2 == CommandParameter.ParamType.Long) ||
+        (type == OptionType.STRING && type2 == CommandParameter.ParamType.String) ||
+        (type == OptionType.STRING && type2 == CommandParameter.ParamType.Word) ||
+        (type == OptionType.MENTIONABLE && type2 == CommandParameter.ParamType.Mentionable) ||
+        (type == OptionType.BOOLEAN && type2 == CommandParameter.ParamType.Boolean)
 }

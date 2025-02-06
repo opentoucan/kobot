@@ -26,30 +26,29 @@ class ModeratorsListCommand(
         event.channel.sendMessageEmbeds(createAdminUsersEmbed(event)).queue()
     }
 
-    private fun createAdminUsersEmbed(message: MessageReceivedEvent): MessageEmbed =
-        when (val guild = springGuildService.getGuild(message.guild.id)) {
-            is Failure -> Embeds.createErrorEmbed("Could not find data for ${message.guild.name}")
-            is Success -> {
-                val stringBuilder = StringBuilder()
-                val primaryAdmin =
-                    message.guild.retrieveMemberById(properties.primaryPrivilegedUserId).complete()
+    private fun createAdminUsersEmbed(message: MessageReceivedEvent): MessageEmbed = when (val guild = springGuildService.getGuild(message.guild.id)) {
+        is Failure -> Embeds.createErrorEmbed("Could not find data for ${message.guild.name}")
+        is Success -> {
+            val stringBuilder = StringBuilder()
+            val primaryAdmin =
+                message.guild.retrieveMemberById(properties.primaryPrivilegedUserId).complete()
 
-                stringBuilder.append(
-                    "Bot controller:  ${primaryAdmin.nickname ?: primaryAdmin.user.asTag}\n",
-                )
+            stringBuilder.append(
+                "Bot controller:  ${primaryAdmin.nickname ?: primaryAdmin.user.asTag}\n",
+            )
 
-                guild.value.privilegedUsers.forEach { s ->
-                    run {
-                        val member = message.guild.retrieveMemberById(s).complete()
-                        stringBuilder.append(member?.nickname ?: member.user.asTag ?: s)
-                    }
+            guild.value.privilegedUsers.forEach { s ->
+                run {
+                    val member = message.guild.retrieveMemberById(s).complete()
+                    stringBuilder.append(member?.nickname ?: member.user.asTag ?: s)
                 }
-
-                EmbedBuilder()
-                    .appendDescription(stringBuilder.toString())
-                    .setColor(0x9d03fc)
-                    .setTitle("Moderators for ${message.guild.name}")
-                    .build()
             }
+
+            EmbedBuilder()
+                .appendDescription(stringBuilder.toString())
+                .setColor(0x9d03fc)
+                .setTitle("Moderators for ${message.guild.name}")
+                .build()
         }
+    }
 }

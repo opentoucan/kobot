@@ -129,10 +129,9 @@ class SchemaUpdater(
         return getOpts()?.schemaVersion ?: 0
     }
 
-    private fun getOpts(): ApplicationOpts? =
-        mongoOperations.findOne(
-            query(where("_id").`is`("appopts")),
-            ApplicationOpts::class.java,
-            "ApplicationOpts",
-        )
+    private fun getOpts(): ApplicationOpts? = mongoOperations.findOne(
+        query(where("_id").`is`("appopts")),
+        ApplicationOpts::class.java,
+        "ApplicationOpts",
+    )
 }

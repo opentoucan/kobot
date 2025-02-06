@@ -18,10 +18,10 @@ class GetMemesCommand(
     private val memeService: MemeService,
     private val discordActionService: DiscordActionService,
 ) : Command(
-        "memes",
-        "List server memes by week or month",
-        listOf(CommandParameter(0, "Interval", CommandParameter.ParamType.Word, "week or month")),
-    ),
+    "memes",
+    "List server memes by week or month",
+    listOf(CommandParameter(0, "Interval", CommandParameter.ParamType.Word, "week or month")),
+),
     ISlashCommand {
     override fun execute(event: DiscordMessageEvent) {
         val paramValue = event.getParamValue(commandParameters[0])

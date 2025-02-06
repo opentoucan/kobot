@@ -38,20 +38,18 @@ class SpringGuildService(
         return Success(guildRepository.save(SpringGuild(guildId)))
     }
 
-    fun deleteSpringGuild(guildId: String): OperationResult<String, String> =
-        when (val guild = getGuild(guildId)) {
-            is Failure -> guild
-            is Success -> {
-                guildRepository.deleteByGuildId(guild.value.guildId)
-                Success(guild.value.id)
-            }
+    fun deleteSpringGuild(guildId: String): OperationResult<String, String> = when (val guild = getGuild(guildId)) {
+        is Failure -> guild
+        is Success -> {
+            guildRepository.deleteByGuildId(guild.value.guildId)
+            Success(guild.value.id)
         }
+    }
 
     fun getGuilds(
         pageSize: Int = 10,
         page: Int = 0,
-    ): OperationResult<List<SpringGuild>, String> =
-        Success(guildRepository.findAll(PageRequest.of(max(page, 0), max(pageSize, 1))).toList())
+    ): OperationResult<List<SpringGuild>, String> = Success(guildRepository.findAll(PageRequest.of(max(page, 0), max(pageSize, 1))).toList())
 
     fun updateUserCount(
         guildId: String,
@@ -87,26 +85,24 @@ class SpringGuildService(
         return Success(findAndModify.volume)
     }
 
-    fun getVol(guildId: String): OperationResult<Int, String> =
-        when (val guild = getGuild(guildId)) {
-            is Failure -> guild
-            is Success -> Success(guild.value.volume)
-        }
+    fun getVol(guildId: String): OperationResult<Int, String> = when (val guild = getGuild(guildId)) {
+        is Failure -> guild
+        is Success -> Success(guild.value.volume)
+    }
 
     fun isModerator(
         guildId: String,
         userId: String,
-    ): OperationResult<String, String> =
-        when (val guild = getGuild(guildId)) {
-            is Failure -> guild
-            is Success -> {
-                if (guild.value.privilegedUsers.contains(userId)) {
-                    Success(userId)
-                } else {
-                    Failure("User is not a moderator")
-                }
+    ): OperationResult<String, String> = when (val guild = getGuild(guildId)) {
+        is Failure -> guild
+        is Success -> {
+            if (guild.value.privilegedUsers.contains(userId)) {
+                Success(userId)
+            } else {
+                Failure("User is not a moderator")
             }
         }
+    }
 
     fun addModerator(
         guildId: String,
@@ -164,11 +160,10 @@ class SpringGuildService(
         }
     }
 
-    fun getMemeChannels(guildId: String): OperationResult<List<String>, String> =
-        when (val guild = getGuild(guildId)) {
-            is Failure -> guild
-            is Success -> Success(guild.value.memeChannels)
-        }
+    fun getMemeChannels(guildId: String): OperationResult<List<String>, String> = when (val guild = getGuild(guildId)) {
+        is Failure -> guild
+        is Success -> Success(guild.value.memeChannels)
+    }
 
     fun deafenChannel(
         guildId: String,
@@ -201,17 +196,15 @@ class SpringGuildService(
     fun isChannelDeafened(
         guildId: String,
         channelId: String,
-    ): Boolean =
-        when (val guild = getGuild(guildId)) {
-            is Failure -> false
-            is Success -> guild.value.deafenedChannels.contains(channelId)
-        }
+    ): Boolean = when (val guild = getGuild(guildId)) {
+        is Failure -> false
+        is Success -> guild.value.deafenedChannels.contains(channelId)
+    }
 
-    fun getDeafenedChannels(guildId: String): OperationResult<List<String>, String> =
-        when (val guild = getGuild(guildId)) {
-            is Failure -> guild
-            is Success -> Success(guild.value.deafenedChannels)
-        }
+    fun getDeafenedChannels(guildId: String): OperationResult<List<String>, String> = when (val guild = getGuild(guildId)) {
+        is Failure -> guild
+        is Success -> Success(guild.value.deafenedChannels)
+    }
 
     fun getGuildsWithoutModerators(): OperationResult<List<SpringGuild>, String> = Success(guildRepository.getGuildsWithModeratorCount(0))
 }

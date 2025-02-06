@@ -11,13 +11,13 @@ import java.io.InputStream
 class DiscordChannelMessageEvent(
     event: MessageReceivedEvent,
 ) : DiscordMessageEvent(
-        event.message.contentStripped,
-        event.channel,
-        event.message.author,
-        event.guild,
-        event.message.attachments,
-        event.message.mentions.users,
-    ) {
+    event.message.contentStripped,
+    event.channel,
+    event.message.author,
+    event.guild,
+    event.message.attachments,
+    event.message.mentions.users,
+) {
     override fun reply(
         embed: MessageEmbed,
         invokerOnly: Boolean,

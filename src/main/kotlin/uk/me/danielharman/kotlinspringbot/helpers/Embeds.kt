@@ -5,23 +5,21 @@ import net.dv8tion.jda.api.entities.MessageEmbed
 import java.awt.Color
 
 object Embeds {
-    fun createErrorEmbed(message: String): MessageEmbed =
-        EmbedBuilder()
-            .setTitle("Error")
-            .setDescription(message)
-            .setColor(Color.RED)
-            .build()
+    fun createErrorEmbed(message: String): MessageEmbed = EmbedBuilder()
+        .setTitle("Error")
+        .setDescription(message)
+        .setColor(Color.RED)
+        .build()
 
     fun infoWithDescriptionEmbedBuilder(
         title: String = "Info",
         message: String,
         colour: Color = Color.blue,
-    ): MessageEmbed =
-        EmbedBuilder()
-            .setTitle(title)
-            .setDescription(message)
-            .setColor(colour)
-            .build()
+    ): MessageEmbed = EmbedBuilder()
+        .setTitle(title)
+        .setDescription(message)
+        .setColor(colour)
+        .build()
 
     fun infoEmbedBuilder(
         title: String = "Info",
