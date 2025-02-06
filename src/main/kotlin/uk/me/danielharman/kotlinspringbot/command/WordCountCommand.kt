@@ -40,7 +40,7 @@ class WordCountCommand(private val springGuildService: SpringGuildService) :
                             try {
                                 stringBuilder.append(
                                     "${
-                                        event.guild?.retrieveMemberById(s)?.complete()?.nickname ?: s
+                                        event.guild.retrieveMemberById(s).complete()?.effectiveName ?: s
                                     } - $i words\n"
                                 )
                             } catch (e: ErrorResponseException) {
