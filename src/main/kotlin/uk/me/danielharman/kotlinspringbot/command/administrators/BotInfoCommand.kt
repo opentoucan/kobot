@@ -12,28 +12,37 @@ import java.time.Duration
 import java.time.LocalDateTime
 
 @Component
-class BotInfoCommand(private val administratorService: AdministratorService) : IAdminCommand {
-
+class BotInfoCommand(
+    private val administratorService: AdministratorService,
+) : IAdminCommand {
     private val commandString = "info"
 
     override fun execute(event: MessageReceivedEvent) {
-
-        val botStartTime = when(val r = administratorService.getBotStartTime()){
-            is Failure -> LocalDateTime.now()
-            is Success -> r.value
-        }
-        val botVersion = when(val r = administratorService.getBotVersion()){
-            is Failure -> r.reason
-            is Success -> r.value
-        }
+        val botStartTime =
+            when (val r = administratorService.getBotStartTime()) {
+                is Failure -> LocalDateTime.now()
+                is Success -> r.value
+            }
+        val botVersion =
+            when (val r = administratorService.getBotVersion()) {
+                is Failure -> r.reason
+                is Success -> r.value
+            }
         val duration = Duration.between(botStartTime, LocalDateTime.now())
 
-        val build = Embeds.infoEmbedBuilder()
-            .appendDescription("Bot version: ${botVersion}\n Bot uptime: ${DurationFormatUtils.formatDuration(duration.toMillis(), "[M 'months'] [d 'days'] [H 'hours'] [m 'minutes'] s 'seconds'")}")
-            .build()
+        val build =
+            Embeds
+                .infoEmbedBuilder()
+                .appendDescription(
+                    "Bot version: ${botVersion}\n Bot uptime: ${DurationFormatUtils.formatDuration(
+                        duration.toMillis(),
+                        "[M 'months'] [d 'days'] [H 'hours'] [m 'minutes'] s 'seconds'",
+                    )}",
+                ).build()
         event.channel.sendMessageEmbeds(build).queue()
-
     }
+
     override fun matchCommandString(str: String): Boolean = str == commandString
+
     override fun getCommandString(): String = commandString
 }

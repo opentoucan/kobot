@@ -5,11 +5,11 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
+import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.helpers.Comparators
+import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
-import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
-import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
@@ -41,7 +41,7 @@ class WordCountCommand(private val springGuildService: SpringGuildService) :
                                 stringBuilder.append(
                                     "${
                                         event.guild.retrieveMemberById(s).complete()?.effectiveName ?: s
-                                    } - $i words\n"
+                                    } - $i words\n",
                                 )
                             } catch (e: ErrorResponseException) {
                                 logger.error("Failed to find user $s by id")
@@ -58,5 +58,4 @@ class WordCountCommand(private val springGuildService: SpringGuildService) :
         }
         event.reply(message)
     }
-
 }

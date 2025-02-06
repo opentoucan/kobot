@@ -16,7 +16,7 @@ import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
 import uk.me.danielharman.kotlinspringbot.objects.ApplicationInfo
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
-import uk.me.danielharman.kotlinspringbot.services.*
+import uk.me.danielharman.kotlinspringbot.services.DiscordService
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
 import java.time.LocalDateTime
 
@@ -29,9 +29,8 @@ class SetupService(
     private val buildProperties: BuildProperties,
     private val kotlinBotProperties: KotlinBotProperties,
     private val administratorService: AdministratorService,
-    private val listeners: List<ListenerAdapter>
+    private val listeners: List<ListenerAdapter>,
 ) {
-
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     @PostConstruct
@@ -44,19 +43,21 @@ class SetupService(
 
         ApplicationInfo.isDev = activeProfiles.contains("dev")
 
-        if(ApplicationInfo.isDev){
+        if (ApplicationInfo.isDev) {
             logger.info("Bot is running in development mode.")
         }
 
-        //Create default admin
-        administratorService.createBotAdministrator(kotlinBotProperties.primaryPrivilegedUserId, setOf(Role.Primary))
+        // Create default admin
+        administratorService.createBotAdministrator(
+            kotlinBotProperties.primaryPrivilegedUserId,
+            setOf(Role.Primary),
+        )
 
         if (!activeProfiles.contains("discordDisabled")) {
-            //Injecting listeners here otherwise we'll get circular dependencies
+            // Injecting listeners here otherwise we'll get circular dependencies
             DiscordObject.registerListeners(listeners)
 
-            when(val dc = discordService.startDiscordConnection())
-            {
+            when (val dc = discordService.startDiscordConnection()) {
                 is Failure -> logger.error("Discord connection failed to start ${dc.reason}")
                 is Success -> {
                     logger.info(dc.value)
@@ -69,7 +70,7 @@ class SetupService(
             logger.info("Running with Discord disabled")
         }
 
-        //Kotlin objects are lazy
+        // Kotlin objects are lazy
         ApplicationInfo.startTime = LocalDateTime.now()
         ApplicationInfo.version = buildProperties.version
     }
@@ -77,11 +78,10 @@ class SetupService(
     @PreDestroy
     fun destroy() {
         logger.info("Cleaning up for shutdown")
-        when(val c = discordService.closeDiscordConnection()){
+        when (val c = discordService.closeDiscordConnection()) {
             is Failure -> logger.error(c.reason)
             is Success -> logger.info(c.value)
         }
         logger.info("Cleanup complete")
     }
-
 }

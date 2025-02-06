@@ -4,7 +4,10 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.*
+import org.hamcrest.Matchers.allOf
+import org.hamcrest.Matchers.emptyCollectionOf
+import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.hasProperty
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.times
 import org.mockito.InjectMocks
@@ -14,54 +17,52 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.MongoOperations
 import org.springframework.test.context.ActiveProfiles
-import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
-import uk.me.danielharman.kotlinspringbot.helpers.*
+import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.helpers.assertFailure
+import uk.me.danielharman.kotlinspringbot.helpers.assertSuccess
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.models.admin.Administrator
 import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
+import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.repositories.admin.AdministratorRepository
 import uk.me.danielharman.kotlinspringbot.services.DiscordService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
-import java.util.*
+import java.util.Optional
 
 @SpringBootTest
 @EnableConfigurationProperties(value = [KotlinBotProperties::class])
 @ActiveProfiles("test")
 internal class AdministratorServiceTest {
+    @InjectMocks lateinit var administratorService: AdministratorService
 
-    @InjectMocks
-    lateinit var administratorService: AdministratorService
+    @Mock lateinit var repository: AdministratorRepository
 
-    @Mock
-    lateinit var repository: AdministratorRepository
+    @Mock lateinit var springGuildService: SpringGuildService
 
-    @Mock
-    lateinit var springGuildService: SpringGuildService
+    @Mock lateinit var discordService: DiscordService
 
-    @Mock
-    lateinit var discordService: DiscordService
+    @Mock lateinit var properties: KotlinBotProperties
 
-    @Mock
-    lateinit var properties: KotlinBotProperties
-
-    @Mock
-    lateinit var mongoOperations: MongoOperations
+    @Mock lateinit var mongoOperations: MongoOperations
 
     @Test
     fun shouldCreateAdmin() {
         val stubAdministrator = Administrator("123", setOf())
         val stubAdmin2 = Administrator("abc")
         Mockito.`when`(repository.findById("abc")).thenReturn(Optional.of(stubAdmin2))
-        Mockito.`when`(repository.save(Mockito.any(Administrator::class.java))).thenReturn(stubAdministrator)
+        Mockito
+            .`when`(repository.save(Mockito.any(Administrator::class.java)))
+            .thenReturn(stubAdministrator)
 
         val sut = administratorService.createBotAdministrator("abc", "123", setOf())
 
         val result = assertSuccess(sut)
         assertThat(
-            result.value, allOf(
+            result.value,
+            allOf(
                 hasProperty("discordId", equalTo("123")),
-                hasProperty("roles", emptyCollectionOf(Role::class.java))
-            )
+                hasProperty("roles", emptyCollectionOf(Role::class.java)),
+            ),
         )
     }
 
@@ -98,10 +99,11 @@ internal class AdministratorServiceTest {
 
         val result = assertSuccess(sut)
         assertThat(
-            result.value, allOf(
+            result.value,
+            allOf(
                 hasProperty("discordId", equalTo("123")),
-                hasProperty("roles", emptyCollectionOf(Role::class.java))
-            )
+                hasProperty("roles", emptyCollectionOf(Role::class.java)),
+            ),
         )
     }
 
@@ -111,7 +113,9 @@ internal class AdministratorServiceTest {
         stubSpringGuild.value.privilegedUsers = listOf("892")
 
         Mockito.`when`(springGuildService.getGuild("123")).thenReturn(stubSpringGuild)
-        Mockito.`when`(springGuildService.addModerator("123", "456")).thenReturn(Success("Added 456"))
+        Mockito
+            .`when`(springGuildService.addModerator("123", "456"))
+            .thenReturn(Success("Added 456"))
 
         val result = administratorService.addSpringGuildAdministrator("892", "123", "456")
 
@@ -141,7 +145,9 @@ internal class AdministratorServiceTest {
         stubSpringGuild.value.privilegedUsers = listOf("892")
 
         Mockito.`when`(springGuildService.getGuild("123")).thenReturn(stubSpringGuild)
-        Mockito.`when`(springGuildService.removeModerator("123", "456")).thenReturn(Success("Removed 456"))
+        Mockito
+            .`when`(springGuildService.removeModerator("123", "456"))
+            .thenReturn(Success("Removed 456"))
 
         val result = administratorService.removeSpringGuildAdministrator("892", "123", "456")
 
@@ -222,7 +228,6 @@ internal class AdministratorServiceTest {
         assertFailure(result)
     }
 
-
     @Test
     fun shouldSyncGuildAdmins() {
         val stubSpringGuilds = Success(listOf(SpringGuild("123"), SpringGuild("456")))
@@ -251,9 +256,10 @@ internal class AdministratorServiceTest {
 
         Mockito.verify(springGuildService, times(1)).addModerator("123", "8910")
         Mockito.verify(springGuildService, times(1)).addModerator("456", "8911")
-        Mockito.verify(discordService, times(2)).sendUserMessage(Mockito.anyString(), Mockito.anyString())
+        Mockito
+            .verify(discordService, times(2))
+            .sendUserMessage(Mockito.anyString(), Mockito.anyString())
 
         assertSuccess(result)
     }
-
 }
