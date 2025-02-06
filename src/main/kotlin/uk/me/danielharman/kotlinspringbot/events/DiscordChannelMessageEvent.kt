@@ -1,26 +1,34 @@
 package uk.me.danielharman.kotlinspringbot.events
 
-import java.io.InputStream
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.utils.FileUpload
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
+import java.io.InputStream
 
-class DiscordChannelMessageEvent(event: MessageReceivedEvent) :
-    DiscordMessageEvent(
+class DiscordChannelMessageEvent(
+    event: MessageReceivedEvent,
+) : DiscordMessageEvent(
         event.message.contentStripped,
         event.channel,
         event.message.author,
         event.guild,
         event.message.attachments,
-        event.message.mentions.users) {
-    override fun reply(embed: MessageEmbed, invokerOnly: Boolean) {
+        event.message.mentions.users,
+    ) {
+    override fun reply(
+        embed: MessageEmbed,
+        invokerOnly: Boolean,
+    ) {
         this.channel.sendMessageEmbeds(embed).queue()
     }
 
-    override fun reply(file: InputStream, filename: String) {
+    override fun reply(
+        file: InputStream,
+        filename: String,
+    ) {
         try {
             this.channel.sendFiles(FileUpload.fromData(file, filename)).complete()
         } catch (e: ErrorResponseException) {
@@ -32,7 +40,10 @@ class DiscordChannelMessageEvent(event: MessageReceivedEvent) :
         }
     }
 
-    override fun reply(msg: String, invokerOnly: Boolean) {
+    override fun reply(
+        msg: String,
+        invokerOnly: Boolean,
+    ) {
         this.channel.sendMessage(msg).queue()
     }
 

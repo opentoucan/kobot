@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 
 class MoveListener : ListenerAdapter() {
     override fun onGuildVoiceUpdate(event: GuildVoiceUpdateEvent) {
-
         if (event.channelLeft == null || event.channelJoined == null) return
 
         if (event.jda.selfUser.id == event.member.id) {

@@ -9,12 +9,12 @@ import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
 
 @Component
-class InspectRolesCommand(private val administratorService: AdministratorService) : IAdminCommand {
-
+class InspectRolesCommand(
+    private val administratorService: AdministratorService,
+) : IAdminCommand {
     private val commandString = "inspectroles"
 
     override fun execute(event: MessageReceivedEvent) {
-
         when (administratorService.getBotAdministratorByDiscordId(event.author.id)) {
             is Failure -> {
                 event.channel
@@ -48,10 +48,11 @@ class InspectRolesCommand(private val administratorService: AdministratorService
                     is Success ->
                         event.channel
                             .sendMessageEmbeds(
-                                Embeds.infoEmbedBuilder()
+                                Embeds
+                                    .infoEmbedBuilder()
                                     .appendDescription("${roles.value}")
-                                    .build())
-                            .queue()
+                                    .build(),
+                            ).queue()
                 }
             }
         }

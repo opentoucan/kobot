@@ -10,5 +10,5 @@ data class MemePostedIntegrationEvent(
     val meme: String,
     val guildId: String,
     val channelId: String,
-    val messageId: String
+    val messageId: String,
 )

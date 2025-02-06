@@ -7,8 +7,9 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventListener
 import com.sedmelluq.discord.lavaplayer.player.event.TrackEndEvent
 import com.sedmelluq.discord.lavaplayer.player.event.TrackExceptionEvent
 
-class GuildMusicManager(manager: AudioPlayerManager) : AudioEventListener {
-
+class GuildMusicManager(
+    manager: AudioPlayerManager,
+) : AudioEventListener {
     var player: AudioPlayer = manager.createPlayer()
     var scheduler: TrackScheduler = TrackScheduler(player)
 
@@ -19,21 +20,22 @@ class GuildMusicManager(manager: AudioPlayerManager) : AudioEventListener {
         player.addListener(this)
     }
 
-    fun getSendHandler(): AudioPlayerSendHandler {
-        return AudioPlayerSendHandler(player)
-    }
+    fun getSendHandler(): AudioPlayerSendHandler = AudioPlayerSendHandler(player)
 
-    fun registerCallback(trackIdentifier: String, func: (String) -> Unit) {
+    fun registerCallback(
+        trackIdentifier: String,
+        func: (String) -> Unit,
+    ) {
         callbacks[trackIdentifier] = func
     }
 
     override fun onEvent(event: AudioEvent) {
-
         when (event) {
             is TrackExceptionEvent -> {
                 callbacks[event.track.identifier]?.let {
                     it(
-                        "An error occurred when trying to play the track, the track may be age restricted or have embedding disabled.")
+                        "An error occurred when trying to play the track, the track may be age restricted or have embedding disabled.",
+                    )
                 }
             }
             is TrackEndEvent -> {

@@ -1,8 +1,8 @@
 package uk.me.danielharman.kotlinspringbot.models
 
-import java.time.LocalDateTime
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import java.time.LocalDateTime
 
 @Document(collection = "memes")
 data class Meme(
@@ -11,12 +11,11 @@ data class Meme(
     var userId: String,
     var url: String,
     var channelId: String,
-    var urlType: UrlType = UrlType.Image
+    var urlType: UrlType = UrlType.Image,
 ) {
-
     enum class UrlType {
         Image,
-        Link
+        Link,
     }
 
     @Id lateinit var id: String
@@ -36,7 +35,6 @@ data class Meme(
     val downvotes: Int
         get() = downvoters.size
 
-    override fun toString(): String {
-        return "Meme(messageId='$messageId', guildId='$guildId', userId='$userId', upvoters=$upvoters, downvoters=$downvoters, url='$url', id='$id', created=$created)"
-    }
+    override fun toString(): String =
+        "Meme(messageId='$messageId', guildId='$guildId', userId='$userId', upvoters=$upvoters, downvoters=$downvoters, url='$url', id='$id', created=$created)"
 }

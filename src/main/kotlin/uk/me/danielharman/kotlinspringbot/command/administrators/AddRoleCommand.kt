@@ -10,12 +10,12 @@ import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
 
 @Component
-class AddRoleCommand(private val administratorService: AdministratorService) : IAdminCommand {
-
+class AddRoleCommand(
+    private val administratorService: AdministratorService,
+) : IAdminCommand {
     private val commandString = "addrole"
 
     override fun execute(event: MessageReceivedEvent) {
-
         when (administratorService.getBotAdministratorByDiscordId(event.author.id)) {
             is Failure ->
                 event.channel
@@ -55,17 +55,21 @@ class AddRoleCommand(private val administratorService: AdministratorService) : I
                     event.channel
                         .sendMessageEmbeds(
                             Embeds.createErrorEmbed(
-                                "No such role ${split[2]}. The current available roles are: ${Role.entries.fold("") { acc, r -> "$acc $r" }}"))
-                        .queue()
+                                "No such role ${split[2]}. The current available roles are: ${Role.entries.fold(
+                                    "",
+                                ) { acc, r -> "$acc $r" }}",
+                            ),
+                        ).queue()
                     return
                 }
 
                 event.channel
                     .sendMessageEmbeds(
-                        Embeds.infoEmbedBuilder()
+                        Embeds
+                            .infoEmbedBuilder()
                             .appendDescription("Added ${split[2]} to ${user.asTag}")
-                            .build())
-                    .queue()
+                            .build(),
+                    ).queue()
             }
         }
     }

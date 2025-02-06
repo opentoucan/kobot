@@ -13,11 +13,10 @@ import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 @Component
 class ClearBotMessagesCommand(
     private val discordService: DiscordActionService,
-    private val properties: KotlinBotProperties
-) : Command("clear", "Clear command invocations and bot messages"), ISlashCommand {
-
+    private val properties: KotlinBotProperties,
+) : Command("clear", "Clear command invocations and bot messages"),
+    ISlashCommand {
     override fun execute(event: DiscordMessageEvent) {
-
         val selfId =
             when (val selfUser = discordService.getSelfUser()) {
                 is Failure -> ""
@@ -25,15 +24,18 @@ class ClearBotMessagesCommand(
             }
 
         event.channel.history.retrievePast(50).complete().forEach { m ->
-            if ((m.author.isBot) ||
+            if (
+                (m.author.isBot) ||
                 m.author.id == selfId ||
                 m.contentStripped.startsWith(properties.commandPrefix) ||
-                m.contentStripped.startsWith(properties.privilegedCommandPrefix)) {
+                m.contentStripped.startsWith(properties.privilegedCommandPrefix)
+            ) {
                 try {
                     m.delete().queue()
                 } catch (e: InsufficientPermissionException) {
                     logger.warn(
-                        "Tried to delete message but had insufficient permissions. ${e.message}")
+                        "Tried to delete message but had insufficient permissions. ${e.message}",
+                    )
                 }
             }
         }

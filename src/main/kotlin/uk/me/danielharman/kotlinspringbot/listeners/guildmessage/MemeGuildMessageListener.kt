@@ -1,9 +1,5 @@
 package uk.me.danielharman.kotlinspringbot.listeners.guildmessage
 
-import java.awt.Color
-import java.net.URI
-import java.net.URISyntaxException
-import java.util.*
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
@@ -25,6 +21,11 @@ import uk.me.danielharman.kotlinspringbot.properties.FeatureProperties
 import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.services.MemeService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
+import java.awt.Color
+import java.net.URI
+import java.net.URISyntaxException
+import java.util.Base64
+import java.util.Locale
 
 @Component
 class MemeGuildMessageListener(
@@ -32,15 +33,18 @@ class MemeGuildMessageListener(
     private val springGuildService: SpringGuildService,
     private val memeService: MemeService,
     private val memePostedIntegrationEventPublisher: MemePostedIntegrationEventPublisher,
-    private val featureProperties: FeatureProperties
+    private val featureProperties: FeatureProperties,
 ) : ListenerAdapter() {
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
         event.message.contentRaw
-        if (event.message.contentStripped.startsWith(properties.commandPrefix) ||
-            event.message.contentStripped.startsWith(properties.privilegedCommandPrefix))
+        if (
+            event.message.contentStripped.startsWith(properties.commandPrefix) ||
+            event.message.contentStripped.startsWith(properties.privilegedCommandPrefix)
+        ) {
             return
+        }
 
         val isDeafened = springGuildService.isChannelDeafened(event.guild.id, event.channel.id)
 
@@ -56,28 +60,34 @@ class MemeGuildMessageListener(
             val memeFileUrl = URI(event.message.attachments[0].url).toURL()
 
             val content = memeFileUrl.openConnection().contentType
-            if (content.startsWith("image") &&
+            if (
+                content.startsWith("image") &&
                 event.message.attachments.isNotEmpty() &&
-                featureProperties.memeRepost) {
-
+                featureProperties.memeRepost
+            ) {
                 val authorName = event.author.effectiveName
                 val rgb = event.member?.color?.rgb ?: Color.WHITE.rgb
                 val colour = "#${Integer.toHexString(rgb).substring(2)}"
                 val avatar =
-                    Base64.getEncoder()
+                    Base64
+                        .getEncoder()
                         .encodeToString(
-                            URI(event.author.effectiveAvatarUrl).toURL().openStream().readBytes())
+                            URI(event.author.effectiveAvatarUrl).toURL().openStream().readBytes(),
+                        )
 
                 memePostedIntegrationEventPublisher.publish(
                     MemePostedIntegrationEvent(
                         authorName,
                         colour,
                         avatar,
-                        Base64.getEncoder()
+                        Base64
+                            .getEncoder()
                             .encodeToString(IOUtils.toByteArray((memeFileUrl).openStream())),
                         event.guild.id,
                         event.channel.id,
-                        event.messageId))
+                        event.messageId,
+                    ),
+                )
             }
         }
 
@@ -100,7 +110,7 @@ class MemeGuildMessageListener(
         guildId: String,
         authorId: String,
         channelId: String,
-        force: Boolean = false
+        force: Boolean = false,
     ) {
         if (message.attachments.isNotEmpty()) {
             message.addReaction(EmojiCodes.ThumbsUp).queue()
@@ -112,14 +122,17 @@ class MemeGuildMessageListener(
                     authorId,
                     message.attachments[0].url,
                     channelId,
-                    Meme.UrlType.Image))
+                    Meme.UrlType.Image,
+                ),
+            )
         } else {
             try {
                 val url = if (force) message.jumpUrl else URI(message.contentRaw).toURL().toString()
                 message.addReaction(EmojiCodes.ThumbsUp).queue()
                 message.addReaction(EmojiCodes.ThumbsDown).queue()
                 memeService.saveMeme(
-                    Meme(message.id, guildId, authorId, url, channelId, Meme.UrlType.Link))
+                    Meme(message.id, guildId, authorId, url, channelId, Meme.UrlType.Link),
+                )
             } catch (ex: NullPointerException) {
                 logger.info("No URL in message: ${ex.message}")
             } catch (ex: URISyntaxException) {
@@ -129,7 +142,6 @@ class MemeGuildMessageListener(
     }
 
     override fun onMessageReactionAdd(event: MessageReactionAddEvent) {
-
         if (event.userId == event.jda.selfUser.id || event.user?.isBot == true) return
 
         val emoji = event.reaction.emoji
@@ -142,13 +154,18 @@ class MemeGuildMessageListener(
         val guild = (getGuild as Success).value
 
         if (guild.memeChannels.contains(event.channel.id)) {
-
-            if (event.userId ==
-                getAuthorIdFromMessageId(event.reaction.channel.asTextChannel(), event.messageId)) {
+            if (
+                event.userId ==
+                getAuthorIdFromMessageId(
+                    event.reaction.channel.asTextChannel(),
+                    event.messageId,
+                )
+            ) {
                 val message = event.retrieveMessage().complete()
                 when (emoji) {
                     EmojiCodes.ThumbsDown,
-                    EmojiCodes.ThumbsUp -> {
+                    EmojiCodes.ThumbsUp,
+                    -> {
                         val user = event.user ?: return
                         logger.info("[Message Listener] Removing reaction by posting user")
                         event.reaction.removeReaction(user).queue()
@@ -164,7 +181,12 @@ class MemeGuildMessageListener(
 
                     EmojiCodes.CheckMark -> {
                         createMeme(
-                            message, guild.guildId, message.author.id, message.channel.id, true)
+                            message,
+                            guild.guildId,
+                            message.author.id,
+                            message.channel.id,
+                            true,
+                        )
                         message.clearReactions(EmojiCodes.CheckMark).queue()
                     }
                 }
@@ -173,21 +195,19 @@ class MemeGuildMessageListener(
                 event.user?.let { event.reaction.removeReaction(it).queue() }
             }
 
-            // Thumbs up
             if (emoji == EmojiCodes.ThumbsUp) {
-                if (!memeService.addUpvote(guild.guildId, event.messageId, event.userId))
+                if (!memeService.addUpvote(guild.guildId, event.messageId, event.userId)) {
                     logger.error("[MessageListener] Failed to upvote")
-            }
-            // Thumbs down
-            else if (emoji == EmojiCodes.ThumbsDown) {
-                if (!memeService.addDownvote(guild.guildId, event.messageId, event.userId))
+                }
+            } else if (emoji == EmojiCodes.ThumbsDown) {
+                if (!memeService.addDownvote(guild.guildId, event.messageId, event.userId)) {
                     logger.error("[MessageListener] Failed to downvote")
+                }
             }
         }
     }
 
     override fun onMessageReactionRemove(event: MessageReactionRemoveEvent) {
-
         if (event.userId == event.jda.selfUser.id) return
 
         val emoji = event.reaction.emoji
@@ -199,24 +219,25 @@ class MemeGuildMessageListener(
         val guild = (getGuild as Success).value
 
         if (guild.memeChannels.contains(event.channel.id)) {
-
-            if (event.userId ==
-                getAuthorIdFromMessageId(event.reaction.channel.asTextChannel(), event.messageId))
+            if (
+                event.userId ==
+                getAuthorIdFromMessageId(
+                    event.reaction.channel.asTextChannel(),
+                    event.messageId,
+                )
+            ) {
                 return
+            }
 
-            // Thumbs up
             if (emoji == EmojiCodes.ThumbsUp) {
                 memeService.removeUpvote(guild.guildId, event.messageId, event.userId)
-            }
-            // Thumbs down
-            else if (emoji == EmojiCodes.ThumbsDown) {
+            } else if (emoji == EmojiCodes.ThumbsDown) {
                 memeService.removeDownvote(guild.guildId, event.messageId, event.userId)
             }
         }
     }
 
     override fun onMessageDelete(event: MessageDeleteEvent) {
-
         val getGuild = springGuildService.getGuild(event.guild.id)
         if (getGuild is Failure) {
             logger.error("onMessageDelete: ${getGuild.reason}")

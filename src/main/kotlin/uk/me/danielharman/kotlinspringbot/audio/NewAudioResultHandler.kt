@@ -22,9 +22,8 @@ class NewAudioResultHandler(
     private val musicManager: GuildMusicManager,
     private val event: DiscordMessageEvent,
     private val springGuildService: SpringGuildService,
-    private val guild: Guild
+    private val guild: Guild,
 ) : AudioLoadResultHandler {
-
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun trackLoaded(track: AudioTrack) {
@@ -40,7 +39,8 @@ class NewAudioResultHandler(
         }
 
         event.reply(
-            "Adding to queue ${firstTrack.info.title} (first track of playlist ${playlist.name}")
+            "Adding to queue ${firstTrack.info.title} (first track of playlist ${playlist.name}",
+        )
         play(firstTrack)
     }
 
@@ -62,7 +62,8 @@ class NewAudioResultHandler(
                 guild.audioManager.openAudioConnection(voiceChannel)
             } catch (e: InsufficientPermissionException) {
                 logger.error(
-                    "Bot encountered an exception when attempting to join a voice channel ${e.message}")
+                    "Bot encountered an exception when attempting to join a voice channel ${e.message}",
+                )
             }
         }
         when (val vol = springGuildService.getVol(guild.id)) {
@@ -72,7 +73,10 @@ class NewAudioResultHandler(
         musicManager.scheduler.queue(track)
     }
 
-    private fun onErrorEvent(event: DiscordMessageEvent, message: String) {
+    private fun onErrorEvent(
+        event: DiscordMessageEvent,
+        message: String,
+    ) {
         event.reply(Embeds.createErrorEmbed(message), false)
     }
 }

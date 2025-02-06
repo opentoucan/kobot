@@ -1,6 +1,5 @@
 package uk.me.danielharman.kotlinspringbot
 
-import java.time.LocalDateTime
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.mongodb.core.MongoOperations
@@ -10,17 +9,20 @@ import org.springframework.data.mongodb.core.query.Update
 import org.springframework.data.mongodb.core.query.Update.update
 import uk.me.danielharman.kotlinspringbot.models.DiscordCommand
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
+import java.time.LocalDateTime
 
-class SchemaUpdater(private val mongoOperations: MongoOperations) {
-
+class SchemaUpdater(
+    private val mongoOperations: MongoOperations,
+) {
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
-    data class ApplicationOpts(val schemaVersion: Int)
+    data class ApplicationOpts(
+        val schemaVersion: Int,
+    )
 
     private val latestVer = 2
 
     fun updateSchema() {
-
         logger.info("[Schema] Checking schema version.")
 
         val findOne = getOpts()
@@ -34,12 +36,12 @@ class SchemaUpdater(private val mongoOperations: MongoOperations) {
 
         logger.info("[Schema] Schema now at $schemaVer")
 
-        if (schemaVer != latestVer)
+        if (schemaVer != latestVer) {
             throw RuntimeException("[Schema] Schema version mismatch! $schemaVer != $latestVer")
+        }
     }
 
     private fun updateTo1(): Int {
-
         logger.info("[Update to 1] Migrating custom commands")
 
         val findAll = mongoOperations.findAll(SpringGuild::class.java)
@@ -53,11 +55,19 @@ class SchemaUpdater(private val mongoOperations: MongoOperations) {
                         update.set(
                             "customCommands.${cmd.key}",
                             SpringGuild.CustomCommand(
-                                cmd.value, SpringGuild.CommandType.STRING, "", LocalDateTime.now()))
+                                cmd.value,
+                                SpringGuild.CommandType.STRING,
+                                "",
+                                LocalDateTime.now(),
+                            ),
+                        )
                     }
 
                     mongoOperations.upsert(
-                        query(where("_id").`is`(sg.id)), update, SpringGuild::class.java)
+                        query(where("_id").`is`(sg.id)),
+                        update,
+                        SpringGuild::class.java,
+                    )
                 }
             }
         }
@@ -66,7 +76,6 @@ class SchemaUpdater(private val mongoOperations: MongoOperations) {
     }
 
     private fun updateTo2(): Int {
-
         logger.info("[Update to 2] Migrating custom commands to DiscordCommand model")
 
         val findAll = mongoOperations.findAll(SpringGuild::class.java)
@@ -98,7 +107,8 @@ class SchemaUpdater(private val mongoOperations: MongoOperations) {
                                 fileName,
                                 type,
                                 c.value.creatorId,
-                                created = c.value.created)
+                                created = c.value.created,
+                            )
                         mongoOperations.save(newCommand, "DiscordCommands")
                     }
                 }
@@ -113,13 +123,16 @@ class SchemaUpdater(private val mongoOperations: MongoOperations) {
             query(where("_id").`is`("appopts")),
             update("schemaVersion", ver),
             ApplicationOpts::class.java,
-            "ApplicationOpts")
+            "ApplicationOpts",
+        )
 
         return getOpts()?.schemaVersion ?: 0
     }
 
-    private fun getOpts(): ApplicationOpts? {
-        return mongoOperations.findOne(
-            query(where("_id").`is`("appopts")), ApplicationOpts::class.java, "ApplicationOpts")
-    }
+    private fun getOpts(): ApplicationOpts? =
+        mongoOperations.findOne(
+            query(where("_id").`is`("appopts")),
+            ApplicationOpts::class.java,
+            "ApplicationOpts",
+        )
 }

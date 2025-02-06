@@ -7,7 +7,7 @@ data class CommandParameter(
     val name: String,
     val type: ParamType,
     val description: String,
-    val required: Boolean = false
+    val required: Boolean = false,
 ) {
     var value: Any? = null
     var error: Boolean = false
@@ -17,7 +17,7 @@ data class CommandParameter(
         String,
         Long,
         Boolean,
-        Mentionable
+        Mentionable,
     }
 
     fun reset() {

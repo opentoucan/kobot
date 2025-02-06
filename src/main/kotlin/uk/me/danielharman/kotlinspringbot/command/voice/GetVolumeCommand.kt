@@ -10,9 +10,10 @@ import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
-class GetVolumeCommand(private val springGuildService: SpringGuildService) :
-    Command("getvol", "Get the bot's current volume level"), ISlashCommand {
-
+class GetVolumeCommand(
+    private val springGuildService: SpringGuildService,
+) : Command("getvol", "Get the bot's current volume level"),
+    ISlashCommand {
     override fun execute(event: DiscordMessageEvent) {
         val guild = event.guild
 

@@ -6,7 +6,6 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 
 @Component
 class SetNickCommand : IModeratorCommand {
-
     private val commandString: String = "setnick"
 
     override fun matchCommandString(str: String): Boolean = commandString == str
@@ -14,7 +13,6 @@ class SetNickCommand : IModeratorCommand {
     override fun getCommandString(): String = commandString
 
     override fun execute(event: MessageReceivedEvent) {
-
         val split = event.message.contentStripped.split('"')
 
         val mentionedMembers = event.message.mentions.members

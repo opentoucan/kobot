@@ -19,18 +19,22 @@ class InfoCommand :
                 "Command",
                 CommandParameter.ParamType.Word,
                 "Name of command to inspect",
-                false))),
+                false,
+            ),
+        ),
+    ),
     ISlashCommand {
-
     override fun execute(event: DiscordMessageEvent) {
         event.reply(
-            Embeds.infoEmbedBuilder(title = "KotBot")
+            Embeds
+                .infoEmbedBuilder(title = "KotBot")
                 .appendDescription("This is a Discord bot written in Kotlin using Spring")
                 .addField("Version", ApplicationInfo.version, false)
                 .addField("Developers", "Daniel Harman\nKieran Dennis\nJared Prest", false)
                 .addField("Libraries", "https://spring.io, https://kotlinlang.org", false)
                 .addField("Source", "https://github.com/opentoucan/kobot", false)
                 .addField("Licence", "https://www.apache.org/licenses/LICENSE-2.0", false)
-                .build())
+                .build(),
+        )
     }
 }

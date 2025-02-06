@@ -13,9 +13,10 @@ import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
-class WordCountCommand(private val springGuildService: SpringGuildService) :
-    Command("wordcounts", "List member word counts"), ISlashCommand {
-
+class WordCountCommand(
+    private val springGuildService: SpringGuildService,
+) : Command("wordcounts", "List member word counts"),
+    ISlashCommand {
     override fun execute(event: DiscordMessageEvent) {
         if (event.guild == null) {
             event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))
@@ -43,8 +44,12 @@ class WordCountCommand(private val springGuildService: SpringGuildService) :
                                 try {
                                     stringBuilder.append(
                                         "${
-                                        event.guild?.retrieveMemberById(s)?.complete()?.nickname ?: s
-                                    } - $i words\n")
+                                            event.guild
+                                                ?.retrieveMemberById(s)
+                                                ?.complete()
+                                                ?.nickname ?: s
+                                        } - $i words\n",
+                                    )
                                 } catch (e: ErrorResponseException) {
                                     logger.error("Failed to find user $s by id")
                                 }

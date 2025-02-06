@@ -6,7 +6,6 @@ import uk.me.danielharman.kotlinspringbot.models.admin.Administrator
 
 @Repository
 interface AdministratorRepository : MongoRepository<Administrator, String> {
-
     fun getByDiscordId(discordId: String): Administrator?
 
     fun deleteByDiscordId(discordId: String)

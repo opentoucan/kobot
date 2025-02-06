@@ -8,11 +8,11 @@ import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 
 @Component
-class ListCommandsCommand(
+class HelpCommand(
     private val commands: List<Command>,
-    private val properties: KotlinBotProperties
-) : Command("help", "Get the list of inbuilt commands"), ISlashCommand {
-
+    private val properties: KotlinBotProperties,
+) : Command("help", "Get the list of inbuilt commands"),
+    ISlashCommand {
     override fun execute(event: DiscordMessageEvent) {
         if (event.guild == null) {
             event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))
@@ -25,16 +25,19 @@ class ListCommandsCommand(
             .forEach { c ->
                 run {
                     stringBuilder.append(
-                        "${properties.commandPrefix}${c.commandString}: ${c.description}\n")
+                        "${properties.commandPrefix}${c.commandString}: ${c.description}\n",
+                    )
                 }
             }
 
         event.reply(
-            Embeds.infoEmbedBuilder()
+            Embeds
+                .infoEmbedBuilder()
                 .appendDescription(
-                    "Text commands: ${properties.commandPrefix}help\n Voice commands: ${properties.voiceCommandPrefix}help\n\n\n")
-                .appendDescription(stringBuilder.toString())
+                    "Text commands: ${properties.commandPrefix}help\n Voice commands: ${properties.voiceCommandPrefix}help\n\n\n",
+                ).appendDescription(stringBuilder.toString())
                 .setTitle("Text Commands")
-                .build())
+                .build(),
+        )
     }
 }

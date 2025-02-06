@@ -6,8 +6,9 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
-class AddModeratorCommand(private val springGuildService: SpringGuildService) : IModeratorCommand {
-
+class AddModeratorCommand(
+    private val springGuildService: SpringGuildService,
+) : IModeratorCommand {
     private val commandString: String = "addmoderator"
 
     override fun matchCommandString(str: String): Boolean = commandString == str
@@ -15,7 +16,6 @@ class AddModeratorCommand(private val springGuildService: SpringGuildService) : 
     override fun getCommandString(): String = commandString
 
     override fun execute(event: MessageReceivedEvent) {
-
         val mentionedUsers = event.message.mentions.users
 
         if (mentionedUsers.size <= 0) {

@@ -9,13 +9,15 @@ import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
 
 @Component
-class ListAdminCommand(private val administratorService: AdministratorService) : IAdminCommand {
-
+class ListAdminCommand(
+    private val administratorService: AdministratorService,
+) : IAdminCommand {
     private val commandString = "admins"
 
     override fun execute(event: MessageReceivedEvent) {
-        when (val thisAdmin =
-            administratorService.getBotAdministratorByDiscordId(event.author.id)) {
+        when (
+            val thisAdmin = administratorService.getBotAdministratorByDiscordId(event.author.id)
+        ) {
             is Failure ->
                 event.channel
                     .sendMessageEmbeds(Embeds.createErrorEmbed("You are not an admin."))

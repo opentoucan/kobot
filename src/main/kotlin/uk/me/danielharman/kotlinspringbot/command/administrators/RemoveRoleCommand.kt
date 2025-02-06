@@ -10,8 +10,9 @@ import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
 
 @Component
-class RemoveRoleCommand(private val administratorService: AdministratorService) : IAdminCommand {
-
+class RemoveRoleCommand(
+    private val administratorService: AdministratorService,
+) : IAdminCommand {
     private val commandString = "removerole"
 
     override fun execute(event: MessageReceivedEvent) {
@@ -56,18 +57,20 @@ class RemoveRoleCommand(private val administratorService: AdministratorService) 
                         .sendMessageEmbeds(
                             Embeds.createErrorEmbed(
                                 "No such role ${split[2]}. The current available roles are: ${
-                                Role.values().fold("") { acc, r -> "$acc $r" }
-                            }"))
-                        .queue()
+                                    Role.values().fold("") { acc, r -> "$acc $r" }
+                                }",
+                            ),
+                        ).queue()
                     return
                 }
 
                 event.channel
                     .sendMessageEmbeds(
-                        Embeds.infoEmbedBuilder()
+                        Embeds
+                            .infoEmbedBuilder()
                             .appendDescription("Removed ${split[2]} from ${user.asTag}")
-                            .build())
-                    .queue()
+                            .build(),
+                    ).queue()
             }
         }
     }

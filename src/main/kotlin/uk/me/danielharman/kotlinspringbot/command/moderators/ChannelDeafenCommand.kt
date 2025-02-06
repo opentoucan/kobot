@@ -10,9 +10,8 @@ import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 @Component
 class ChannelDeafenCommand(
     private val springGuildService: SpringGuildService,
-    private val unDeafenCommand: ChannelUnDeafenCommand
+    private val unDeafenCommand: ChannelUnDeafenCommand,
 ) : IModeratorCommand {
-
     private val commandString: String = "deafen"
 
     override fun matchCommandString(str: String): Boolean = commandString == str

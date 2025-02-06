@@ -9,12 +9,12 @@ import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
 
 @Component
-class RemoveAdminCommand(private val administratorService: AdministratorService) : IAdminCommand {
-
+class RemoveAdminCommand(
+    private val administratorService: AdministratorService,
+) : IAdminCommand {
     private val commandString = "removeadmin"
 
     override fun execute(event: MessageReceivedEvent) {
-
         when (administratorService.getBotAdministratorByDiscordId(event.author.id)) {
             is Failure ->
                 event.channel
@@ -50,10 +50,8 @@ class RemoveAdminCommand(private val administratorService: AdministratorService)
 
                 event.channel
                     .sendMessageEmbeds(
-                        Embeds.infoEmbedBuilder()
-                            .appendDescription("Removed ${user.asTag}")
-                            .build())
-                    .queue()
+                        Embeds.infoEmbedBuilder().appendDescription("Removed ${user.asTag}").build(),
+                    ).queue()
             }
         }
     }

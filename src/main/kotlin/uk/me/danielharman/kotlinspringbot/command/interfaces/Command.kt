@@ -9,9 +9,8 @@ import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 abstract class Command(
     val commandString: String,
     val description: String,
-    val commandParameters: List<CommandParameter> = listOf()
+    val commandParameters: List<CommandParameter> = listOf(),
 ) {
-
     protected val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     abstract fun execute(event: DiscordMessageEvent)

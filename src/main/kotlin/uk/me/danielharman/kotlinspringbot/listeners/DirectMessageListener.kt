@@ -11,9 +11,8 @@ import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 @Component
 class DirectMessageListener(
     private val commandFactory: AdminCommandFactory,
-    private val properties: KotlinBotProperties
+    private val properties: KotlinBotProperties,
 ) : ListenerAdapter() {
-
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
@@ -27,7 +26,6 @@ class DirectMessageListener(
     }
 
     private fun runCommand(event: MessageReceivedEvent) {
-
         if (event.author.id == event.jda.selfUser.id || event.author.isBot) {
             logger.info("Not running command as author is me or a bot")
             return

@@ -15,7 +15,6 @@ import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 
 @Service
 class DiscordActionService {
-
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     fun getTextChannel(channelId: String): OperationResult<GuildChannel, String> {
@@ -28,12 +27,9 @@ class DiscordActionService {
         }
     }
 
-    fun getSelfUser(): OperationResult<User, String> {
-        return Success(DiscordObject.jda.selfUser)
-    }
+    fun getSelfUser(): OperationResult<User, String> = Success(DiscordObject.jda.selfUser)
 
     fun getUserById(creatorId: String): OperationResult<User, String> {
-
         if (creatorId.isEmpty()) {
             return Failure("Failed to get user: Id was empty")
         }

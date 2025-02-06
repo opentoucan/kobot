@@ -1,6 +1,5 @@
 package uk.me.danielharman.kotlinspringbot.services
 
-import java.time.LocalDateTime
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
@@ -16,17 +15,20 @@ import uk.me.danielharman.kotlinspringbot.models.DiscordChannelMessage
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
+import java.time.LocalDateTime
 
 @Service
 class DiscordService(
     private val springGuildService: SpringGuildService,
     private val properties: KotlinBotProperties,
-    private val commands: List<ISlashCommand>
+    private val commands: List<ISlashCommand>,
 ) {
-
     private val logger = LoggerFactory.getLogger(DiscordService::class.java)
 
-    fun sendUserMessage(msg: String, userId: String): PrivateChannel? {
+    fun sendUserMessage(
+        msg: String,
+        userId: String,
+    ): PrivateChannel? {
         val user = DiscordObject.jda.retrieveUserById(userId).complete()
         val privateChannel = user.openPrivateChannel().complete()
         privateChannel.sendMessage(msg).queue()
@@ -70,10 +72,12 @@ class DiscordService(
         if (!DiscordObject.initialised) {
             DiscordObject.init(properties, commands)
             return Success(
-                "Discord connection up at ${DiscordObject.startTime?.toString() ?: "????"}")
+                "Discord connection up at ${DiscordObject.startTime?.toString() ?: "????"}",
+            )
         }
         return Failure(
-            "Discord connection is already up. Started at ${DiscordObject.startTime?.toString()}")
+            "Discord connection is already up. Started at ${DiscordObject.startTime?.toString()}",
+        )
     }
 
     fun getDiscordStartTime(): OperationResult<LocalDateTime, String> {

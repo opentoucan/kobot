@@ -1,6 +1,5 @@
 package uk.me.danielharman.kotlinspringbot.services.admin
 
-import java.time.LocalDateTime
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.mongodb.core.MongoOperations
@@ -19,6 +18,7 @@ import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.repositories.admin.AdministratorRepository
 import uk.me.danielharman.kotlinspringbot.services.DiscordService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
+import java.time.LocalDateTime
 
 @Service
 class AdministratorService(
@@ -26,18 +26,15 @@ class AdministratorService(
     private val springGuildService: SpringGuildService,
     private val discordService: DiscordService,
     private val properties: KotlinBotProperties,
-    private val mongoOperations: MongoOperations
+    private val mongoOperations: MongoOperations,
 ) {
-
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     fun getBotVersion(): OperationResult<String, String> = Success(ApplicationInfo.version)
 
-    fun getBotStartTime(): OperationResult<LocalDateTime, String> =
-        Success(ApplicationInfo.startTime)
+    fun getBotStartTime(): OperationResult<LocalDateTime, String> = Success(ApplicationInfo.startTime)
 
-    fun getDiscordStartTime(): OperationResult<LocalDateTime, String> =
-        discordService.getDiscordStartTime()
+    fun getDiscordStartTime(): OperationResult<LocalDateTime, String> = discordService.getDiscordStartTime()
 
     fun getBotDiscordName(): OperationResult<String, String> = discordService.getBotName()
 
@@ -73,7 +70,7 @@ class AdministratorService(
 
     fun createBotAdministrator(
         discordId: String,
-        roles: Set<Role> = setOf()
+        roles: Set<Role> = setOf(),
     ): OperationResult<Administrator, String> =
         when (val admin = getBotAdministratorByDiscordId(discordId)) {
             is Failure -> Success(repository.save(Administrator(discordId, roles)))
@@ -83,7 +80,7 @@ class AdministratorService(
     fun createBotAdministrator(
         userId: String,
         discordId: String,
-        roles: Set<Role>
+        roles: Set<Role>,
     ): OperationResult<Administrator, String> =
         when (val admin = getBotAdministratorById(userId)) {
             is Failure -> admin
@@ -105,7 +102,7 @@ class AdministratorService(
     fun addSpringGuildAdministrator(
         userId: String,
         guildId: String,
-        newAdminId: String
+        newAdminId: String,
     ): OperationResult<String, String> {
         // TODO: Permissions
         return when (val guild = springGuildService.getGuild(guildId)) {
@@ -122,7 +119,7 @@ class AdministratorService(
     fun removeSpringGuildAdministrator(
         userId: String,
         guildId: String,
-        adminId: String
+        adminId: String,
     ): OperationResult<String, String> {
         // TODO: Permissions
         return when (val guild = springGuildService.getGuild(guildId)) {
@@ -132,12 +129,16 @@ class AdministratorService(
                     return Failure("Insufficient permissions.")
                 }
                 return Success(
-                    (springGuildService.removeModerator(guildId, adminId) as Success).value)
+                    (springGuildService.removeModerator(guildId, adminId) as Success).value,
+                )
             }
         }
     }
 
-    fun deleteSpringGuild(userId: String, guildId: String): OperationResult<String, String> {
+    fun deleteSpringGuild(
+        userId: String,
+        guildId: String,
+    ): OperationResult<String, String> {
         // TODO: Permissions
         return when (val guild = springGuildService.getGuild(guildId)) {
             is Failure -> guild
@@ -150,7 +151,10 @@ class AdministratorService(
         }
     }
 
-    fun getSpringGuild(userId: String, guildId: String): OperationResult<SpringGuild, String> {
+    fun getSpringGuild(
+        userId: String,
+        guildId: String,
+    ): OperationResult<SpringGuild, String> {
         // TODO: Permissions
         when (val guild = springGuildService.getGuild(guildId)) {
             is Failure -> return guild
@@ -191,9 +195,11 @@ class AdministratorService(
                 springGuildService.addModerator(springGuild.guildId, owner.user.id)
 
                 discordService.sendUserMessage(
-                    "You have been added as a bot moderator for ${discordService.getBotName()} in server ${guild.value.name} as you are the owner." +
+                    "You have been added as a bot moderator for " +
+                        "${discordService.getBotName()} in server ${guild.value.name} as you are the owner." +
                         " Use ${properties.privilegedCommandPrefix}help in your server for more information.",
-                    owner.user.id)
+                    owner.user.id,
+                )
                 logger.info("Set ${owner.user.id} as admin of ${springGuild.guildId}")
                 return Success("Set ${owner.user.id} as admin of ${springGuild.guildId}")
             }
@@ -205,12 +211,17 @@ class AdministratorService(
         return Success(repository.findAll())
     }
 
-    fun addRole(userId: String, discordId: String, role: Role): OperationResult<Set<Role>, String> {
+    fun addRole(
+        userId: String,
+        discordId: String,
+        role: Role,
+    ): OperationResult<Set<Role>, String> {
         when (val admin = getBotAdministratorByDiscordId(discordId)) {
             is Failure -> return admin
             is Success -> {
-                if (hasRoles(userId, Role.ManageAdmin) is Failure)
+                if (hasRoles(userId, Role.ManageAdmin) is Failure) {
                     return Failure("Does not have permission to manage administrators.")
+                }
 
                 if (admin.value.roles.contains(role)) return Success(admin.value.roles)
 
@@ -218,7 +229,8 @@ class AdministratorService(
                     mongoOperations.findAndModify(
                         Query(Criteria.where("_id").`is`(admin.value.id)),
                         Update().addToSet("roles", role),
-                        Administrator::class.java)
+                        Administrator::class.java,
+                    )
 
                 return Success(findAndModify?.roles ?: setOf())
             }
@@ -228,13 +240,14 @@ class AdministratorService(
     fun removeRole(
         userId: String,
         discordId: String,
-        role: Role
+        role: Role,
     ): OperationResult<Set<Role>, String> {
         when (val admin = getBotAdministratorByDiscordId(discordId)) {
             is Failure -> return admin
             is Success -> {
-                if (hasRoles(userId, Role.ManageAdmin) is Failure)
+                if (hasRoles(userId, Role.ManageAdmin) is Failure) {
                     return Failure("Does not have permission to manage administrators.")
+                }
 
                 if (!admin.value.roles.contains(role)) return Success(admin.value.roles)
 
@@ -242,7 +255,8 @@ class AdministratorService(
                     mongoOperations.findAndModify(
                         Query(Criteria.where("_id").`is`(admin.value.id)),
                         Update().pull("roles", role),
-                        Administrator::class.java)
+                        Administrator::class.java,
+                    )
                 return Success(findAndModify?.roles ?: setOf())
             }
         }
@@ -251,7 +265,9 @@ class AdministratorService(
     fun logToAdmins(message: String) {
         val admins =
             mongoOperations.find(
-                Query(Criteria.where("roles").`in`(Role.Logging)), Administrator::class.java)
+                Query(Criteria.where("roles").`in`(Role.Logging)),
+                Administrator::class.java,
+            )
         for (admin in admins) {
             if (admin.roles.contains(Role.Logging)) {
                 logger.info("[System]: $message ${admin.discordId}")
@@ -260,13 +276,17 @@ class AdministratorService(
         }
     }
 
-    fun getRoles(userId: String, discordId: String): OperationResult<Set<Role>, String> {
+    fun getRoles(
+        userId: String,
+        discordId: String,
+    ): OperationResult<Set<Role>, String> {
         when (val admin = getBotAdministratorByDiscordId(userId)) {
             is Failure -> return admin
             is Success -> {
                 val id = admin.value.id
-                if (hasRoles(id, Role.InspectAdmin) is Failure)
+                if (hasRoles(id, Role.InspectAdmin) is Failure) {
                     return Failure("Does not have permission to view roles")
+                }
 
                 return when (val user = getBotAdministratorByDiscordId(discordId)) {
                     is Failure -> user

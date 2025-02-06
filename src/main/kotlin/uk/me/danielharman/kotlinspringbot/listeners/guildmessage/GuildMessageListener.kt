@@ -18,7 +18,6 @@ class GuildMessageListener(
     private val springGuildService: SpringGuildService,
     private val commandFactory: CommandFactory,
 ) : ListenerAdapter() {
-
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     // Leave a voice channel once everyone has left
@@ -38,8 +37,10 @@ class GuildMessageListener(
 
         val members = voiceChannel.members
         // If the channel is just us bots
-        if ((members.firstOrNull { m -> !m.user.isBot } == null) &&
-            members.firstOrNull { m -> m.id == voiceChannel.jda.selfUser.id } != null) {
+        if (
+            (members.firstOrNull { m -> !m.user.isBot } == null) &&
+            members.firstOrNull { m -> m.id == voiceChannel.jda.selfUser.id } != null
+        ) {
             audioManager.closeAudioConnection()
         }
     }

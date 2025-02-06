@@ -9,9 +9,8 @@ import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 @Component
 class ListModeratorCommandsCommand(
     private val commands: List<IModeratorCommand>,
-    private val properties: KotlinBotProperties
+    private val properties: KotlinBotProperties,
 ) : IModeratorCommand {
-
     private val commandString = "commands"
 
     override fun execute(event: MessageReceivedEvent) {
@@ -22,17 +21,19 @@ class ListModeratorCommandsCommand(
             .forEach { c ->
                 run {
                     stringBuilder.append(
-                        "${properties.privilegedCommandPrefix}${c.getCommandString()}\n")
+                        "${properties.privilegedCommandPrefix}${c.getCommandString()}\n",
+                    )
                 }
             }
 
         event.channel
             .sendMessageEmbeds(
-                Embeds.infoEmbedBuilder()
+                Embeds
+                    .infoEmbedBuilder()
                     .appendDescription(stringBuilder.toString())
                     .setTitle("Moderator Commands")
-                    .build())
-            .queue()
+                    .build(),
+            ).queue()
     }
 
     override fun matchCommandString(str: String): Boolean = str == commandString

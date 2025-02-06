@@ -13,16 +13,15 @@ import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 @Component
 class SetVolumeCommand(
     private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
-    private val springGuildService: SpringGuildService
-) :
-    Command(
+    private val springGuildService: SpringGuildService,
+) : Command(
         "vol",
         "Set the bot's volume level (0-100)",
         listOf(
-            CommandParameter(
-                0, "volume", ParamType.Long, "Volume to set the bot to (0-100)", true))),
+            CommandParameter(0, "volume", ParamType.Long, "Volume to set the bot to (0-100)", true),
+        ),
+    ),
     ISlashCommand {
-
     override fun execute(event: DiscordMessageEvent) {
         if (event.guild == null) {
             event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))

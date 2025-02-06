@@ -5,8 +5,9 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.command.moderators.DefaultModeratorCommand
 
 @Service
-class ModeratorCommandFactory(private val commands: List<IModeratorCommand>) {
-
+class ModeratorCommandFactory(
+    private val commands: List<IModeratorCommand>,
+) {
     fun getCommand(commandString: String): IModeratorCommand {
         for (command in commands) {
             if (command.matchCommandString(commandString)) return command

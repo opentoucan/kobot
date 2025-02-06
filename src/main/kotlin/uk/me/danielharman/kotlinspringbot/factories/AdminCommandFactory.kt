@@ -5,8 +5,9 @@ import uk.me.danielharman.kotlinspringbot.command.administrators.DefaultAdminCom
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
 
 @Service
-class AdminCommandFactory(private val commands: List<IAdminCommand>) {
-
+class AdminCommandFactory(
+    private val commands: List<IAdminCommand>,
+) {
     fun getCommand(commandString: String): IAdminCommand {
         for (command in commands) {
             if (command.matchCommandString(commandString)) return command

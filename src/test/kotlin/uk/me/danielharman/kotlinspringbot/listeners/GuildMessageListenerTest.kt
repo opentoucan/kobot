@@ -10,7 +10,10 @@ import net.dv8tion.jda.api.requests.restaction.MessageCreateAction
 import org.junit.jupiter.api.Test
 import org.mockito.InjectMocks
 import org.mockito.Mock
-import org.mockito.Mockito.*
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
@@ -28,7 +31,6 @@ import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 @EnableConfigurationProperties(value = [KotlinBotProperties::class])
 @ActiveProfiles("test")
 internal class GuildMessageListenerTest {
-
     @InjectMocks private lateinit var listener: GuildMessageListener
 
     @Mock private lateinit var springGuildService: SpringGuildService
@@ -45,7 +47,6 @@ internal class GuildMessageListenerTest {
 
     @Test
     fun onGuildJoin() {
-
         val event = mock(GuildJoinEvent::class.java)
         val guild = mock(Guild::class.java)
         val springGuild = mock(SpringGuild::class.java)

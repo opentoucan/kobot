@@ -2,7 +2,6 @@ package uk.me.danielharman.kotlinspringbot
 
 import jakarta.annotation.PostConstruct
 import jakarta.annotation.PreDestroy
-import java.time.LocalDateTime
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -17,8 +16,9 @@ import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
 import uk.me.danielharman.kotlinspringbot.objects.ApplicationInfo
 import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
-import uk.me.danielharman.kotlinspringbot.services.*
+import uk.me.danielharman.kotlinspringbot.services.DiscordService
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
+import java.time.LocalDateTime
 
 @Component
 @Profile("!test")
@@ -29,9 +29,8 @@ class SetupService(
     private val buildProperties: BuildProperties,
     private val kotlinBotProperties: KotlinBotProperties,
     private val administratorService: AdministratorService,
-    private val listeners: List<ListenerAdapter>
+    private val listeners: List<ListenerAdapter>,
 ) {
-
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     @PostConstruct
@@ -50,7 +49,9 @@ class SetupService(
 
         // Create default admin
         administratorService.createBotAdministrator(
-            kotlinBotProperties.primaryPrivilegedUserId, setOf(Role.Primary))
+            kotlinBotProperties.primaryPrivilegedUserId,
+            setOf(Role.Primary),
+        )
 
         if (!activeProfiles.contains("discordDisabled")) {
             // Injecting listeners here otherwise we'll get circular dependencies

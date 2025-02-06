@@ -1,7 +1,5 @@
 package uk.me.danielharman.kotlinspringbot.objects
 
-import java.lang.RuntimeException
-import java.time.LocalDateTime
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
@@ -16,17 +14,20 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter.ParamType
 import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
+import java.lang.RuntimeException
+import java.time.LocalDateTime
 
 object DiscordObject {
-
     lateinit var jda: JDA
     var initialised: Boolean = false
     var startTime: LocalDateTime? = null
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
     var listeners: List<ListenerAdapter> = listOf()
 
-    fun init(properties: KotlinBotProperties, commands: List<ISlashCommand>) {
-
+    fun init(
+        properties: KotlinBotProperties,
+        commands: List<ISlashCommand>,
+    ) {
         logger.info("Starting discord")
         logger.info("${listeners.size} listeners registered")
         logger.info("${commands.size} commands registered")
@@ -34,7 +35,8 @@ object DiscordObject {
             throw RuntimeException("Too many commands, discord limits slash commands to 100")
         }
         val builder: JDABuilder =
-            JDABuilder.create(
+            JDABuilder
+                .create(
                     properties.token,
                     GatewayIntent.MESSAGE_CONTENT,
                     GatewayIntent.GUILD_MEMBERS,
@@ -43,10 +45,13 @@ object DiscordObject {
                     GatewayIntent.GUILD_MESSAGES,
                     GatewayIntent.GUILD_VOICE_STATES,
                     GatewayIntent.GUILD_EXPRESSIONS,
-                    GatewayIntent.GUILD_MESSAGE_REACTIONS)
-                .setActivity(
+                    GatewayIntent.GUILD_MESSAGE_REACTIONS,
+                ).setActivity(
                     Activity.of(
-                        Activity.ActivityType.CUSTOM_STATUS, "${properties.commandPrefix}help"))
+                        Activity.ActivityType.CUSTOM_STATUS,
+                        "${properties.commandPrefix}help",
+                    ),
+                )
 
         for (listener: ListenerAdapter in listeners) {
             builder.addEventListeners(listener)
@@ -62,7 +67,6 @@ object DiscordObject {
 
             val commandData = mutableListOf<CommandData>()
             for (command: ISlashCommand in commands) {
-
                 val data = Commands.slash(command.commandString, command.description)
 
                 for (commandParameter: CommandParameter in command.commandParameters) {
@@ -70,7 +74,8 @@ object DiscordObject {
                         convertParamTypeToJdaOptionType(commandParameter.type),
                         commandParameter.name.lowercase(),
                         commandParameter.description,
-                        commandParameter.required)
+                        commandParameter.required,
+                    )
                 }
                 commandData.add(data)
             }
@@ -91,13 +96,12 @@ object DiscordObject {
         startTime = null
     }
 
-    private fun convertParamTypeToJdaOptionType(type: ParamType): OptionType {
-        return when (type) {
+    private fun convertParamTypeToJdaOptionType(type: ParamType): OptionType =
+        when (type) {
             ParamType.Word -> OptionType.STRING
             ParamType.String -> OptionType.STRING
             ParamType.Long -> OptionType.INTEGER
             ParamType.Boolean -> OptionType.BOOLEAN
             ParamType.Mentionable -> OptionType.MENTIONABLE
         }
-    }
 }

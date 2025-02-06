@@ -21,14 +21,13 @@ class PlayMusicCommand(
     private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
     private val springGuildService: SpringGuildService,
     private val discordActionService: DiscordActionService,
-    private val kotlinBotProperties: KotlinBotProperties
-) :
-    Command(
+    private val kotlinBotProperties: KotlinBotProperties,
+) : Command(
         "play",
         "Play audio via Youtube, Vimeo etc.",
-        listOf(CommandParameter(0, "url", ParamType.Word, "Url to play music from"))),
+        listOf(CommandParameter(0, "url", ParamType.Word, "Url to play music from")),
+    ),
     ISlashCommand {
-
     override fun execute(event: DiscordMessageEvent) {
         val voiceChannel: VoiceChannel?
 
@@ -86,11 +85,13 @@ class PlayMusicCommand(
         }
 
         logger.info(
-            "Connected voice channel from manager: " + guild.audioManager.connectedChannel?.id)
+            "Connected voice channel from manager: " + guild.audioManager.connectedChannel?.id,
+        )
         val musicManager = guildMusicPlayerProvider.getGuildAudioPlayer(voiceChannel.guild)
         guildMusicPlayerProvider.playerManager.loadItemOrdered(
             musicManager,
             url,
-            NewAudioResultHandler(voiceChannel, musicManager, event, springGuildService, guild))
+            NewAudioResultHandler(voiceChannel, musicManager, event, springGuildService, guild),
+        )
     }
 }

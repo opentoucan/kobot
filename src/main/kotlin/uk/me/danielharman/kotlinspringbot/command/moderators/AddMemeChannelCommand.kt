@@ -6,9 +6,9 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
-class AddMemeChannelCommand(private val springGuildService: SpringGuildService) :
-    IModeratorCommand {
-
+class AddMemeChannelCommand(
+    private val springGuildService: SpringGuildService,
+) : IModeratorCommand {
     private val commandString: String = "addmemechannel"
 
     override fun execute(event: MessageReceivedEvent) {

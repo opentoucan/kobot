@@ -7,7 +7,7 @@ data class MemeRepostIntegrationEvent(
     val replyImage: String,
     val guildId: String,
     val channelId: String,
-    val links: List<Link> = listOf()
+    val links: List<Link> = listOf(),
 )
 
 @Serializable
@@ -15,5 +15,5 @@ data class Link(
     val guildId: String,
     val channelId: String,
     val messageId: String,
-    val score: Float
+    val score: Float,
 )

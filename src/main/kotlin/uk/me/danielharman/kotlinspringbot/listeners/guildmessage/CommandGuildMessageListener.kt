@@ -22,13 +22,11 @@ class CommandGuildMessageListener(
     private val commandFactory: CommandFactory,
     private val properties: KotlinBotProperties,
     private val springGuildService: SpringGuildService,
-    private val discordService: DiscordActionService
+    private val discordService: DiscordActionService,
 ) : ListenerAdapter() {
-
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
-
         val isDeafened = springGuildService.isChannelDeafened(event.guild.id, event.channel.id)
 
         when {
@@ -43,7 +41,6 @@ class CommandGuildMessageListener(
     }
 
     private fun runCommand(event: DiscordMessageEvent) {
-
         val selfUser = discordService.getSelfUser() as Success
 
         if (event.author.id == selfUser.value.id || event.author.isBot) {
@@ -58,8 +55,10 @@ class CommandGuildMessageListener(
             event.reply(
                 Embeds.infoWithDescriptionEmbedBuilder(
                     "Command not found",
-                    "If you are trying to use custom commands like save or saved these are now deprecated, use an alternative bot"),
-                false)
+                    "If you are trying to use custom commands like save or saved these are now deprecated, use an alternative bot",
+                ),
+                false,
+            )
             return
         }
         try {
@@ -71,7 +70,6 @@ class CommandGuildMessageListener(
     }
 
     private fun runAdminCommand(event: MessageReceivedEvent) {
-
         if (event.author.id == event.jda.selfUser.id || event.author.isBot) {
             logger.info("Not running command as author is me or a bot")
             return

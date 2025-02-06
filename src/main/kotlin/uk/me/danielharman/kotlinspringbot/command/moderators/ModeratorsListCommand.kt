@@ -14,9 +14,8 @@ import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 @Component
 class ModeratorsListCommand(
     private val springGuildService: SpringGuildService,
-    private val properties: KotlinBotProperties
+    private val properties: KotlinBotProperties,
 ) : IModeratorCommand {
-
     private val commandString: String = "moderators"
 
     override fun matchCommandString(str: String): Boolean = commandString == str
@@ -27,9 +26,8 @@ class ModeratorsListCommand(
         event.channel.sendMessageEmbeds(createAdminUsersEmbed(event)).queue()
     }
 
-    private fun createAdminUsersEmbed(message: MessageReceivedEvent): MessageEmbed {
-
-        return when (val guild = springGuildService.getGuild(message.guild.id)) {
+    private fun createAdminUsersEmbed(message: MessageReceivedEvent): MessageEmbed =
+        when (val guild = springGuildService.getGuild(message.guild.id)) {
             is Failure -> Embeds.createErrorEmbed("Could not find data for ${message.guild.name}")
             is Success -> {
                 val stringBuilder = StringBuilder()
@@ -37,7 +35,8 @@ class ModeratorsListCommand(
                     message.guild.retrieveMemberById(properties.primaryPrivilegedUserId).complete()
 
                 stringBuilder.append(
-                    "Bot controller:  ${primaryAdmin.nickname ?: primaryAdmin.user.asTag}\n")
+                    "Bot controller:  ${primaryAdmin.nickname ?: primaryAdmin.user.asTag}\n",
+                )
 
                 guild.value.privilegedUsers.forEach { s ->
                     run {
@@ -53,5 +52,4 @@ class ModeratorsListCommand(
                     .build()
             }
         }
-    }
 }

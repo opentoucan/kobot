@@ -8,5 +8,5 @@ data class KotlinBotProperties(
     var voiceCommandPrefix: String,
     var privilegedCommandPrefix: String,
     var primaryPrivilegedUserId: String,
-    var token: String
+    var token: String,
 )

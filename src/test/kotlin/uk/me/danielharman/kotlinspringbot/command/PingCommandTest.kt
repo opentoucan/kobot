@@ -16,12 +16,10 @@ import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 @EnableConfigurationProperties(value = [KotlinBotProperties::class])
 @ActiveProfiles("test")
 internal class PingCommandTest {
-
     @InjectMocks private lateinit var pingCommand: PingCommand
 
     @Test
     fun shouldPingOnChannelMessage() {
-
         val event = Mockito.mock(DiscordChannelMessageEvent::class.java)
         val author = Mockito.mock(User::class.java)
         `when`(event.author).thenReturn(author)
@@ -34,7 +32,6 @@ internal class PingCommandTest {
 
     @Test
     fun shouldPingOnSlashCommand() {
-
         val event = Mockito.mock(DiscordSlashCommandEvent::class.java)
         val author = Mockito.mock(User::class.java)
         `when`(event.author).thenReturn(author)

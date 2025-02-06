@@ -1,16 +1,17 @@
 package uk.me.danielharman.kotlinspringbot.models
 
-import java.time.LocalDateTime
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import java.time.LocalDateTime
 
 @Document(collection = "springGuild")
-data class SpringGuild(val guildId: String) {
-
+data class SpringGuild(
+    val guildId: String,
+) {
     enum class CommandType {
         STRING,
-        FILE
+        FILE,
     }
 
     data class CustomCommand(
@@ -19,7 +20,7 @@ data class SpringGuild(val guildId: String) {
         val creatorId: String,
         val created: LocalDateTime,
         var keyword: String = "",
-        var id: String = ObjectId.get().toHexString()
+        var id: String = ObjectId.get().toHexString(),
     )
 
     @Id lateinit var id: String
@@ -36,7 +37,5 @@ data class SpringGuild(val guildId: String) {
     var volume = 50
     var deafenedChannels: List<String> = listOf()
 
-    override fun toString(): String {
-        return "ChannelStats(guildId='$guildId', id='$id', wordCounts=$wordCounts, commandCounts=$commandCounts)"
-    }
+    override fun toString(): String = "ChannelStats(guildId='$guildId', id='$id', wordCounts=$wordCounts, commandCounts=$commandCounts)"
 }

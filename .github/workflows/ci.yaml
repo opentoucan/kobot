@@ -27,13 +27,13 @@ jobs:
         uses: Homebrew/actions/setup-homebrew@master
 
       - name: Setup Workflow Tools
-        run: brew install ktfmt
+        run: brew install ktlint,detekt
 
-      - name: Check files are linted
-        run: ktfmt --kotlinlang-style ${{ github.workspace }}
+      - name: Lint check
+        run: ktlint --editorconfig .editorconfig ./src/**/*.kt build.gradle.kts
 
-      - name: Git diff
-        run: git diff
+      - name: Code analysis
+        run: detekt --config detekt.yaml --input ./src,build.gradle.kts
 
   build-docker:
     runs-on: ubuntu-24.04

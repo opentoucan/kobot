@@ -8,17 +8,15 @@ import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Service
 
 @Service
-class MemePostedIntegrationEventPublisher(private val rabbitTemplate: RabbitTemplate) {
-
+class MemePostedIntegrationEventPublisher(
+    private val rabbitTemplate: RabbitTemplate,
+) {
     val topicExchangeName: String = "meme-posted-exchange"
 
     @Bean
-    fun getExchange(): TopicExchange {
-        return TopicExchange(topicExchangeName)
-    }
+    fun getExchange(): TopicExchange = TopicExchange(topicExchangeName)
 
     fun publish(event: MemePostedIntegrationEvent) {
-
         val payload = Json.encodeToString(event)
         rabbitTemplate.convertAndSend(topicExchangeName, "meme-posted-queue", payload)
     }

@@ -9,14 +9,15 @@ import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
 
 @Component
-class AddAdminCommand(private val administratorService: AdministratorService) : IAdminCommand {
-
+class AddAdminCommand(
+    private val administratorService: AdministratorService,
+) : IAdminCommand {
     private val commandString = "addadmin"
 
     override fun execute(event: MessageReceivedEvent) {
-
-        when (val thisAdmin =
-            administratorService.getBotAdministratorByDiscordId(event.author.id)) {
+        when (
+            val thisAdmin = administratorService.getBotAdministratorByDiscordId(event.author.id)
+        ) {
             is Failure ->
                 event.channel
                     .sendMessageEmbeds(Embeds.createErrorEmbed("You are not an admin."))
@@ -42,7 +43,10 @@ class AddAdminCommand(private val administratorService: AdministratorService) : 
 
                 val createBotAdministrator =
                     administratorService.createBotAdministrator(
-                        thisAdmin.value.id, user.id, setOf())
+                        thisAdmin.value.id,
+                        user.id,
+                        setOf(),
+                    )
 
                 if (createBotAdministrator is Failure) {
                     event.channel
@@ -53,10 +57,11 @@ class AddAdminCommand(private val administratorService: AdministratorService) : 
 
                 event.channel
                     .sendMessageEmbeds(
-                        Embeds.infoEmbedBuilder()
+                        Embeds
+                            .infoEmbedBuilder()
                             .appendDescription("Added ${user.asTag} as an admin")
-                            .build())
-                    .queue()
+                            .build(),
+                    ).queue()
             }
         }
     }

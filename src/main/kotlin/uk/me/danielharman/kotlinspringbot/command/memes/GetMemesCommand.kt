@@ -1,6 +1,5 @@
 package uk.me.danielharman.kotlinspringbot.command.memes
 
-import java.util.*
 import net.dv8tion.jda.api.EmbedBuilder
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
@@ -12,20 +11,19 @@ import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import uk.me.danielharman.kotlinspringbot.models.Meme
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
+import java.util.Locale
 
 @Component
 class GetMemesCommand(
     private val memeService: MemeService,
-    private val discordActionService: DiscordActionService
-) :
-    Command(
+    private val discordActionService: DiscordActionService,
+) : Command(
         "memes",
         "List server memes by week or month",
-        listOf(CommandParameter(0, "Interval", CommandParameter.ParamType.Word, "week or month"))),
+        listOf(CommandParameter(0, "Interval", CommandParameter.ParamType.Word, "week or month")),
+    ),
     ISlashCommand {
-
     override fun execute(event: DiscordMessageEvent) {
-
         val paramValue = event.getParamValue(commandParameters[0])
         val intervalString = paramValue.asString()
 
@@ -47,13 +45,16 @@ class GetMemesCommand(
 
         var i = 1
         for (meme in memes) {
-
             val description =
                 EmbedBuilder()
                     .setTitle("#$i")
                     .setAuthor(
-                        event.guild!!.retrieveMemberById(meme.userId).complete()?.nickname
-                            ?: meme.userId)
+                        event.guild!!
+                            .retrieveMemberById(meme.userId)
+                            .complete()
+                            ?.nickname
+                            ?: meme.userId,
+                    )
 
             val channelName =
                 when (val channel = discordActionService.getTextChannel(meme.channelId)) {
@@ -66,11 +67,13 @@ class GetMemesCommand(
                     description
                         .setImage(meme.url)
                         .setDescription(
-                            "Channel: $channelName\nUpvotes: ${meme.upvotes} Downvotes: ${meme.downvotes}")
+                            "Channel: $channelName\nUpvotes: ${meme.upvotes} Downvotes: ${meme.downvotes}",
+                        )
                 }
                 Meme.UrlType.Link -> {
                     description.setDescription(
-                        "Channel: $channelName\nUpvotes: ${meme.upvotes} Downvotes: ${meme.downvotes} \n ${meme.url}")
+                        "Channel: $channelName\nUpvotes: ${meme.upvotes} Downvotes: ${meme.downvotes} \n ${meme.url}",
+                    )
                 }
             }
             event.reply(description.build())

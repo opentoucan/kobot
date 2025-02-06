@@ -19,15 +19,21 @@ class PingReplyGuildMessageListener(
         if (!event.isFromGuild || event.author.isBot) return
 
         logger.debug(
-            "[${event.guild.name}] #${event.channel.name} <${event.member?.nickname ?: event.author.asTag}>: ${event.message.contentDisplay}")
+            "[${event.guild.name}] #${event.channel.name} <${event.member?.nickname ?: event.author.asTag}>: ${event.message.contentDisplay}",
+        )
 
         val isDeafened = springGuildService.isChannelDeafened(event.guild.id, event.channel.id)
 
-        if (!isDeafened &&
-            event.message.mentions.isMentioned(event.jda.selfUser, Message.MentionType.USER)) {
+        if (
+            !isDeafened &&
+            event.message.mentions.isMentioned(event.jda.selfUser, Message.MentionType.USER)
+        ) {
             val emotesByName = event.guild.getEmojisByName("piing", true)
-            if (emotesByName.size >= 1) event.message.addReaction(emotesByName[0]).queue()
-            else event.message.addReaction(Emoji.fromUnicode("U+1F621")).queue()
+            if (emotesByName.size >= 1) {
+                event.message.addReaction(emotesByName[0]).queue()
+            } else {
+                event.message.addReaction(Emoji.fromUnicode("U+1F621")).queue()
+            }
         }
     }
 }
