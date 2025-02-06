@@ -27,7 +27,7 @@ jobs:
         uses: Homebrew/actions/setup-homebrew@master
 
       - name: Setup Workflow Tools
-        run: brew install ktlint,detekt
+        run: brew install ktlint detekt
 
       - name: Lint check
         run: ktlint --editorconfig .editorconfig ./src/**/*.kt build.gradle.kts
