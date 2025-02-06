@@ -30,7 +30,10 @@ jobs:
         run: brew install ktfmt
 
       - name: Check files are linted
-        run: ktfmt --kotlinlang-style --dry-run ${{ github.workspace }}
+        run: ktfmt --kotlinlang-style ${{ github.workspace }}
+
+      - name: Git diff
+        run: git diff
 
   build-docker:
     runs-on: ubuntu-24.04
