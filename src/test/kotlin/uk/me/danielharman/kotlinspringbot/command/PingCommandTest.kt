@@ -8,21 +8,18 @@ import org.mockito.Mockito.`when`
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
-import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.events.DiscordChannelMessageEvent
 import uk.me.danielharman.kotlinspringbot.events.DiscordSlashCommandEvent
+import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 
 @SpringBootTest
 @EnableConfigurationProperties(value = [KotlinBotProperties::class])
 @ActiveProfiles("test")
 internal class PingCommandTest {
-
-    @InjectMocks
-    private lateinit var pingCommand: PingCommand
+    @InjectMocks private lateinit var pingCommand: PingCommand
 
     @Test
     fun shouldPingOnChannelMessage() {
-
         val event = Mockito.mock(DiscordChannelMessageEvent::class.java)
         val author = Mockito.mock(User::class.java)
         `when`(event.author).thenReturn(author)
@@ -35,7 +32,6 @@ internal class PingCommandTest {
 
     @Test
     fun shouldPingOnSlashCommand() {
-
         val event = Mockito.mock(DiscordSlashCommandEvent::class.java)
         val author = Mockito.mock(User::class.java)
         `when`(event.author).thenReturn(author)
@@ -45,6 +41,4 @@ internal class PingCommandTest {
 
         Mockito.verify(event).reply("pong 1234")
     }
-
-
 }

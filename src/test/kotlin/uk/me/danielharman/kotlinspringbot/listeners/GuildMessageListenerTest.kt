@@ -10,49 +10,43 @@ import net.dv8tion.jda.api.requests.restaction.MessageCreateAction
 import org.junit.jupiter.api.Test
 import org.mockito.InjectMocks
 import org.mockito.Mock
-import org.mockito.Mockito.*
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
-import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
 import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.listeners.guildmessage.GuildMessageListener
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
+import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
-import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import uk.me.danielharman.kotlinspringbot.services.MemeService
+import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @SpringBootTest
 @EnableConfigurationProperties(value = [KotlinBotProperties::class])
 @ActiveProfiles("test")
 internal class GuildMessageListenerTest {
+    @InjectMocks private lateinit var listener: GuildMessageListener
 
-    @InjectMocks
-    private lateinit var listener: GuildMessageListener
+    @Mock private lateinit var springGuildService: SpringGuildService
 
-    @Mock
-    private lateinit var springGuildService: SpringGuildService
+    @Mock private lateinit var moderatorCommandFactory: ModeratorCommandFactory
 
-    @Mock
-    private lateinit var moderatorCommandFactory: ModeratorCommandFactory
+    @Mock private lateinit var commandFactory: CommandFactory
 
-    @Mock
-    private lateinit var commandFactory: CommandFactory
+    @Mock private lateinit var properties: KotlinBotProperties
 
-    @Mock
-    private lateinit var properties: KotlinBotProperties
+    @Mock private lateinit var memeService: MemeService
 
-    @Mock
-    private lateinit var memeService: MemeService
-
-    @Mock
-    private lateinit var discordService: DiscordActionService
+    @Mock private lateinit var discordService: DiscordActionService
 
     @Test
     fun onGuildJoin() {
-
         val event = mock(GuildJoinEvent::class.java)
         val guild = mock(Guild::class.java)
         val springGuild = mock(SpringGuild::class.java)
@@ -94,6 +88,4 @@ internal class GuildMessageListenerTest {
         verify(textChannel, times(1)).sendMessage(":wave:")
         verify(messageRequest, times(1)).queue()
     }
-
-
 }

@@ -12,22 +12,28 @@ import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 @Component
 class PingReplyGuildMessageListener(
     private val springGuildService: SpringGuildService,
-    ) : ListenerAdapter() {
+) : ListenerAdapter() {
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
-        if (!event.isFromGuild || event.author.isBot) return;
+        if (!event.isFromGuild || event.author.isBot) return
 
-        logger.debug("[${event.guild.name}] #${event.channel.name} <${event.member?.nickname ?: event.author.asTag}>: ${event.message.contentDisplay}")
+        logger.debug(
+            "[${event.guild.name}] #${event.channel.name} <${event.member?.nickname ?: event.author.asTag}>: ${event.message.contentDisplay}",
+        )
 
         val isDeafened = springGuildService.isChannelDeafened(event.guild.id, event.channel.id)
 
-        if (!isDeafened && event.message.mentions.isMentioned(event.jda.selfUser, Message.MentionType.USER)) {
+        if (
+            !isDeafened &&
+            event.message.mentions.isMentioned(event.jda.selfUser, Message.MentionType.USER)
+        ) {
             val emotesByName = event.guild.getEmojisByName("piing", true)
-            if (emotesByName.size >= 1)
+            if (emotesByName.size >= 1) {
                 event.message.addReaction(emotesByName[0]).queue()
-            else
+            } else {
                 event.message.addReaction(Emoji.fromUnicode("U+1F621")).queue()
+            }
         }
     }
 }

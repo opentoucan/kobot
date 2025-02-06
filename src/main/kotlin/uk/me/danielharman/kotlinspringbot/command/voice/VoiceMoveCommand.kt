@@ -9,10 +9,10 @@ import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 
 @Component
-class VoiceMoveCommand(private val discordActionService: DiscordActionService) :
-    Command("voicemove", "Enable mass moving of members to different voice channels"),
+class VoiceMoveCommand(
+    private val discordActionService: DiscordActionService,
+) : Command("voicemove", "Enable mass moving of members to different voice channels"),
     ISlashCommand {
-
     override fun execute(event: DiscordMessageEvent) {
         if (event.guild == null) {
             event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))
@@ -48,16 +48,10 @@ class VoiceMoveCommand(private val discordActionService: DiscordActionService) :
             event.reply("Voice move enabled!")
             discordActionService.enableVoiceMove()
         } catch (e: InsufficientPermissionException) {
-            logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
+            logger.error(
+                "Bot encountered an exception when attempting to join a voice channel ${e.message}",
+            )
             event.channel.sendMessage("I don't have permission to join.").queue()
         }
-
     }
-
 }
-
-
-
-
-
-

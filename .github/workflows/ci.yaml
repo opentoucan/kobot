@@ -1,3 +1,7 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: ci
+
 on:
   push:
     branches: [ 'main', 'release' ]
@@ -15,6 +19,28 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: Setup Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Setup Workflow Tools
+        run: brew install ktlint detekt
+
+      - name: Lint check
+        run: ktlint --editorconfig .editorconfig ./src/**/*.kt build.gradle.kts
+
+      - name: Code analysis
+        run: detekt --config detekt.yaml --input ./src,build.gradle.kts
+
+      - name: Upload SARIF to GitHub using the upload-sarif action
+        uses: github/codeql-action/upload-sarif@v3
+        if: success() || failure()
+        with:
+          sarif_file: detekt.sarif
+
   build-docker:
     runs-on: ubuntu-24.04
     steps:
@@ -49,6 +75,6 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          push: ${{ github.ref_name == 'main' || github.ref_name  == 'release'  }}
+          push: ${{ github.ref_name == 'main' || github.ref_name  == 'release' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

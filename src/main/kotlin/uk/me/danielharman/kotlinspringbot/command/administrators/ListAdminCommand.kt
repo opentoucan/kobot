@@ -9,19 +9,25 @@ import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
 
 @Component
-class ListAdminCommand(private val administratorService: AdministratorService) : IAdminCommand {
-
+class ListAdminCommand(
+    private val administratorService: AdministratorService,
+) : IAdminCommand {
     private val commandString = "admins"
 
     override fun execute(event: MessageReceivedEvent) {
-        when (val thisAdmin = administratorService.getBotAdministratorByDiscordId(event.author.id)) {
-            is Failure -> event.channel.sendMessageEmbeds(Embeds.createErrorEmbed("You are not an admin.")).queue()
+        when (
+            val thisAdmin = administratorService.getBotAdministratorByDiscordId(event.author.id)
+        ) {
+            is Failure ->
+                event.channel
+                    .sendMessageEmbeds(Embeds.createErrorEmbed("You are not an admin."))
+                    .queue()
             is Success -> {
                 when (val admins = administratorService.getAdministrators(thisAdmin.value.id)) {
                     is Failure -> Embeds.createErrorEmbed(admins.reason)
                     is Success -> {
                         val infoEmbedBuilder = Embeds.infoEmbedBuilder()
-                        //TODO: Pretty up
+                        // TODO: Pretty up
                         for (admin in admins.value) {
                             infoEmbedBuilder.appendDescription("${admin.discordId}\n")
                         }
@@ -31,6 +37,8 @@ class ListAdminCommand(private val administratorService: AdministratorService) :
             }
         }
     }
+
     override fun matchCommandString(str: String): Boolean = str == commandString
+
     override fun getCommandString(): String = commandString
 }
