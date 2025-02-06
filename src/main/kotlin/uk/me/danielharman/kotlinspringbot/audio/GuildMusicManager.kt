@@ -6,11 +6,12 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEvent
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventListener
 import com.sedmelluq.discord.lavaplayer.player.event.TrackEndEvent
 import com.sedmelluq.discord.lavaplayer.player.event.TrackExceptionEvent
+import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 
-class GuildMusicManager(manager: AudioPlayerManager) : AudioEventListener {
+class GuildMusicManager(manager: AudioPlayerManager, guildId: String, discordService: DiscordActionService) : AudioEventListener {
 
     var player: AudioPlayer = manager.createPlayer()
-    var scheduler: TrackScheduler = TrackScheduler(player)
+    var scheduler: TrackScheduler = TrackScheduler(player, guildId, discordService)
 
     private val callbacks: HashMap<String, (String) -> Unit> = HashMap()
 

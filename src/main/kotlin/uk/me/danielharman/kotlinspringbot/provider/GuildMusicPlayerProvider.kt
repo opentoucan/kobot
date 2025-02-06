@@ -7,9 +7,11 @@ import dev.lavalink.youtube.YoutubeAudioSourceManager
 import net.dv8tion.jda.api.entities.Guild
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.audio.GuildMusicManager
+import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 
 @Component
-class GuildMusicPlayerProvider {
+class GuildMusicPlayerProvider(private val discordService: DiscordActionService) {
+
     final val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
     private val musicManagers: HashMap<Long, GuildMusicManager> = hashMapOf()
 
@@ -24,7 +26,7 @@ class GuildMusicPlayerProvider {
         var musicManager = musicManagers[guildId]
 
         if (musicManager == null) {
-            musicManager = GuildMusicManager(playerManager)
+            musicManager = GuildMusicManager(playerManager, guild.id, discordService)
             musicManagers[guildId] = musicManager
         }
 

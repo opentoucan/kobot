@@ -16,7 +16,6 @@ import uk.me.danielharman.kotlinspringbot.helpers.HelperFunctions.partialWrapper
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
-//TODO re-write because dumb things because java inline class overrides
 class NewAudioResultHandler(
     private val voiceChannel: VoiceChannel?, private val musicManager: GuildMusicManager,
     private val event: DiscordMessageEvent, private val springGuildService: SpringGuildService, private val guild: Guild
@@ -26,7 +25,7 @@ class NewAudioResultHandler(
 
     override fun trackLoaded(track: AudioTrack) {
         play(track)
-        event.reply("Queued track")
+        event.reply("Queued ${track.info.title}")
     }
 
     override fun playlistLoaded(playlist: AudioPlaylist) {
@@ -66,7 +65,7 @@ class NewAudioResultHandler(
            is Failure -> logger.error("Failed to get guild volume ${vol.reason}")
            is Success -> musicManager.player.volume = vol.value
        }
-        musicManager.scheduler.queue(track)
+        musicManager.scheduler.queue(track, event.channel)
 
     }
 
