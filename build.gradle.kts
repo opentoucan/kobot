@@ -65,7 +65,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.4.2") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
-    implementation("net.dv8tion:JDA:5.2.3")
+    implementation("net.dv8tion:JDA:5.3.0")
     implementation("dev.arbjerg:lavaplayer:2.2.3")
     implementation("dev.lavalink.youtube:common:1.11.4")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2")
