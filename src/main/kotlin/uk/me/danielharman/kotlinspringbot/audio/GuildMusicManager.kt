@@ -20,17 +20,14 @@ class GuildMusicManager(manager: AudioPlayerManager, guildId: String, discordSer
         player.addListener(this)
     }
 
-    fun getSendHandler(): AudioPlayerSendHandler {
-        return AudioPlayerSendHandler(player)
-    }
+    fun getSendHandler(): AudioPlayerSendHandler = AudioPlayerSendHandler(player)
 
     fun registerCallback(trackIdentifier: String, func: (String) -> Unit) {
         callbacks[trackIdentifier] = func
     }
 
     override fun onEvent(event: AudioEvent) {
-
-        when(event){
+        when (event) {
             is TrackExceptionEvent -> {
                 callbacks[event.track.identifier]?.let { it("An error occurred when trying to play the track, the track may be age restricted or have embedding disabled.") }
             }

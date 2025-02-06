@@ -15,13 +15,13 @@ class TrackScheduler(private val player: AudioPlayer, val guildId: String, val d
 
     var queue: BlockingQueue<Pair<AudioTrack, String>> = LinkedBlockingQueue()
 
-    fun queue(track: AudioTrack, callbackChannel: MessageChannel){
-        if(!player.startTrack(track, true)){
+    fun queue(track: AudioTrack, callbackChannel: MessageChannel) {
+        if (!player.startTrack(track, true)) {
             queue.offer(Pair(track, callbackChannel.id))
         }
     }
 
-    fun nextTrack(){
+    fun nextTrack() {
         val trackMessageChannelPair = queue.poll() ?: return
 
         when (val guild = discordService.getGuild(guildId)) {
@@ -35,9 +35,8 @@ class TrackScheduler(private val player: AudioPlayer, val guildId: String, val d
     }
 
     override fun onTrackEnd(player: AudioPlayer, track: AudioTrack, endReason: AudioTrackEndReason) {
-        if(endReason.mayStartNext){
+        if (endReason.mayStartNext) {
             nextTrack()
         }
     }
-
 }

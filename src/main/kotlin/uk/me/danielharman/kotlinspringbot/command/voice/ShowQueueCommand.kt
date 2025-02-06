@@ -11,9 +11,9 @@ import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 
 @Component
 class ShowQueueCommand(private val guildMusicPlayerProvider: GuildMusicPlayerProvider) :
-    Command("queue", "Get the list of queued tracks"), ISlashCommand {
+    Command("queue", "Get the list of queued tracks"),
+    ISlashCommand {
     override fun execute(event: DiscordMessageEvent) {
-
         if (event.guild == null) {
             event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))
             return
@@ -25,8 +25,7 @@ class ShowQueueCommand(private val guildMusicPlayerProvider: GuildMusicPlayerPro
 
         val playingTrack = guildAudioPlayer.player.playingTrack
 
-        if(queue.isEmpty() && playingTrack == null) {
-
+        if (queue.isEmpty() && playingTrack == null) {
             event.reply("Queue is empty")
             return
         }
@@ -41,12 +40,11 @@ class ShowQueueCommand(private val guildMusicPlayerProvider: GuildMusicPlayerPro
             }
         }
         event.reply(
-        EmbedBuilder()
-            .appendDescription(stringBuilder.toString())
-            .setColor(0x9d03fc)
-            .setTitle("Queued Tracks")
-            .build()
+            EmbedBuilder()
+                .appendDescription(stringBuilder.toString())
+                .setColor(0x9d03fc)
+                .setTitle("Queued Tracks")
+                .build(),
         )
     }
-
 }
