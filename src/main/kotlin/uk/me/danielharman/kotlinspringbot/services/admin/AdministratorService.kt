@@ -39,27 +39,21 @@ class AdministratorService(
     fun getBotDiscordName(): OperationResult<String, String> = discordService.getBotName()
 
     fun closeDiscordConnection(userId: String): OperationResult<String, String> = when (
-        val admin = getBotAdministratorById(
-            userId
-        )
+        val admin = getBotAdministratorById(userId)
     ) {
         is Failure -> admin
         is Success -> discordService.closeDiscordConnection()
     }
 
     fun startDiscordConnection(userId: String): OperationResult<String, String> = when (
-        val admin = getBotAdministratorById(
-            userId
-        )
+        val admin = getBotAdministratorById(userId)
     ) {
         is Failure -> admin
         is Success -> discordService.startDiscordConnection()
     }
 
     fun restartDiscordConnection(userId: String): OperationResult<String, String> = when (
-        val closeDiscordConnection = closeDiscordConnection(
-            userId
-        )
+        val closeDiscordConnection = closeDiscordConnection(userId)
     ) {
         is Failure -> closeDiscordConnection
         is Success -> startDiscordConnection(userId)

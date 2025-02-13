@@ -50,7 +50,7 @@ class SpringGuildService(
 
     fun getGuilds(
         pageSize: Int = 10,
-        page: Int = 0,
+        page: Int = 0
     ): OperationResult<List<SpringGuild>, String> =
         Success(guildRepository.findAll(PageRequest.of(max(page, 0), max(pageSize, 1))).toList())
 
@@ -205,9 +205,7 @@ class SpringGuildService(
     }
 
     fun getDeafenedChannels(guildId: String): OperationResult<List<String>, String> = when (
-        val guild = getGuild(
-            guildId
-        )
+        val guild = getGuild(guildId)
     ) {
         is Failure -> guild
         is Success -> Success(guild.value.deafenedChannels)
