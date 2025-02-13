@@ -11,20 +11,16 @@ import org.junit.jupiter.api.Test
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.times
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
-import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
-import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.listeners.guildmessage.GuildMessageListener
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
-import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
-import uk.me.danielharman.kotlinspringbot.services.MemeService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @SpringBootTest
@@ -34,16 +30,6 @@ internal class GuildMessageListenerTest {
     @InjectMocks private lateinit var listener: GuildMessageListener
 
     @Mock private lateinit var springGuildService: SpringGuildService
-
-    @Mock private lateinit var moderatorCommandFactory: ModeratorCommandFactory
-
-    @Mock private lateinit var commandFactory: CommandFactory
-
-    @Mock private lateinit var properties: KotlinBotProperties
-
-    @Mock private lateinit var memeService: MemeService
-
-    @Mock private lateinit var discordService: DiscordActionService
 
     @Test
     fun onGuildJoin() {

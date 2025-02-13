@@ -7,7 +7,9 @@ import java.util.Locale
 
 @Component
 class AdminPingCommand : IAdminCommand {
-    override fun execute(event: MessageReceivedEvent) = event.channel.sendMessage("pong ${event.author.asMention}").queue()
+    override fun execute(
+        event: MessageReceivedEvent
+    ) = event.channel.sendMessage("pong ${event.author.asMention}").queue()
 
     override fun matchCommandString(str: String): Boolean = str.lowercase(Locale.getDefault()) == "ping"
 

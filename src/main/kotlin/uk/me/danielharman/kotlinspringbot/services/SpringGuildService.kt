@@ -11,6 +11,8 @@ import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.repositories.GuildRepository
 import kotlin.math.max
 
+private const val MAX_VOLUME = 100
+
 @Service
 class SpringGuildService(
     private val guildRepository: GuildRepository,
@@ -49,7 +51,8 @@ class SpringGuildService(
     fun getGuilds(
         pageSize: Int = 10,
         page: Int = 0,
-    ): OperationResult<List<SpringGuild>, String> = Success(guildRepository.findAll(PageRequest.of(max(page, 0), max(pageSize, 1))).toList())
+    ): OperationResult<List<SpringGuild>, String> =
+        Success(guildRepository.findAll(PageRequest.of(max(page, 0), max(pageSize, 1))).toList())
 
     fun updateUserCount(
         guildId: String,
@@ -73,7 +76,7 @@ class SpringGuildService(
 
         val newVol =
             when {
-                vol > 100 -> 100
+                vol > MAX_VOLUME -> MAX_VOLUME
                 vol < 0 -> 0
                 else -> vol
             }
@@ -201,10 +204,16 @@ class SpringGuildService(
         is Success -> guild.value.deafenedChannels.contains(channelId)
     }
 
-    fun getDeafenedChannels(guildId: String): OperationResult<List<String>, String> = when (val guild = getGuild(guildId)) {
+    fun getDeafenedChannels(guildId: String): OperationResult<List<String>, String> = when (
+        val guild = getGuild(
+            guildId
+        )
+    ) {
         is Failure -> guild
         is Success -> Success(guild.value.deafenedChannels)
     }
 
-    fun getGuildsWithoutModerators(): OperationResult<List<SpringGuild>, String> = Success(guildRepository.getGuildsWithModeratorCount(0))
+    fun getGuildsWithoutModerators(): OperationResult<List<SpringGuild>, String> = Success(
+        guildRepository.getGuildsWithModeratorCount(0)
+    )
 }

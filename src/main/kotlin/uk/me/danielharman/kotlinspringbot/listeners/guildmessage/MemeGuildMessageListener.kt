@@ -133,8 +133,6 @@ class MemeGuildMessageListener(
                 memeService.saveMeme(
                     Meme(message.id, guildId, authorId, url, channelId, Meme.UrlType.Link),
                 )
-            } catch (ex: NullPointerException) {
-                logger.info("No URL in message: ${ex.message}")
             } catch (ex: URISyntaxException) {
                 logger.info("Invalid URL in message: ${ex.message}")
             }

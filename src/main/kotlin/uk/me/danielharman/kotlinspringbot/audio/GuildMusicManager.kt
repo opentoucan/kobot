@@ -8,7 +8,11 @@ import com.sedmelluq.discord.lavaplayer.player.event.TrackEndEvent
 import com.sedmelluq.discord.lavaplayer.player.event.TrackExceptionEvent
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 
-class GuildMusicManager(manager: AudioPlayerManager, guildId: String, discordService: DiscordActionService) : AudioEventListener {
+class GuildMusicManager(
+    manager: AudioPlayerManager,
+    guildId: String,
+    discordService: DiscordActionService,
+) : AudioEventListener {
 
     var player: AudioPlayer = manager.createPlayer()
     var scheduler: TrackScheduler = TrackScheduler(player, guildId, discordService)
@@ -29,8 +33,14 @@ class GuildMusicManager(manager: AudioPlayerManager, guildId: String, discordSer
     override fun onEvent(event: AudioEvent) {
         when (event) {
             is TrackExceptionEvent -> {
-                callbacks[event.track.identifier]?.let { it("An error occurred when trying to play the track, the track may be age restricted or have embedding disabled.") }
+                callbacks[event.track.identifier]?.let {
+                    it(
+                        "An error occurred when trying to play the track," +
+                            " the track may be age restricted or have embedding disabled.",
+                    )
+                }
             }
+
             is TrackEndEvent -> {
                 callbacks.remove(event.track.identifier)
             }

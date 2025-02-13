@@ -21,5 +21,6 @@ class DiscordCommand(
 
     @Id lateinit var id: String
 
-    override fun toString(): String = "DiscordCommand(key='$key', content=$content, fileName=$fileName, type=$type, creatorId='$creatorId', id='$id', created=$created)"
+    override fun toString(): String = "DiscordCommand(key='$key', content=$content," +
+        " fileName=$fileName, type=$type, creatorId='$creatorId', id='$id', created=$created)"
 }

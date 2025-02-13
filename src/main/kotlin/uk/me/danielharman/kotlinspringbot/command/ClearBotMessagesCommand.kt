@@ -10,6 +10,8 @@ import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 
+private const val HISTORY_LIMIT = 50
+
 @Component
 class ClearBotMessagesCommand(
     private val discordService: DiscordActionService,
@@ -23,7 +25,7 @@ class ClearBotMessagesCommand(
                 is Success -> selfUser.value.id
             }
 
-        event.channel.history.retrievePast(50).complete().forEach { m ->
+        event.channel.history.retrievePast(HISTORY_LIMIT).complete().forEach { m ->
             if (
                 (m.author.isBot) ||
                 m.author.id == selfId ||

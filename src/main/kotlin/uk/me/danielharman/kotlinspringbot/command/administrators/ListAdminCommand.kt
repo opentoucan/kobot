@@ -16,18 +16,17 @@ class ListAdminCommand(
 
     override fun execute(event: MessageReceivedEvent) {
         when (
-            val thisAdmin = administratorService.getBotAdministratorByDiscordId(event.author.id)
+            administratorService.getBotAdministratorByDiscordId(event.author.id)
         ) {
             is Failure ->
                 event.channel
                     .sendMessageEmbeds(Embeds.createErrorEmbed("You are not an admin."))
                     .queue()
             is Success -> {
-                when (val admins = administratorService.getAdministrators(thisAdmin.value.id)) {
+                when (val admins = administratorService.getAdministrators()) {
                     is Failure -> Embeds.createErrorEmbed(admins.reason)
                     is Success -> {
                         val infoEmbedBuilder = Embeds.infoEmbedBuilder()
-                        // TODO: Pretty up
                         for (admin in admins.value) {
                             infoEmbedBuilder.appendDescription("${admin.discordId}\n")
                         }

@@ -11,7 +11,11 @@ import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 
-class TrackScheduler(private val player: AudioPlayer, val guildId: String, val discordService: DiscordActionService) : AudioEventAdapter() {
+class TrackScheduler(
+    private val player: AudioPlayer,
+    val guildId: String,
+    val discordService: DiscordActionService
+) : AudioEventAdapter() {
 
     var queue: BlockingQueue<Pair<AudioTrack, String>> = LinkedBlockingQueue()
 

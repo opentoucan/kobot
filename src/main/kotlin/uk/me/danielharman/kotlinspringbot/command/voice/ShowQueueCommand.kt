@@ -7,6 +7,7 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.HelperFunctions.formatDurationString
+import uk.me.danielharman.kotlinspringbot.helpers.PURPLE
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 
 @Component
@@ -32,7 +33,10 @@ class ShowQueueCommand(private val guildMusicPlayerProvider: GuildMusicPlayerPro
 
         val stringBuilder = StringBuilder()
 
-        stringBuilder.append("Now Playing: ${playingTrack.info.title} ${playingTrack.position.formatDurationString()}/${playingTrack.duration.formatDurationString()}\n")
+        stringBuilder.append(
+            "Now Playing: ${playingTrack.info.title} " +
+                "${playingTrack.position.formatDurationString()}/${playingTrack.duration.formatDurationString()}\n"
+        )
 
         queue.stream().forEach { (track, _) ->
             run {
@@ -42,7 +46,7 @@ class ShowQueueCommand(private val guildMusicPlayerProvider: GuildMusicPlayerPro
         event.reply(
             EmbedBuilder()
                 .appendDescription(stringBuilder.toString())
-                .setColor(0x9d03fc)
+                .setColor(PURPLE)
                 .setTitle("Queued Tracks")
                 .build(),
         )

@@ -38,17 +38,29 @@ class AdministratorService(
 
     fun getBotDiscordName(): OperationResult<String, String> = discordService.getBotName()
 
-    fun closeDiscordConnection(userId: String): OperationResult<String, String> = when (val admin = getBotAdministratorById(userId)) {
+    fun closeDiscordConnection(userId: String): OperationResult<String, String> = when (
+        val admin = getBotAdministratorById(
+            userId
+        )
+    ) {
         is Failure -> admin
         is Success -> discordService.closeDiscordConnection()
     }
 
-    fun startDiscordConnection(userId: String): OperationResult<String, String> = when (val admin = getBotAdministratorById(userId)) {
+    fun startDiscordConnection(userId: String): OperationResult<String, String> = when (
+        val admin = getBotAdministratorById(
+            userId
+        )
+    ) {
         is Failure -> admin
         is Success -> discordService.startDiscordConnection()
     }
 
-    fun restartDiscordConnection(userId: String): OperationResult<String, String> = when (val closeDiscordConnection = closeDiscordConnection(userId)) {
+    fun restartDiscordConnection(userId: String): OperationResult<String, String> = when (
+        val closeDiscordConnection = closeDiscordConnection(
+            userId
+        )
+    ) {
         is Failure -> closeDiscordConnection
         is Success -> startDiscordConnection(userId)
     }
@@ -99,7 +111,6 @@ class AdministratorService(
         guildId: String,
         newAdminId: String,
     ): OperationResult<String, String> {
-        // TODO: Permissions
         return when (val guild = springGuildService.getGuild(guildId)) {
             is Failure -> guild
             is Success -> {
@@ -116,7 +127,6 @@ class AdministratorService(
         guildId: String,
         adminId: String,
     ): OperationResult<String, String> {
-        // TODO: Permissions
         return when (val guild = springGuildService.getGuild(guildId)) {
             is Failure -> guild
             is Success -> {
@@ -134,7 +144,6 @@ class AdministratorService(
         userId: String,
         guildId: String,
     ): OperationResult<String, String> {
-        // TODO: Permissions
         return when (val guild = springGuildService.getGuild(guildId)) {
             is Failure -> guild
             is Success -> {
@@ -150,7 +159,6 @@ class AdministratorService(
         userId: String,
         guildId: String,
     ): OperationResult<SpringGuild, String> {
-        // TODO: Permissions
         when (val guild = springGuildService.getGuild(guildId)) {
             is Failure -> return guild
             is Success -> {
@@ -162,15 +170,16 @@ class AdministratorService(
         }
     }
 
-    fun syncGuildAdmins(): OperationResult<String, String> = when (val guildsWithoutAdmins = springGuildService.getGuildsWithoutModerators()) {
-        is Failure -> guildsWithoutAdmins
-        is Success -> {
-            for (guild in guildsWithoutAdmins.value) {
-                syncGuildAdmin(guild)
+    fun syncGuildAdmins(): OperationResult<String, String> =
+        when (val guildsWithoutAdmins = springGuildService.getGuildsWithoutModerators()) {
+            is Failure -> guildsWithoutAdmins
+            is Success -> {
+                for (guild in guildsWithoutAdmins.value) {
+                    syncGuildAdmin(guild)
+                }
+                Success("Updated ${guildsWithoutAdmins.value.size} guilds.")
             }
-            Success("Updated ${guildsWithoutAdmins.value.size} guilds.")
         }
-    }
 
     private fun syncGuildAdmin(springGuild: SpringGuild): OperationResult<String, String> {
         when (val guild = discordService.getGuild(springGuild.guildId)) {
@@ -200,8 +209,7 @@ class AdministratorService(
         }
     }
 
-    fun getAdministrators(userId: String): OperationResult<List<Administrator>, String> {
-        // TODO Permissions
+    fun getAdministrators(): OperationResult<List<Administrator>, String> {
         return Success(repository.findAll())
     }
 
