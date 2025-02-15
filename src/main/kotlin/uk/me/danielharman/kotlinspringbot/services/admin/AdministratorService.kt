@@ -164,16 +164,15 @@ class AdministratorService(
         }
     }
 
-    fun syncGuildAdmins(): OperationResult<String, String> =
-        when (val guildsWithoutAdmins = springGuildService.getGuildsWithoutModerators()) {
-            is Failure -> guildsWithoutAdmins
-            is Success -> {
-                for (guild in guildsWithoutAdmins.value) {
-                    syncGuildAdmin(guild)
-                }
-                Success("Updated ${guildsWithoutAdmins.value.size} guilds.")
+    fun syncGuildAdmins(): OperationResult<String, String> = when (val guildsWithoutAdmins = springGuildService.getGuildsWithoutModerators()) {
+        is Failure -> guildsWithoutAdmins
+        is Success -> {
+            for (guild in guildsWithoutAdmins.value) {
+                syncGuildAdmin(guild)
             }
+            Success("Updated ${guildsWithoutAdmins.value.size} guilds.")
         }
+    }
 
     private fun syncGuildAdmin(springGuild: SpringGuild): OperationResult<String, String> {
         when (val guild = discordService.getGuild(springGuild.guildId)) {
@@ -203,9 +202,7 @@ class AdministratorService(
         }
     }
 
-    fun getAdministrators(): OperationResult<List<Administrator>, String> {
-        return Success(repository.findAll())
-    }
+    fun getAdministrators(): OperationResult<List<Administrator>, String> = Success(repository.findAll())
 
     fun addRole(
         userId: String,

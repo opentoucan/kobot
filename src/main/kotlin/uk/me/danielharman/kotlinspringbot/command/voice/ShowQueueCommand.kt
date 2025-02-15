@@ -35,7 +35,7 @@ class ShowQueueCommand(private val guildMusicPlayerProvider: GuildMusicPlayerPro
 
         stringBuilder.append(
             "Now Playing: ${playingTrack.info.title} " +
-                "${playingTrack.position.formatDurationString()}/${playingTrack.duration.formatDurationString()}\n"
+                "${playingTrack.position.formatDurationString()}/${playingTrack.duration.formatDurationString()}\n",
         )
 
         queue.stream().forEach { (track, _) ->

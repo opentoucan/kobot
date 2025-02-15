@@ -7,8 +7,7 @@ import java.util.Locale
 
 @Component
 class ModeratorPingCommand : IModeratorCommand {
-    override fun execute(event: MessageReceivedEvent) =
-        event.channel.sendMessage("pong ${event.author.asMention}").queue()
+    override fun execute(event: MessageReceivedEvent) = event.channel.sendMessage("pong ${event.author.asMention}").queue()
 
     override fun matchCommandString(str: String): Boolean = str.lowercase(Locale.getDefault()) == "ping"
 

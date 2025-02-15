@@ -50,9 +50,8 @@ class SpringGuildService(
 
     fun getGuilds(
         pageSize: Int = 10,
-        page: Int = 0
-    ): OperationResult<List<SpringGuild>, String> =
-        Success(guildRepository.findAll(PageRequest.of(max(page, 0), max(pageSize, 1))).toList())
+        page: Int = 0,
+    ): OperationResult<List<SpringGuild>, String> = Success(guildRepository.findAll(PageRequest.of(max(page, 0), max(pageSize, 1))).toList())
 
     fun updateUserCount(
         guildId: String,
@@ -212,6 +211,6 @@ class SpringGuildService(
     }
 
     fun getGuildsWithoutModerators(): OperationResult<List<SpringGuild>, String> = Success(
-        guildRepository.getGuildsWithModeratorCount(0)
+        guildRepository.getGuildsWithModeratorCount(0),
     )
 }

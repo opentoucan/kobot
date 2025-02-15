@@ -14,7 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue
 class TrackScheduler(
     private val player: AudioPlayer,
     val guildId: String,
-    val discordService: DiscordActionService
+    val discordService: DiscordActionService,
 ) : AudioEventAdapter() {
 
     var queue: BlockingQueue<Pair<AudioTrack, String>> = LinkedBlockingQueue()
