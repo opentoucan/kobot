@@ -8,9 +8,10 @@ import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 
 @Component
-class SkipTrackCommand(private val guildMusicPlayerProvider: GuildMusicPlayerProvider) :
-    Command("skip", "Skip the currently playing track"), ISlashCommand {
-
+class SkipTrackCommand(
+    private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
+) : Command("skip", "Skip the currently playing track"),
+    ISlashCommand {
     override fun execute(event: DiscordMessageEvent) {
         if (event.guild == null) {
             event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))

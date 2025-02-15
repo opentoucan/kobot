@@ -1,0 +1,21 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+set: [pipefail]
+shopt: [globstar]
+
+includes:
+  precommit: .taskfiles/precommit
+
+tasks:
+
+  default:
+    cmd: task --list
+    silent: true
+
+  # Ref: https://github.com/go-task/task/issues/608
+  noop:
+    internal: true
+    silent: true
+    cmd: noop() { :; }

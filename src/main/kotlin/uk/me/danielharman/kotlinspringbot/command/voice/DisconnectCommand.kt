@@ -10,9 +10,10 @@ import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 
 @Component
-class DisconnectCommand(private val discordActionService: DiscordActionService) :
-    Command("disconnect", "Disconnect the bot from the current voice channel"), ISlashCommand {
-
+class DisconnectCommand(
+    private val discordActionService: DiscordActionService,
+) : Command("disconnect", "Disconnect the bot from the current voice channel"),
+    ISlashCommand {
     override fun execute(event: DiscordMessageEvent) {
         val guild = event.guild
 
@@ -31,6 +32,5 @@ class DisconnectCommand(private val discordActionService: DiscordActionService) 
         } else {
             event.reply("I am not connected to an audio channel")
         }
-
     }
 }

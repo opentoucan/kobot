@@ -16,17 +16,19 @@ import uk.me.danielharman.kotlinspringbot.helpers.HelperFunctions.partialWrapper
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
-//TODO re-write because dumb things because java inline class overrides
 class NewAudioResultHandler(
-    private val voiceChannel: VoiceChannel?, private val musicManager: GuildMusicManager,
-    private val event: DiscordMessageEvent, private val springGuildService: SpringGuildService, private val guild: Guild
+    private val voiceChannel: VoiceChannel?,
+    private val musicManager: GuildMusicManager,
+    private val event: DiscordMessageEvent,
+    private val springGuildService: SpringGuildService,
+    private val guild: Guild,
 ) : AudioLoadResultHandler {
 
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun trackLoaded(track: AudioTrack) {
         play(track)
-        event.reply("Queued track")
+        event.reply("Queued ${track.info.title}")
     }
 
     override fun playlistLoaded(playlist: AudioPlaylist) {
@@ -38,7 +40,6 @@ class NewAudioResultHandler(
 
         event.reply("Adding to queue ${firstTrack.info.title} (first track of playlist ${playlist.name}")
         play(firstTrack)
-
     }
 
     override fun noMatches() {
@@ -50,10 +51,11 @@ class NewAudioResultHandler(
     }
 
     fun play(track: AudioTrack) {
-        if (voiceChannel == null)
+        if (voiceChannel == null) {
             return
+        }
 
-        musicManager.registerCallback (track.identifier, partialWrapper(::onErrorEvent, event))
+        musicManager.registerCallback(track.identifier, partialWrapper(::onErrorEvent, event))
 
         if (!guild.audioManager.isConnected) {
             try {
@@ -62,16 +64,14 @@ class NewAudioResultHandler(
                 logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
             }
         }
-       when(val vol = springGuildService.getVol(guild.id)){
-           is Failure -> logger.error("Failed to get guild volume ${vol.reason}")
-           is Success -> musicManager.player.volume = vol.value
-       }
-        musicManager.scheduler.queue(track)
-
+        when (val vol = springGuildService.getVol(guild.id)) {
+            is Failure -> logger.error("Failed to get guild volume ${vol.reason}")
+            is Success -> musicManager.player.volume = vol.value
+        }
+        musicManager.scheduler.queue(track, event.channel)
     }
 
-    private fun onErrorEvent(event: DiscordMessageEvent, message: String){
+    private fun onErrorEvent(event: DiscordMessageEvent, message: String) {
         event.reply(Embeds.createErrorEmbed(message), false)
     }
-
 }

@@ -1,3 +1,7 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: ci
+
 on:
   push:
     branches: [ 'main', 'release' ]
@@ -15,13 +19,35 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: Setup Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Setup Workflow Tools
+        run: brew install ktlint detekt
+
+      - name: Lint check
+        run: ktlint --editorconfig .editorconfig ./src/**/*.kt build.gradle.kts
+
+      - name: Code analysis
+        run: detekt --config detekt.yaml --input ./src,build.gradle.kts
+
+      - name: Upload SARIF to GitHub using the upload-sarif action
+        uses: github/codeql-action/upload-sarif@v3
+        if: success() || failure()
+        with:
+          sarif_file: detekt.sarif
+
   build-docker:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4.2.2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.8.0
+        uses: docker/setup-buildx-action@v3.9.0
 
       - name: Login to Github Packages
         if: github.event_name != 'pull_request'
@@ -45,10 +71,10 @@ jobs:
 
       - name: Build and push Docker image
         id: build-and-push
-        uses: docker/build-push-action@v6.12.0
+        uses: docker/build-push-action@v6.13.0
         with:
           context: .
           file: ./Dockerfile
-          push: ${{ github.ref_name == 'main' || github.ref_name  == 'release'  }}
+          push: ${{ github.ref_name == 'main' || github.ref_name  == 'release' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

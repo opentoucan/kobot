@@ -6,10 +6,6 @@ import uk.me.danielharman.kotlinspringbot.events.DiscordChannelMessageEvent
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.events.DiscordSlashCommandEvent
 
-fun MessageReceivedEvent.toMessageEvent(): DiscordMessageEvent {
-    return DiscordChannelMessageEvent(this)
-}
+fun MessageReceivedEvent.toMessageEvent(): DiscordMessageEvent = DiscordChannelMessageEvent(this)
 
-fun SlashCommandInteractionEvent.toMessageEvent(): DiscordMessageEvent {
-    return DiscordSlashCommandEvent(this)
-}
+fun SlashCommandInteractionEvent.toMessageEvent(): DiscordMessageEvent = DiscordSlashCommandEvent(this)

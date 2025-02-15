@@ -1,9 +1,13 @@
 package uk.me.danielharman.kotlinspringbot.services
 
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.*
+import org.hamcrest.Matchers.contains
+import org.hamcrest.Matchers.containsInAnyOrder
+import org.hamcrest.Matchers.not
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -17,9 +21,8 @@ import uk.me.danielharman.kotlinspringbot.repositories.GuildRepository
 @ActiveProfiles("test")
 internal class SpringGuildServiceTest(
     @Autowired private val service: SpringGuildService,
-    @Autowired private val repo: GuildRepository
+    @Autowired private val repo: GuildRepository,
 ) {
-
     @AfterEach
     fun afterEach() {
         repo.deleteAll()
@@ -53,7 +56,6 @@ internal class SpringGuildServiceTest(
 
     @Test
     fun shouldUpdateWordCount() {
-
         val stubGuild = SpringGuild("1234")
 
         repo.save(stubGuild)
@@ -232,5 +234,4 @@ internal class SpringGuildServiceTest(
         assertEquals(1, result.value.size)
         assertThat(result.value, containsInAnyOrder(stub2))
     }
-
 }

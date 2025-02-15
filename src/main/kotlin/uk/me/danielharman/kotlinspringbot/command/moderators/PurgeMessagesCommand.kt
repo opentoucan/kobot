@@ -7,7 +7,6 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 
 @Component
 class PurgeMessagesCommand : IModeratorCommand {
-
     private val commandString: String = "purge"
 
     override fun matchCommandString(str: String): Boolean = commandString == str
@@ -15,7 +14,6 @@ class PurgeMessagesCommand : IModeratorCommand {
     override fun getCommandString(): String = commandString
 
     override fun execute(event: MessageReceivedEvent) {
-
         val s = event.message.contentStripped.split(" ")
 
         if (s.size < 2) {
@@ -30,7 +28,10 @@ class PurgeMessagesCommand : IModeratorCommand {
             return
         }
 
-        val messages = event.channel.history.retrievePast(number).complete()
+        val messages =
+            event.channel.history
+                .retrievePast(number)
+                .complete()
 
         try {
             event.channel.purgeMessages(messages)
@@ -39,8 +40,9 @@ class PurgeMessagesCommand : IModeratorCommand {
             return
         }
 
-        event.channel.sendMessage("https://cdn.discordapp.com/attachments/554379034750877707/650988065539620874/giphy_1.gif").queue()
-
+        event.channel
+            .sendMessage(
+                "https://cdn.discordapp.com/attachments/554379034750877707/650988065539620874/giphy_1.gif",
+            ).queue()
     }
-
 }

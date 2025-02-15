@@ -8,8 +8,9 @@ import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 
 @Component
-class SummonCommand : Command("summon", "Make the bot join the voice channel"), ISlashCommand {
-
+class SummonCommand :
+    Command("summon", "Make the bot join the voice channel"),
+    ISlashCommand {
     override fun execute(event: DiscordMessageEvent) {
         if (event.guild == null) {
             event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))
@@ -41,9 +42,10 @@ class SummonCommand : Command("summon", "Make the bot join the voice channel"), 
         try {
             audioManager.openAudioConnection(voiceChannel)
         } catch (e: InsufficientPermissionException) {
-            logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
+            logger.error(
+                "Bot encountered an exception when attempting to join a voice channel ${e.message}",
+            )
             event.reply("I don't have permission to join.")
         }
     }
-
 }

@@ -8,12 +8,12 @@ import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
 
 @Component
-class RestartCommand(private val administratorService: AdministratorService) : IAdminCommand {
-
+class RestartCommand(
+    private val administratorService: AdministratorService,
+) : IAdminCommand {
     private val commandString = "restart"
 
     override fun execute(event: MessageReceivedEvent) {
-
         when (val getAdmin = administratorService.getBotAdministratorByDiscordId(event.author.id)) {
             is Failure -> event.channel.sendMessage("You are not an admin").queue()
             is Success -> {
@@ -24,5 +24,6 @@ class RestartCommand(private val administratorService: AdministratorService) : I
     }
 
     override fun matchCommandString(str: String): Boolean = str == commandString
+
     override fun getCommandString(): String = commandString
 }

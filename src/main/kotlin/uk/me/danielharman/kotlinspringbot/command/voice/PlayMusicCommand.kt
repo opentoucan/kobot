@@ -2,7 +2,6 @@ package uk.me.danielharman.kotlinspringbot.command.voice
 
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
@@ -21,11 +20,12 @@ class PlayMusicCommand(
     private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
     private val springGuildService: SpringGuildService,
     private val discordActionService: DiscordActionService,
-    private val kotlinBotProperties: KotlinBotProperties
 ) : Command(
-    "play", "Play audio via Youtube, Vimeo etc.",
-    listOf(CommandParameter(0, "url", ParamType.Word, "Url to play music from"))
-), ISlashCommand {
+    "play",
+    "Play audio via Youtube, Vimeo etc.",
+    listOf(CommandParameter(0, "url", ParamType.Word, "Url to play music from")),
+),
+    ISlashCommand {
 
     override fun execute(event: DiscordMessageEvent) {
         val voiceChannel: VoiceChannel?
@@ -48,7 +48,7 @@ class PlayMusicCommand(
             event.reply(message)
             return
         }
-        
+
         val member = guild.retrieveMember(event.author).complete()
 
         if (member == null) {
@@ -88,7 +88,7 @@ class PlayMusicCommand(
         guildMusicPlayerProvider.playerManager.loadItemOrdered(
             musicManager,
             url,
-            NewAudioResultHandler(voiceChannel, musicManager, event, springGuildService, guild)
+            NewAudioResultHandler(voiceChannel, musicManager, event, springGuildService, guild),
         )
     }
 }
