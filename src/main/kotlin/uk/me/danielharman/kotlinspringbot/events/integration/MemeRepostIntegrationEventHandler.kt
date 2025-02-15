@@ -17,6 +17,8 @@ import uk.me.danielharman.kotlinspringbot.services.DiscordService
 import java.text.DecimalFormat
 import java.util.Base64
 
+private const val SCORE_MULTIPLIER = 100
+
 @Service
 class MemeRepostIntegrationEventHandler(
     private val discordService: DiscordService,
@@ -47,9 +49,10 @@ class MemeRepostIntegrationEventHandler(
         val discordMessage =
             DiscordChannelMessage(
                 "Thou hath reposted! \n ${repostLink.joinToString("\n"){
-                    "https://discord.com/channels/${it.guildId}/${it.channelId}/${it.messageId} score: ${scorePercentageFormat.format(
-                        it.score * 100,
-                    )}%"
+                    "https://discord.com/channels/${it.guildId}/${it.channelId}/${it.messageId} " +
+                        "score: ${scorePercentageFormat.format(
+                            it.score * SCORE_MULTIPLIER,
+                        )}%"
                 }}",
                 memeRepostEvent.guildId,
                 memeRepostEvent.channelId,
