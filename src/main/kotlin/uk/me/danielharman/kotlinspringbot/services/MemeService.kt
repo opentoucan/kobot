@@ -13,6 +13,10 @@ import uk.me.danielharman.kotlinspringbot.repositories.MemeRepository
 import java.time.LocalDateTime
 import java.util.stream.Collectors
 
+private const val MAX_MEME_LIST_SIZE = 10
+private const val TOP_MEMES = 3
+private const val THE_NUMBER_OF_DAYS_IN_A_WEEK_YOU_STUPID_LINTER = 7L
+
 @Service
 class MemeService(
     private val mongoTemplate: MongoTemplate,
@@ -58,7 +62,7 @@ class MemeService(
         guildId: String,
         asc: Boolean = false,
     ): List<Pair<String, MemeRanking>> {
-        springGuildService.getGuild(guildId) ?: return listOf()
+        springGuildService.getGuild(guildId)
 
         val idMap = HashMap<String, MemeRanking>()
 
@@ -75,23 +79,12 @@ class MemeService(
         }
 
         return if (asc) {
-            val filtered = idMap.toList().sortedBy { (_, value) -> value.score }
-            if (filtered.size > 10) {
-                filtered.subList(0, 10)
-            } else {
-                filtered
-            }
+            idMap.toList().sortedBy { (_, value) -> value.score }.take(MAX_MEME_LIST_SIZE)
         } else {
-            val filtered =
-                idMap
-                    .toList()
-                    .sortedByDescending { (_, value) -> value.score }
-                    .filter { (_, value) -> value.score > 0 }
-            if (filtered.size > 10) {
-                filtered.subList(0, 10)
-            } else {
-                filtered
-            }
+            idMap
+                .toList()
+                .sortedByDescending { (_, value) -> value.score }
+                .filter { (_, value) -> value.score > 0 }.take(MAX_MEME_LIST_SIZE)
         }
     }
 
@@ -106,7 +99,7 @@ class MemeService(
         when (interval) {
             MemeInterval.WEEK -> {
                 lte = Criteria("created").lte(now)
-                gte = lte.gte(LocalDateTime.now().minusDays(7))
+                gte = lte.gte(LocalDateTime.now().minusDays(THE_NUMBER_OF_DAYS_IN_A_WEEK_YOU_STUPID_LINTER))
             }
             MemeInterval.MONTH -> {
                 lte = Criteria("created").lte(now)
@@ -127,9 +120,7 @@ class MemeService(
                 .sorted { o1, o2 -> o2.score - o1.score }
                 .collect(Collectors.toList())
 
-        if (memes.size <= 3) return memes
-
-        return memes.subList(0, 3)
+        return memes.take(TOP_MEMES)
     }
 
     fun addDownvote(

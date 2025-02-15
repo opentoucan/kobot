@@ -34,7 +34,8 @@ class HelpCommand(
             Embeds
                 .infoEmbedBuilder()
                 .appendDescription(
-                    "Text commands: ${properties.commandPrefix}help\n Voice commands: ${properties.voiceCommandPrefix}help\n\n\n",
+                    "Text commands: ${properties.commandPrefix}help\n " +
+                        "Voice commands: ${properties.voiceCommandPrefix}help\n\n\n",
                 ).appendDescription(stringBuilder.toString())
                 .setTitle("Text Commands")
                 .build(),
