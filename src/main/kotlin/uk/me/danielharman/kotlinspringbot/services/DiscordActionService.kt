@@ -15,7 +15,6 @@ import uk.me.danielharman.kotlinspringbot.objects.DiscordObject
 
 @Service
 class DiscordActionService {
-
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     fun getTextChannel(channelId: String): OperationResult<GuildChannel, String> {
@@ -26,16 +25,12 @@ class DiscordActionService {
         } else {
             Success(channel)
         }
-
     }
 
-    fun getSelfUser(): OperationResult<User, String> {
-        return Success(DiscordObject.jda.selfUser)
-    }
+    fun getSelfUser(): OperationResult<User, String> = Success(DiscordObject.jda.selfUser)
 
     fun getUserById(creatorId: String): OperationResult<User, String> {
-
-        if(creatorId.isEmpty()){
+        if (creatorId.isEmpty()) {
             return Failure("Failed to get user: Id was empty")
         }
 
@@ -57,13 +52,16 @@ class DiscordActionService {
             is Failure -> Failure(guild.reason)
             is Success -> {
                 val channel =
-                    guild.value.retrieveMemberById(DiscordObject.jda.selfUser.id).complete()?.voiceState?.channel
+                    guild.value
+                        .retrieveMemberById(DiscordObject.jda.selfUser.id)
+                        .complete()
+                        ?.voiceState
+                        ?.channel
                 return if (channel == null) {
                     Failure("Could not find channel")
                 } else {
                     Success(channel.asVoiceChannel())
                 }
-
             }
         }
     }
@@ -71,5 +69,4 @@ class DiscordActionService {
     fun enableVoiceMove() {
         DiscordObject.jda.addEventListener(MoveListener())
     }
-
 }

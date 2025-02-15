@@ -7,7 +7,7 @@ data class CommandParameter(
     val name: String,
     val type: ParamType,
     val description: String,
-    val required: Boolean = false
+    val required: Boolean = false,
 ) {
     var value: Any? = null
     var error: Boolean = false
@@ -17,46 +17,31 @@ data class CommandParameter(
         String,
         Long,
         Boolean,
-        Mentionable
+        Mentionable,
     }
 
-    fun reset(){
+    fun reset() {
         value = null
         error = false
     }
 
     fun asBoolean(): Boolean? {
         if (type == ParamType.Boolean && value != null) {
-            return try {
-                value as Boolean
-            } catch (e: TypeCastException) {
-                error = true
-                null
-            }
+            return value as Boolean
         }
         return null
     }
 
     fun asString(): String? {
         if ((type == ParamType.String || type == ParamType.Word) && value != null) {
-            return try {
-                value as String
-            } catch (e: TypeCastException) {
-                error = true
-                null
-            }
+            return value as String
         }
         return null
     }
 
     fun asLong(): Long? {
         if (type == ParamType.Long && value != null) {
-            return try {
-                value as Long
-            } catch (e: TypeCastException) {
-                error = true
-                null
-            }
+            return value as Long
         }
         return null
     }
@@ -71,5 +56,4 @@ data class CommandParameter(
         }
         return null
     }
-
 }

@@ -9,16 +9,20 @@ import uk.me.danielharman.kotlinspringbot.helpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.repositories.GuildRepository
-import java.util.stream.Collectors
 import kotlin.math.max
 
-@Service
-class SpringGuildService(private val guildRepository: GuildRepository) {
+private const val MAX_VOLUME = 100
 
+@Service
+class SpringGuildService(
+    private val guildRepository: GuildRepository,
+) {
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     fun getGuild(guildId: String): OperationResult<SpringGuild, String> {
-        val guild = guildRepository.findByGuildId(guildId) ?: return Failure("Could not find guild $guildId")
+        val guild =
+            guildRepository.findByGuildId(guildId)
+                ?: return Failure("Could not find guild $guildId")
         return Success(guild)
     }
 
@@ -36,21 +40,24 @@ class SpringGuildService(private val guildRepository: GuildRepository) {
         return Success(guildRepository.save(SpringGuild(guildId)))
     }
 
-    fun deleteSpringGuild(guildId: String): OperationResult<String, String> {
-        return when (val guild = getGuild(guildId)) {
-            is Failure -> guild
-            is Success -> {
-                guildRepository.deleteByGuildId(guild.value.guildId)
-                Success(guild.value.id)
-            }
+    fun deleteSpringGuild(guildId: String): OperationResult<String, String> = when (val guild = getGuild(guildId)) {
+        is Failure -> guild
+        is Success -> {
+            guildRepository.deleteByGuildId(guild.value.guildId)
+            Success(guild.value.id)
         }
     }
 
-    fun getGuilds(pageSize: Int = 10, page: Int = 0): OperationResult<List<SpringGuild>, String> =
-        Success(guildRepository.findAll(PageRequest.of(max(page, 0), max(pageSize, 1))).toList())
+    fun getGuilds(
+        pageSize: Int = 10,
+        page: Int = 0,
+    ): OperationResult<List<SpringGuild>, String> = Success(guildRepository.findAll(PageRequest.of(max(page, 0), max(pageSize, 1))).toList())
 
-
-    fun updateUserCount(guildId: String, userId: String, count: Int): OperationResult<SpringGuild, String> {
+    fun updateUserCount(
+        guildId: String,
+        userId: String,
+        count: Int,
+    ): OperationResult<SpringGuild, String> {
         val guild = createGuildIfNotExists(guildId)
         if (guild is Failure) return guild
 
@@ -59,42 +66,50 @@ class SpringGuildService(private val guildRepository: GuildRepository) {
         return Success(result)
     }
 
-    fun setVol(guildId: String, vol: Int): OperationResult<Int, String> {
+    fun setVol(
+        guildId: String,
+        vol: Int,
+    ): OperationResult<Int, String> {
         val guild = createGuildIfNotExists(guildId)
         if (guild is Failure) return guild
 
-        val newVol = when {
-            vol > 100 -> 100
-            vol < 0 -> 0
-            else -> vol
-        }
+        val newVol =
+            when {
+                vol > MAX_VOLUME -> MAX_VOLUME
+                vol < 0 -> 0
+                else -> vol
+            }
 
-        val findAndModify = guildRepository.setGuildVolume(guildId, newVol) ?: return Failure("Failed to update guild")
+        val findAndModify =
+            guildRepository.setGuildVolume(guildId, newVol)
+                ?: return Failure("Failed to update guild")
 
         return Success(findAndModify.volume)
     }
 
-    fun getVol(guildId: String): OperationResult<Int, String> {
-        return when (val guild = getGuild(guildId)) {
-            is Failure -> guild
-            is Success -> Success(guild.value.volume)
-        }
+    fun getVol(guildId: String): OperationResult<Int, String> = when (val guild = getGuild(guildId)) {
+        is Failure -> guild
+        is Success -> Success(guild.value.volume)
     }
 
-    fun isModerator(guildId: String, userId: String): OperationResult<String, String> {
-        return when (val guild = getGuild(guildId)) {
-            is Failure -> guild
-            is Success -> {
-                if (guild.value.privilegedUsers.contains(userId)) {
-                    Success(userId)
-                } else {
-                    Failure("User is not a moderator")
-                }
+    fun isModerator(
+        guildId: String,
+        userId: String,
+    ): OperationResult<String, String> = when (val guild = getGuild(guildId)) {
+        is Failure -> guild
+        is Success -> {
+            if (guild.value.privilegedUsers.contains(userId)) {
+                Success(userId)
+            } else {
+                Failure("User is not a moderator")
             }
         }
     }
 
-    fun addModerator(guildId: String, userId: String): OperationResult<String, String> {
+    fun addModerator(
+        guildId: String,
+        userId: String,
+    ): OperationResult<String, String> {
         return when (val guild = createGuildIfNotExists(guildId)) {
             is Failure -> guild
             is Success -> {
@@ -105,7 +120,10 @@ class SpringGuildService(private val guildRepository: GuildRepository) {
         }
     }
 
-    fun removeModerator(guildId: String, userId: String): OperationResult<String, String> {
+    fun removeModerator(
+        guildId: String,
+        userId: String,
+    ): OperationResult<String, String> {
         when (val guild = getGuild(guildId)) {
             is Failure -> return guild
             is Success -> {
@@ -116,7 +134,10 @@ class SpringGuildService(private val guildRepository: GuildRepository) {
         }
     }
 
-    fun addMemeChannel(guildId: String, channelId: String): OperationResult<String, String> {
+    fun addMemeChannel(
+        guildId: String,
+        channelId: String,
+    ): OperationResult<String, String> {
         return when (val guild = createGuildIfNotExists(guildId)) {
             is Failure -> guild
             is Success -> {
@@ -127,7 +148,10 @@ class SpringGuildService(private val guildRepository: GuildRepository) {
         }
     }
 
-    fun removeMemeChannel(guildId: String, channelId: String): OperationResult<String, String> {
+    fun removeMemeChannel(
+        guildId: String,
+        channelId: String,
+    ): OperationResult<String, String> {
         return when (val guild = getGuild(guildId)) {
             is Failure -> guild
             is Success -> {
@@ -138,14 +162,15 @@ class SpringGuildService(private val guildRepository: GuildRepository) {
         }
     }
 
-    fun getMemeChannels(guildId: String): OperationResult<List<String>, String> {
-        return when (val guild = getGuild(guildId)) {
-            is Failure -> guild
-            is Success -> Success(guild.value.memeChannels)
-        }
+    fun getMemeChannels(guildId: String): OperationResult<List<String>, String> = when (val guild = getGuild(guildId)) {
+        is Failure -> guild
+        is Success -> Success(guild.value.memeChannels)
     }
 
-    fun deafenChannel(guildId: String, channelId: String): OperationResult<String, String> {
+    fun deafenChannel(
+        guildId: String,
+        channelId: String,
+    ): OperationResult<String, String> {
         return when (val guild = getGuild(guildId)) {
             is Failure -> guild
             is Success -> {
@@ -156,7 +181,10 @@ class SpringGuildService(private val guildRepository: GuildRepository) {
         }
     }
 
-    fun unDeafenChannel(guildId: String, channelId: String): OperationResult<String, String> {
+    fun unDeafenChannel(
+        guildId: String,
+        channelId: String,
+    ): OperationResult<String, String> {
         return when (val guild = getGuild(guildId)) {
             is Failure -> guild
             is Success -> {
@@ -167,13 +195,22 @@ class SpringGuildService(private val guildRepository: GuildRepository) {
         }
     }
 
-    fun getDeafenedChannels(guildId: String): OperationResult<List<String>, String> {
-        return when (val guild = getGuild(guildId)) {
-            is Failure -> guild
-            is Success -> Success(guild.value.deafenedChannels)
-        }
+    fun isChannelDeafened(
+        guildId: String,
+        channelId: String,
+    ): Boolean = when (val guild = getGuild(guildId)) {
+        is Failure -> false
+        is Success -> guild.value.deafenedChannels.contains(channelId)
     }
 
-    fun getGuildsWithoutModerators(): OperationResult<List<SpringGuild>, String> =
-        Success(guildRepository.getGuildsWithModeratorCount(0))
+    fun getDeafenedChannels(guildId: String): OperationResult<List<String>, String> = when (
+        val guild = getGuild(guildId)
+    ) {
+        is Failure -> guild
+        is Success -> Success(guild.value.deafenedChannels)
+    }
+
+    fun getGuildsWithoutModerators(): OperationResult<List<SpringGuild>, String> = Success(
+        guildRepository.getGuildsWithModeratorCount(0),
+    )
 }
