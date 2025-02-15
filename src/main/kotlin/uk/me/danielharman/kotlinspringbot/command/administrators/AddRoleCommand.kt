@@ -1,6 +1,8 @@
 package uk.me.danielharman.kotlinspringbot.command.administrators
 
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IAdminCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
@@ -9,11 +11,16 @@ import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
 import uk.me.danielharman.kotlinspringbot.services.admin.AdministratorService
 
+private const val MIN_PARAMETERS = 3
+
 @Component
 class AddRoleCommand(
     private val administratorService: AdministratorService,
+
 ) : IAdminCommand {
     private val commandString = "addrole"
+
+    private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun execute(event: MessageReceivedEvent) {
         when (administratorService.getBotAdministratorByDiscordId(event.author.id)) {
@@ -24,7 +31,7 @@ class AddRoleCommand(
             is Success -> {
                 val split = event.message.contentRaw.split(' ')
 
-                if (split.size < 3) {
+                if (split.size < MIN_PARAMETERS) {
                     event.channel
                         .sendMessageEmbeds(Embeds.createErrorEmbed("Not enough parameters"))
                         .queue()
@@ -52,6 +59,7 @@ class AddRoleCommand(
                         return
                     }
                 } catch (e: IllegalArgumentException) {
+                    logger.error(e.message)
                     event.channel
                         .sendMessageEmbeds(
                             Embeds.createErrorEmbed(
