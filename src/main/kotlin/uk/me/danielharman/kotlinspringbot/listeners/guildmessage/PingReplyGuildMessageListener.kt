@@ -19,7 +19,8 @@ class PingReplyGuildMessageListener(
         if (!event.isFromGuild || event.author.isBot) return
 
         logger.debug(
-            "[${event.guild.name}] #${event.channel.name} <${event.member?.nickname ?: event.author.asTag}>: ${event.message.contentDisplay}",
+            "[${event.guild.name}] #${event.channel.name} " +
+                "<${event.member?.nickname ?: event.author.asTag}>: ${event.message.contentDisplay}",
         )
 
         val isDeafened = springGuildService.isChannelDeafened(event.guild.id, event.channel.id)

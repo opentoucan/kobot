@@ -5,6 +5,8 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDateTime
 
+private const val DEFAULT_VOLUME = 50
+
 @Document(collection = "springGuild")
 data class SpringGuild(
     val guildId: String,
@@ -34,8 +36,9 @@ data class SpringGuild(
     var logChannelId: String = ""
     var memeChannels: List<String> = listOf()
     var xkcdChannelId: String = ""
-    var volume = 50
+    var volume = DEFAULT_VOLUME
     var deafenedChannels: List<String> = listOf()
 
-    override fun toString(): String = "ChannelStats(guildId='$guildId', id='$id', wordCounts=$wordCounts, commandCounts=$commandCounts)"
+    override fun toString(): String = "ChannelStats(guildId='$guildId'," +
+        " id='$id', wordCounts=$wordCounts, commandCounts=$commandCounts)"
 }

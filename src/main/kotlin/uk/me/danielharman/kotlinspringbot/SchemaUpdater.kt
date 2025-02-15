@@ -11,6 +11,8 @@ import uk.me.danielharman.kotlinspringbot.models.DiscordCommand
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import java.time.LocalDateTime
 
+class SchemaUpdateException(msg: String) : Exception(msg)
+
 class SchemaUpdater(
     private val mongoOperations: MongoOperations,
 ) {
@@ -37,7 +39,7 @@ class SchemaUpdater(
         logger.info("[Schema] Schema now at $schemaVer")
 
         if (schemaVer != latestVer) {
-            throw RuntimeException("[Schema] Schema version mismatch! $schemaVer != $latestVer")
+            throw SchemaUpdateException("[Schema] Schema version mismatch! $schemaVer != $latestVer")
         }
     }
 

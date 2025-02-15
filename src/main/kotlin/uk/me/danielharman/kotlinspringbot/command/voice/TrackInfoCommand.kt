@@ -7,6 +7,7 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.helpers.PURPLE
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 import java.awt.Color
 
@@ -46,7 +47,7 @@ class TrackInfoCommand(
         event.reply(
             EmbedBuilder()
                 .setTitle("Music")
-                .setColor(0x2e298f)
+                .setColor(PURPLE)
                 .addField("Track Title", audioTrack.info.title, false)
                 .addField("Track Author", audioTrack.info.author, false)
                 .addField("Track Length", durationStr, false)

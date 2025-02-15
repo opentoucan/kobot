@@ -9,8 +9,11 @@ import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.helpers.Comparators
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.PURPLE
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
+
+private const val LIST_OF_USERS_LIMIT = 20L
 
 @Component
 class WordCountCommand(private val springGuildService: SpringGuildService) :
@@ -34,7 +37,7 @@ class WordCountCommand(private val springGuildService: SpringGuildService) :
                 getSpringGuild.value.userWordCounts.entries
                     .stream()
                     .sorted(Comparators.mapStrIntComparator)
-                    .limit(20)
+                    .limit(LIST_OF_USERS_LIMIT)
                     .forEach { (s, i) ->
                         run {
                             try {
@@ -44,14 +47,14 @@ class WordCountCommand(private val springGuildService: SpringGuildService) :
                                     } - $i words\n",
                                 )
                             } catch (e: ErrorResponseException) {
-                                logger.error("Failed to find user $s by id")
+                                logger.error("Failed to find user $s by id ${e.message}")
                             }
                         }
                     }
 
                 EmbedBuilder()
                     .appendDescription(stringBuilder.toString())
-                    .setColor(0x9d03fc)
+                    .setColor(PURPLE)
                     .setTitle("Words said per user for $guildName")
                     .build()
             }

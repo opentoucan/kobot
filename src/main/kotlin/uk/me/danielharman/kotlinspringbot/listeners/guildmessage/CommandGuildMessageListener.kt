@@ -55,7 +55,8 @@ class CommandGuildMessageListener(
             event.reply(
                 Embeds.infoWithDescriptionEmbedBuilder(
                     "Command not found",
-                    "If you are trying to use custom commands like save or saved these are now deprecated, use an alternative bot",
+                    "If you are trying to use custom commands like save " +
+                        "or saved these are now deprecated, use an alternative bot",
                 ),
                 false,
             )
@@ -64,6 +65,7 @@ class CommandGuildMessageListener(
         try {
             command.execute(event)
         } catch (e: Exception) {
+            logger.error(e.message, e)
             event.reply("An internal error occurred while executing the command.", true)
             throw e
         }

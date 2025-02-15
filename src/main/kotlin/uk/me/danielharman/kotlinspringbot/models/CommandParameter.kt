@@ -27,36 +27,21 @@ data class CommandParameter(
 
     fun asBoolean(): Boolean? {
         if (type == ParamType.Boolean && value != null) {
-            return try {
-                value as Boolean
-            } catch (e: TypeCastException) {
-                error = true
-                null
-            }
+            return value as Boolean
         }
         return null
     }
 
     fun asString(): String? {
         if ((type == ParamType.String || type == ParamType.Word) && value != null) {
-            return try {
-                value as String
-            } catch (e: TypeCastException) {
-                error = true
-                null
-            }
+            return value as String
         }
         return null
     }
 
     fun asLong(): Long? {
         if (type == ParamType.Long && value != null) {
-            return try {
-                value as Long
-            } catch (e: TypeCastException) {
-                error = true
-                null
-            }
+            return value as Long
         }
         return null
     }

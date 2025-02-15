@@ -17,6 +17,8 @@ import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import java.lang.RuntimeException
 import java.time.LocalDateTime
 
+private const val DISCORD_SLASH_LIMIT = 100
+
 object DiscordObject {
     lateinit var jda: JDA
     var initialised: Boolean = false
@@ -31,7 +33,7 @@ object DiscordObject {
         logger.info("Starting discord")
         logger.info("${listeners.size} listeners registered")
         logger.info("${commands.size} commands registered")
-        if (commands.size > 100) {
+        if (commands.size > DISCORD_SLASH_LIMIT) {
             throw RuntimeException("Too many commands, discord limits slash commands to 100")
         }
         val builder: JDABuilder =

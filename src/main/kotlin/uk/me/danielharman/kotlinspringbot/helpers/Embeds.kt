@@ -4,6 +4,8 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import java.awt.Color
 
+const val PURPLE = 0x9d03fc
+
 object Embeds {
     fun createErrorEmbed(message: String): MessageEmbed = EmbedBuilder()
         .setTitle("Error")

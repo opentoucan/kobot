@@ -10,6 +10,8 @@ import uk.me.danielharman.kotlinspringbot.models.CommandParameter.ParamType
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
+private const val MAX_VOLUME = 100
+
 @Component
 class SetVolumeCommand(
     private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
@@ -40,7 +42,7 @@ class SetVolumeCommand(
 
         val newVol =
             when {
-                vol > 100 -> 100
+                vol > MAX_VOLUME -> MAX_VOLUME
                 vol < 0 -> 0
                 else -> vol
             }
