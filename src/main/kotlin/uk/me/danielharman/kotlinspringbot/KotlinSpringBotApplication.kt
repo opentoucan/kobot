@@ -11,6 +11,6 @@ import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 class KotlinSpringBotApplication
 
 fun main(args: Array<String>) {
-    @Suppress("SpreadOperator") 
+    @Suppress("SpreadOperator")
     runApplication<KotlinSpringBotApplication>(*args)
 }
