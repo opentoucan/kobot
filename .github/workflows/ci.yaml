@@ -4,13 +4,15 @@ name: ci
 
 on:
   push:
-    branches: [ 'main', 'release' ]
+    branches: [ 'main' ]
+    tags:
+      - 'v?[0-9]+.[0-9]+.[0-9]+'
     paths-ignore:
       - '.github/**'
       - 'docs/**'
       - '**.md'
   pull_request:
-    branches: [ 'main', 'release' ]
+    branches: [ 'main' ]
     paths-ignore:
       - '.github/**'
       - 'docs/**'
@@ -42,6 +44,7 @@ jobs:
           sarif_file: detekt.sarif
 
   build-docker:
+    needs: ["lint"]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4.2.2
@@ -50,15 +53,18 @@ jobs:
         uses: docker/setup-buildx-action@v3.9.0
 
       - name: Login to Github Packages
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && github.ref_type == 'tag'
         uses: docker/login-action@v3.3.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set current date as env variable
-        run: echo "date=$(date +'%Y-%m-%dT%H-%M-%S')" >> $GITHUB_ENV
+      - name: Extract tag
+        id: semver_tag
+        run: |
+          GIT_TAG=${{ github.ref_name  }}
+          echo "TAG=${GIT_TAG#*v}" >> $GITHUB_OUTPUT
 
       - name: Extract Docker metadata
         id: meta
@@ -67,7 +73,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/kobot
           tags: |
             type=raw,value=latest
-            type=raw,value=${{ github.ref_name }}.${{ env.date }}
+            type=raw,value=${{ steps.semver_tag.outputs.TAG }}
 
       - name: Build and push Docker image
         id: build-and-push
@@ -75,6 +81,8 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          push: ${{ github.ref_name == 'main' || github.ref_name  == 'release' }}
+          push: ${{ github.ref_type == 'tag' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ steps.semver_tag.outputs.TAG }}
