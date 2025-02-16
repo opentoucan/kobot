@@ -49,7 +49,8 @@ class GetMemeRank(
                             is Success -> user.value.asTag
                         }
                 des.append(
-                    "${if (!asc) "#" else ""}${if (!asc) counter++.toString() else ""} $name: S:${pair.second.score}   U:${pair.second.upvotes}   D:${pair.second.downvotes} of ${pair.second.count} posts\n",
+                    "${if (!asc) "#" else ""}${if (!asc) counter++.toString() else ""} $name: S:${pair.second.score}" +
+                        "   U:${pair.second.upvotes}   D:${pair.second.downvotes} of ${pair.second.count} posts\n",
                 )
             } catch (e: ErrorResponseException) {
                 logger.error(e.message)

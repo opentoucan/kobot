@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.IModeratorCommand
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.PURPLE
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
@@ -46,7 +47,7 @@ class ModeratorsListCommand(
 
             EmbedBuilder()
                 .appendDescription(stringBuilder.toString())
-                .setColor(0x9d03fc)
+                .setColor(PURPLE)
                 .setTitle("Moderators for ${message.guild.name}")
                 .build()
         }
