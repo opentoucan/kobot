@@ -41,7 +41,9 @@ class MemeGuildMessageListener(
         event.message.contentRaw
         if (
             event.message.contentStripped.startsWith(properties.commandPrefix) ||
-            event.message.contentStripped.startsWith(properties.privilegedCommandPrefix)
+            event.message.contentStripped.startsWith(properties.privilegedCommandPrefix) ||
+            !event.isFromGuild ||
+            event.author.isBot
         ) {
             return
         }
@@ -54,7 +56,7 @@ class MemeGuildMessageListener(
             memeChannels = getMemeChannels.value
         }
 
-        if (memeChannels.contains(event.channel.id)) {
+        if (memeChannels.contains(event.channel.id) && event.message.attachments.isNotEmpty()) {
             createMeme(event.message, event.guild.id, event.author.id, event.channel.id)
 
             val memeFileUrl = URI(event.message.attachments[0].url).toURL()
