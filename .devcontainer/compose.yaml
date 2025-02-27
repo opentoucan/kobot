@@ -1,0 +1,19 @@
+x-podman:
+  in_pod: false
+
+services:
+  workspace:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: workspace
+    env_file: devcontainer.env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=local
+    volumes:
+      - ..:/workspace:cached
+    ports:
+      - 8080:8080
+    command: sleep infinity
+    user: vscode
+    userns_mode: keep-id:uid=1000,gid=1000
