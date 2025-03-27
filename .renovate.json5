@@ -1,0 +1,47 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    'local>opentoucan/renovate-config'
+  ],
+  packageRules: [
+    {
+      description: ["Spring Boot Group"],
+      groupName: "SpringBoot",
+      matchPackagePatterns: ["^org.springframework.boot"],
+      matchDatasources: ["gradle"],
+      group: {
+        commitMessageTopic: "{{{groupName}}} group"
+      }
+    },
+    {
+      description: ["Kotlin Group"],
+      groupName: "Kotlin",
+      matchPackagePatterns: ["^org.jetbrains.kotlin"],
+      matchDatasources: ["gradle"],
+      group: {
+        commitMessageTopic: "{{{groupName}}} group"
+      }
+    },
+    {
+      description: ["Kotest Group"],
+      groupName: "Kotest",
+      matchPackagePatterns: ["^io.kotest"],
+      matchDatasources: ["gradle"],
+      group: {
+        commitMessageTopic: "{{{groupName}}} group"
+      }
+    },
+    {
+      matchManagers: ["java-version"],
+      semanticCommitScope: "java",
+      commitMessageTopic: "java {{depName}}",
+      addLabels: ["renovate/java"]
+    }
+    {
+      matchManagers: ["gradle-version"],
+      semanticCommitScope: "gradle",
+      commitMessageTopic: "gradle {{depName}}",
+      addLabels: ["renovate/gradle"]
+    }
+  ]
+}
