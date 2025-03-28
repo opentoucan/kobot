@@ -38,7 +38,7 @@
       addLabels: ["renovate/java"]
     },
     {
-      matchManagers: ["gradle-version"],
+      matchManagers: ["gradle"],
       semanticCommitScope: "gradle",
       commitMessageTopic: "gradle {{depName}}",
       addLabels: ["renovate/gradle"]
