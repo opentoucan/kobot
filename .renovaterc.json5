@@ -32,12 +32,6 @@
       }
     },
     {
-      matchManagers: ["java"],
-      semanticCommitScope: "java",
-      commitMessageTopic: "java {{depName}}",
-      addLabels: ["renovate/java"]
-    },
-    {
       matchManagers: ["gradle"],
       semanticCommitScope: "gradle",
       commitMessageTopic: "gradle {{depName}}",
