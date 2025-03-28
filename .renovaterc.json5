@@ -32,7 +32,7 @@
       }
     },
     {
-      matchManagers: ["java-version"],
+      matchManagers: ["java"],
       semanticCommitScope: "java",
       commitMessageTopic: "java {{depName}}",
       addLabels: ["renovate/java"]
