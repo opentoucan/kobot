@@ -27,38 +27,6 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  prepare-release:
-    runs-on: ubuntu-latest
-    if: inputs.version != '' || github.ref_type == 'tag'
-    outputs:
-      version: ${{ steps.image-version.outputs.semantic }}
-      platforms: ${{ steps.bake-options.outputs.platforms }}
-    steps:
-      - name: Set input version
-        id: input_version
-        run: |
-          echo "VERSION=${${{ inputs.version }}-:${{ github.ref_name }}}" >> $GITHUB_OUTPUT
-
-      - name: Get semantic version
-        uses: ./.github/actions/image-versions
-        id: image-version
-        with:
-          input-version: ${{ steps.input_version.output.VERSION }}
-
-      - name: Get Bake Options
-        id: bake-options
-        shell: bash
-        run: |
-          BAKE_OPTS=$(docker buildx bake --file docker-bake.hcl image-all --print 2>/dev/null)
-
-          PLATFORMS=$(jq --raw-output --compact-output '.target."image-all".platforms' <<< "$BAKE_OPTS")
-          echo "platforms=${PLATFORMS}" >> $GITHUB_OUTPUT
-
-      - name: Check semantic version is invalid
-        if: ${{ !steps.image-version.outputs.is-valid-semver }}
-        run: |
-          echo "${{ steps.image-version.outputs.semantic }} is not a valid " || exit 1
-
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -93,12 +61,28 @@ jobs:
         if: success() || failure()
         with:
           sarif_file: report.sarif
+
+  prepare-build:
+    runs-on: ubuntu-latest
+    outputs:
+      platforms: ${{ steps.bake-options.outputs.platforms }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - name: Get Bake Options
+        id: bake-options
+        shell: bash
+        run: |
+          BAKE_OPTS=$(docker buildx bake --file docker-bake.hcl image-all --print 2>/dev/null)
+
+          PLATFORMS=$(jq --raw-output --compact-output '.target."image-all".platforms' <<< "$BAKE_OPTS")
+          echo "platforms=${PLATFORMS}" >> $GITHUB_OUTPUT
+
   build-docker:
     runs-on: ${{ startsWith(matrix.platform, 'linux/arm') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
-        platform: ${{ fromJson(needs.prepare-release.outputs.platforms) }}
+        platform: ${{ fromJson(needs.prepare-build.outputs.platforms) }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
@@ -151,6 +135,29 @@ jobs:
             *.platform=${{ matrix.platform }}
             *.tags=
           targets: image-all
+
+  prepare-release:
+    runs-on: ubuntu-latest
+    if: inputs.version != '' || github.ref_type == 'tag'
+    outputs:
+      version: ${{ steps.image-version.outputs.semantic }}
+    steps:
+      - name: Set input version
+        id: input_version
+        run: |
+          echo "VERSION=${${{ inputs.version }}-:${{ github.ref_name }}}" >> $GITHUB_OUTPUT
+
+      - name: Get semantic version
+        uses: ./.github/actions/image-versions
+        id: image-version
+        with:
+          input-version: ${{ steps.input_version.output.VERSION }}
+
+      - name: Check semantic version is invalid
+        if: ${{ !steps.image-version.outputs.is-valid-semver }}
+        run: |
+          echo "${{ steps.image-version.outputs.semantic }} is not a valid " || exit 1
+
   release:
     if: ${{ inputs.version != '' || github.ref_type == 'tag' }}
     name: Release
