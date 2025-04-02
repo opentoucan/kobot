@@ -155,6 +155,30 @@ jobs:
             *.tags=
           targets: image-all
 
+      - if: ${{ inputs.release }}
+        name: Export Digest
+        run: |
+          mkdir -p ${{ runner.temp }}/digests
+          DIGEST="${{ fromJSON(steps.bake.outputs.metadata).image['containerimage.digest'] }}"
+          touch "${{ runner.temp }}/digests/${DIGEST#sha256:}"
+
+      - name: Upload Bake Metadata
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ${{ steps.vars.outputs.repository-name }}-bake-metadata
+          path: ${{ steps.meta.outputs.bake-file }}
+          if-no-files-found: error
+          retention-days: 1
+
+      - if: ${{ inputs.release }}
+        name: Upload Digest
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ${{ steps.vars.outputs.repository-name  }}-digests-${{ steps.vars.outputs.target-arch }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
   release:
     if: ${{ needs.prepare.outputs.valid-release }}
     name: Release
@@ -182,14 +206,14 @@ jobs:
       - name: Download Bake Metadata
         uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
         with:
-          name: ${{ steps.vars.outputs.repository-name  }}-bake-metadata
+          name: ${{ steps.vars.outputs.repository-name }}-bake-metadata
           path: ${{ runner.temp }}
 
       - name: Download Digests
         uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
         with:
           path: ${{ runner.temp }}/digests
-          pattern: ${{ steps.vars.outputs.repository-name  }}-digests-*
+          pattern: ${{ steps.vars.outputs.repository-name }}-digests-*
           merge-multiple: true
 
       - name: Login to GitHub Container Registry
@@ -235,7 +259,7 @@ jobs:
               --generate-notes
 
   attest:
-    if: ${{ inputs.version != '' || github.ref_type == 'tag' }}
+    if: ${{ needs.prepare.outputs.valid-release }}
     name: Attest
     needs: release
     runs-on: ubuntu-latest
