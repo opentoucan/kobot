@@ -38,7 +38,6 @@ runs:
           const inputVersion = '${{ inputs.input-version }}';
           const parsedSemver = semver.coerce(inputVersion, { includePrerelease: true });
           const isValidSemver = parsedSemver !== null;
-          const semanticVersion = parsedSemver.version;
 
           core.setOutput('is-valid-semver', isValidSemver);
-          core.setOutput('semantic', semanticVersion);
+          core.setOutput('semantic', isValidSemver ? parsedSemver.version : null);
