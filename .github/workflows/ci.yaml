@@ -32,6 +32,7 @@ jobs:
     if: inputs.version != '' || github.ref_type == 'tag'
     outputs:
       version: ${{ steps.image-version.outputs.semantic }}
+      platforms: ${{ steps.bake-options.outputs.platforms }}
     steps:
       - name: Set input version
         id: input_version
@@ -48,6 +49,16 @@ jobs:
         if: ${{ !steps.image-version.outputs.is-valid-semver }}
         run: |
           echo "${{ steps.image-version.outputs.semantic }} is not a valid " || exit 1
+
+      - name: Get Bake Options
+        id: bake-options
+        shell: bash
+        run: |
+          BAKE_OPTS=$(docker buildx bake --file docker-bake.hcl image-all --print 2>/dev/null)
+
+          PLATFORMS=$(jq --raw-output --compact-output '.target."image-all".platforms' <<< "$BAKE_OPTS")
+          echo "platforms=${PLATFORMS}" >> $GITHUB_OUTPUT
+
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -83,7 +94,11 @@ jobs:
         with:
           sarif_file: report.sarif
   build-docker:
-    runs-on: ubuntu-latest
+    runs-on: ${{ startsWith(matrix.platform, 'linux/arm') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ${{ fromJson(needs.prepare-release.outputs.platforms) }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
@@ -94,6 +109,7 @@ jobs:
           script: |
             core.setOutput('repository-owner', '${{ github.repository_owner }}'.toLowerCase());
             core.setOutput('repository-name', '${{ github.event.repository.name }}'.toLowerCase());
+            core.setOutput('target-arch', '${{ matrix.platform }}'.split('/').pop());
 
       - name: Login to Github Packages
         if: github.event_name != 'pull_request' && github.ref_type == 'tag'
@@ -132,6 +148,7 @@ jobs:
             *.labels.org.opencontainers.image.revision=${{ github.sha }}
             *.labels.org.opencontainers.image.vendor=${{ steps.vars.outputs.repository-owner }}
             ${{ inputs.version != '' || github.ref_type == 'tag' && format('*.output=type=image,name=ghcr.io/{0}/{1},push-by-digest=true,name-canonical=true,push=true', steps.vars.outputs.repository-owner, steps.vars.outputs.repository-name) || '*.output=type=image' }}
+            *.platform=${{ matrix.platform }}
             *.tags=
           targets: image-all
   release:
