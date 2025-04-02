@@ -71,7 +71,7 @@ jobs:
       - name: Set input version
         id: input_version
         run: |
-          echo "VERSION=${${{ inputs.version }}:-${{ github.ref_name }}}" >> $GITHUB_OUTPUT
+          echo "VERSION=$(${{ inputs.version }}:-${{ github.ref_name }})" >> $GITHUB_OUTPUT
 
       - name: Get semantic version
         uses: ./.github/actions/image-versions
