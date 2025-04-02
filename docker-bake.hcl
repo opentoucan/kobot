@@ -2,9 +2,6 @@ target "docker-metadata-action" {}
 
 target "image" {
   inherits = ["docker-metadata-action"]
-  tags = [
-    "kobot:latest"
-  ]
 }
 
 target "image-local" {
@@ -12,8 +9,8 @@ target "image-local" {
   output = ["type=docker"]
 }
 
-target "release" {
-  inherits = ["docker-metadata-action"]
+target "image-all" {
+  inherits = ["image"]
   platforms = [
     "linux/amd64",
     "linux/arm64",
