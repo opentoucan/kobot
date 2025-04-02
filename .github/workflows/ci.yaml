@@ -71,6 +71,14 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
+      - name: Setup Vars
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        id: vars
+        with:
+          script: |
+            core.setOutput('repository-owner', '${{ github.repository_owner }}'.toLowerCase());
+            core.setOutput('repository-name', '${{ github.event.repository.name }}'.toLowerCase());
+
       - name: Set input version
         id: input_version
         env:
@@ -93,6 +101,23 @@ jobs:
 
           PLATFORMS=$(jq --raw-output --compact-output '.target."image-all".platforms' <<< "$BAKE_OPTS")
           echo "platforms=${PLATFORMS}" >> $GITHUB_OUTPUT
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ steps.vars.outputs.repository-owner }}/${{ steps.vars.outputs.repository-name }}
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ needs.validate-release.outputs.semantic }}
+
+      - name: Upload Bake Metadata
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ${{ steps.vars.outputs.repository-name }}-bake-metadata
+          path: ${{ steps.meta.outputs.bake-file }}
+          if-no-files-found: error
+          retention-days: 1
 
   build-docker:
     name: Build (${{ matrix.platform }})
@@ -122,14 +147,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
+      - name: Download Bake Metadata
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/kobot
-          tags: |
-            type=raw,value=latest
-            type=raw,value=${{ needs.prepare.outputs.semantic }}
+          name: ${{ steps.vars.outputs.repository-name }}-bake-metadata
+          path: ${{ runner.temp }}
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
@@ -162,14 +184,6 @@ jobs:
           DIGEST="${{ fromJSON(steps.bake.outputs.metadata).image['containerimage.digest'] }}"
           touch "${{ runner.temp }}/digests/${DIGEST#sha256:}"
 
-      - name: Upload Bake Metadata
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: ${{ steps.vars.outputs.repository-name }}-bake-metadata
-          path: ${{ steps.meta.outputs.bake-file }}
-          if-no-files-found: error
-          retention-days: 1
-
       - if: ${{ inputs.release }}
         name: Upload Digest
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -183,7 +197,7 @@ jobs:
     if: ${{ needs.prepare.outputs.valid-release }}
     name: Release
     runs-on: ubuntu-latest
-    needs: ["prepare", "build-docker"]
+    needs: "build-docker"
     outputs:
       digest: ${{ steps.digest.outputs.digest }}
     steps:
