@@ -115,7 +115,7 @@ jobs:
             core.setOutput('target-arch', '${{ matrix.platform }}'.split('/').pop());
 
       - name: Login to Github Packages
-        if: github.event_name != 'pull_request' && github.ref_type == 'tag'
+        if: ${{ needs.prepare.outputs.valid-release }}
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
         with:
           registry: ${{ env.REGISTRY }}
