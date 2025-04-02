@@ -45,11 +45,6 @@ jobs:
         with:
           input-version: ${{ steps.input_version.output.VERSION }}
 
-      - name: Check semantic version is invalid
-        if: ${{ !steps.image-version.outputs.is-valid-semver }}
-        run: |
-          echo "${{ steps.image-version.outputs.semantic }} is not a valid " || exit 1
-
       - name: Get Bake Options
         id: bake-options
         shell: bash
@@ -58,6 +53,11 @@ jobs:
 
           PLATFORMS=$(jq --raw-output --compact-output '.target."image-all".platforms' <<< "$BAKE_OPTS")
           echo "platforms=${PLATFORMS}" >> $GITHUB_OUTPUT
+
+      - name: Check semantic version is invalid
+        if: ${{ !steps.image-version.outputs.is-valid-semver }}
+        run: |
+          echo "${{ steps.image-version.outputs.semantic }} is not a valid " || exit 1
 
   lint:
     runs-on: ubuntu-latest
