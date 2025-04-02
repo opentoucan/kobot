@@ -72,13 +72,15 @@ jobs:
         id: bake-options
         shell: bash
         run: |
-          BAKE_OPTS=$(docker buildx bake --file docker-bake.hcl image-all --print 2>/dev/null)
+          BAKE_OPTS=$(docker buildx bake --file ./docker-bake.hcl image-all --print 2>/dev/null)
 
           PLATFORMS=$(jq --raw-output --compact-output '.target."image-all".platforms' <<< "$BAKE_OPTS")
           echo "platforms=${PLATFORMS}" >> $GITHUB_OUTPUT
 
   build-docker:
+    name: Build (${{ matrix.platform }})
     runs-on: ${{ startsWith(matrix.platform, 'linux/arm') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    needs: prepare-build
     strategy:
       fail-fast: false
       matrix:
