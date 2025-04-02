@@ -1,9 +1,9 @@
 target "docker-metadata-action" {}
 
 target "image" {
-  inherits = ["docker-metadata-action"],
+  inherits = ["docker-metadata-action"]
   tags = [
-    "kobot:latest",
+    "kobot:latest"
   ]
 }
 
