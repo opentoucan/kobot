@@ -69,11 +69,14 @@ jobs:
       valid-release: ${{ steps.image-version.outputs.is-valid-semver }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      
+
       - name: Set input version
         id: input_version
+        env:
+          TAG: ${{ github.ref_name }}
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          echo "VERSION=$(${{ inputs.version }}:-${{ github.ref_name }})" >> $GITHUB_OUTPUT
+          echo "VERSION=${INPUT_VERSION:-TAG}" >> $GITHUB_OUTPUT
 
       - name: Get semantic version
         uses: ./.github/actions/image-versions
