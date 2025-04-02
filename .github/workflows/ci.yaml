@@ -64,7 +64,6 @@ jobs:
 
   prepare:
     runs-on: ubuntu-latest
-    needs: build-docker
     outputs:
       version: ${{ steps.image-version.outputs.semantic }}
       valid-release: ${{ steps.image-version.outputs.is-valid-semver }}
