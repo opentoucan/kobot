@@ -9,9 +9,9 @@ inputs:
     required: true
 
 outputs:
-  is-valid-semver:
+  valid-release:
     description: If version is valid semantic versioning
-    value: ${{ steps.version.outputs.is-valid-semver }}
+    value: ${{ steps.version.outputs.valid-release }}
   semantic:
     description: Semantic Version
     value: ${{ steps.version.outputs.semantic }}
@@ -37,7 +37,6 @@ runs:
 
           const inputVersion = '${{ inputs.input-version }}';
           const parsedSemver = semver.coerce(inputVersion, { includePrerelease: true });
-          const isValidSemver = parsedSemver.version !== null;
-
-          core.setOutput('is-valid-semver', isValidSemver);
-          core.setOutput('semantic', isValidSemver ? parsedSemver.version : null);
+          const isValidSemver = parsedSemver !== null;
+          core.setOutput('valid-release', isValidSemver);
+          core.setOutput('semantic', parsedSemver?.version);

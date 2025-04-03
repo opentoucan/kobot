@@ -95,12 +95,7 @@ jobs:
 
       - name: Get Bake Options
         id: bake-options
-        shell: bash
-        run: |
-          BAKE_OPTS=$(docker buildx bake --file ./docker-bake.hcl image-all --print 2>/dev/null)
-
-          PLATFORMS=$(jq --raw-output --compact-output '.target."image-all".platforms' <<< "$BAKE_OPTS")
-          echo "platforms=${PLATFORMS}" >> $GITHUB_OUTPUT
+        uses: ./.github/actions/bake-options
 
       - name: Extract Docker metadata
         id: meta
@@ -109,7 +104,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ steps.vars.outputs.repository-owner }}/${{ steps.vars.outputs.repository-name }}
           tags: |
             type=raw,value=latest
-            type=raw,value=${{ needs.validate-release.outputs.semantic }}
+            type=raw,value=${{ steps.image-version.outputs.semantic }}
 
       - name: Upload Bake Metadata
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -201,11 +196,6 @@ jobs:
     outputs:
       digest: ${{ steps.digest.outputs.digest }}
     steps:
-      - name: Check semantic version is invalid
-        if: ${{ !steps.image-version.outputs.valid-release }}
-        run: |
-          echo "${{ steps.image-version.outputs.semantic }} is not a valid " || exit 1
-
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
