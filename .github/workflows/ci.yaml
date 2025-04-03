@@ -68,7 +68,7 @@ jobs:
     outputs:
       version: ${{ steps.image-version.outputs.semantic }}
       platforms: ${{ steps.bake-options.outputs.platforms }}
-      valid-release: ${{ steps.image-version.outputs.is-valid-semver }}
+      valid-release: ${{ steps.image-version.outputs.valid-release }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
@@ -136,7 +136,7 @@ jobs:
             core.setOutput('target-arch', '${{ matrix.platform }}'.split('/').pop());
 
       - name: Login to Github Packages
-        if: ${{ needs.prepare.outputs.valid-release }}
+        if: needs.prepare.outputs.valid-release
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -173,14 +173,14 @@ jobs:
             *.tags=
           targets: image-all
 
-      - if: ${{ inputs.release }}
+      - if: needs.prepare.outputs.valid-release
         name: Export Digest
         run: |
           mkdir -p ${{ runner.temp }}/digests
           DIGEST="${{ fromJSON(steps.bake.outputs.metadata).image['containerimage.digest'] }}"
           touch "${{ runner.temp }}/digests/${DIGEST#sha256:}"
 
-      - if: ${{ inputs.release }}
+      - if: needs.prepare.outputs.valid-release
         name: Upload Digest
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -190,7 +190,7 @@ jobs:
           retention-days: 1
 
   release:
-    if: ${{ needs.prepare.outputs.valid-release }}
+    if: needs.prepare.outputs.valid-release
     name: Release
     runs-on: ubuntu-latest
     needs: "build-docker"
