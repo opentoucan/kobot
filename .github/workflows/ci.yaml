@@ -64,6 +64,7 @@ jobs:
 
   prepare:
     runs-on: ubuntu-latest
+    needs: lint
     outputs:
       version: ${{ steps.image-version.outputs.semantic }}
       platforms: ${{ steps.bake-options.outputs.platforms }}
