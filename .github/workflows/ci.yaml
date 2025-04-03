@@ -259,7 +259,7 @@ jobs:
           GITHUB_TOKEN: "${{ steps.app-token.outputs.token }}"
         run: |
           gh release create "${{ needs.prepare.outputs.version }}" \
-              --repo="${{ github.event.repository.name }}" \
+              --repo="${GITHUB_REPOSITORY}" \
               --title="${{ needs.prepare.outputs.version }}" \
               --generate-notes
 
