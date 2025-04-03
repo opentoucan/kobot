@@ -268,6 +268,11 @@ jobs:
     name: Attest
     needs: release
     runs-on: ubuntu-latest
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
+      security-events: write
     steps:
       - name: Setup Vars
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
