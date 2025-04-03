@@ -255,13 +255,14 @@ jobs:
 
       - name: Create Release
         shell: bash
+        continue-on-error: true
         env:
           GITHUB_TOKEN: "${{ steps.app-token.outputs.token }}"
         run: |
           gh release create "${{ needs.prepare.outputs.version }}" \
               --repo="${GITHUB_REPOSITORY}" \
               --title="${{ needs.prepare.outputs.version }}" \
-              --generate-notes 2>/dev/null
+              --generate-notes
 
   attest:
     if: ${{ needs.prepare.outputs.valid-release }}
