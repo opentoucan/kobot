@@ -261,7 +261,7 @@ jobs:
           gh release create "${{ needs.prepare.outputs.version }}" \
               --repo="${GITHUB_REPOSITORY}" \
               --title="${{ needs.prepare.outputs.version }}" \
-              --generate-notes
+              --generate-notes 2>/dev/null
 
   attest:
     if: ${{ needs.prepare.outputs.valid-release }}
