@@ -165,13 +165,13 @@ jobs:
             *.cache-to=${{ needs.prepare.outputs.valid-release && format('type=registry,ref=ghcr.io/{0}/build_cache:{1}-{2},mode=max,compression=zstd,force-compression=true', steps.vars.outputs.repository-owner, steps.vars.outputs.repository-name, steps.vars.outputs.target-arch) || '' }}
             *.labels.org.opencontainers.image.title=${{ steps.vars.outputs.repository-name }}
             *.labels.org.opencontainers.image.url=https://ghcr.io/${{ steps.vars.outputs.repository-owner }}/${{ steps.vars.outputs.repository-name }}
-            *.labels.org.opencontainers.image.version=${{ needs.prepare.outputs.semantic || github.sha }}
+            *.labels.org.opencontainers.image.version=${{ needs.prepare.outputs.version || github.sha }}
             *.labels.org.opencontainers.image.revision=${{ github.sha }}
             *.labels.org.opencontainers.image.vendor=${{ steps.vars.outputs.repository-owner }}
-            ${{ needs.prepare.outputs.valid-release && format('*.output=type=image,name=ghcr.io/{0}/{1},push-by-digest=true,name-canonical=true,push=true', steps.vars.outputs.repository-owner, steps.vars.outputs.repository-name) || '*.output=type=image' }}
+            ${{ needs.prepare.outputs.valid-release && format('*.output=type=image,name=ghcr.io/{0}/{1},push-by-digest=true,name-canonical=true,push=true', steps.vars.outputs.repository-owner, steps.vars.outputs.repository-name) || '*.output=type=docker' }}
             *.platform=${{ matrix.platform }}
             *.tags=
-          targets: image-all
+          targets: image
 
       - if: needs.prepare.outputs.valid-release
         name: Export Digest
@@ -258,9 +258,9 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ steps.app-token.outputs.token }}"
         run: |
-          gh release create "${{ needs.prepare.outputs.semantic }}" \
+          gh release create "${{ needs.prepare.outputs.version }}" \
               --repo="${{ github.event.repository.name }}" \
-              --title="${{ needs.prepare.outputs.semantic }}" \
+              --title="${{ needs.prepare.outputs.version }}" \
               --generate-notes
 
   attest:
