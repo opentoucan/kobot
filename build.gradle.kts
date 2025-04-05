@@ -35,7 +35,7 @@ java { toolchain { languageVersion = JavaLanguageVersion.of(23) } }
 
 springBoot { buildInfo() }
 
-jacoco { toolVersion = "0.8.12" }
+jacoco { toolVersion = "0.8.13" }
 
 tasks.test {
     finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
