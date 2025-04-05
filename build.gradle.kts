@@ -71,7 +71,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.3")
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.1.10")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.10")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
     implementation("io.ktor:ktor-client-cio:3.1.1")
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
     implementation("org.apache.commons:commons-lang3:3.17.0")
