@@ -35,7 +35,7 @@ java { toolchain { languageVersion = JavaLanguageVersion.of(23) } }
 
 springBoot { buildInfo() }
 
-jacoco { toolVersion = "0.8.12" }
+jacoco { toolVersion = "0.8.13" }
 
 tasks.test {
     finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
@@ -72,17 +72,17 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.1.10")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.10")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
-    implementation("io.ktor:ktor-client-cio:3.1.1")
+    implementation("io.ktor:ktor-client-cio:3.1.2")
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
     implementation("org.apache.commons:commons-lang3:3.17.0")
     implementation("commons-io:commons-io:2.18.0")
-    testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:4.18.1")
+    testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:4.20.0")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:5.9.1") // for kotest framework
     testImplementation(
         "io.kotest:kotest-assertions-core-jvm:5.9.1",
     ) // for kotest core jvm assertions
     testImplementation("io.kotest:kotest-property-jvm:5.9.1") // for kotest property test
-    testImplementation(group = "org.mockito", name = "mockito-core", version = "5.16.1")
+    testImplementation(group = "org.mockito", name = "mockito-core", version = "5.17.0")
     testImplementation("org.hamcrest:hamcrest:3.0")
 }
 
