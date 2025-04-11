@@ -55,7 +55,7 @@ jobs:
         run: uvx --no-cache --no-config --from sarif-tools@latest sarif copy *.sarif --out report.sarif
 
       - name: Upload SARIF to GitHub using the upload-sarif action
-        uses: github/codeql-action/upload-sarif@1b549b9259bda1cb5ddde3b41741a82a2d15a841 # v3
+        uses: github/codeql-action/upload-sarif@45775bd8235c68ba998cffa5171334d58593da47 # v3
         if: success() || failure()
         with:
           sarif_file: report.sarif
@@ -81,10 +81,10 @@ jobs:
       - name: Set input version
         id: input_version
         env:
-          TAG: ${{ github.ref_name }}
+          SOURCE_TAG: ${GITHUB_REF#refs/tags/}
           INPUT_VERSION: ${{ inputs.version }}
         run: |
-          echo "VERSION=${INPUT_VERSION:-$TAG}" >> $GITHUB_OUTPUT
+          echo "VERSION=${INPUT_VERSION:-$SOURCE_TAG}" >> $GITHUB_OUTPUT
 
       - name: Get semantic version
         uses: ./.github/actions/image-versions
