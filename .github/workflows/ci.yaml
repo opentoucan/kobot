@@ -78,13 +78,18 @@ jobs:
             core.setOutput('repository-owner', '${{ github.repository_owner }}'.toLowerCase());
             core.setOutput('repository-name', '${{ github.event.repository.name }}'.toLowerCase());
 
+      - name: Set input version
+        id: input_version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          echo '${INPUT_VERSION:-${GITHUB_REF#refs/tags/}}' >> $GITHUB_OUTPUT
+
       - name: Get semantic version
         uses: ./.github/actions/image-versions
         id: image-version
-        env:
-          INPUT_VERSION: ${{ inputs.version }}
         with:
-          version-to-parse: ${INPUT_VERSION:-${GITHUB_REF#refs/tags/}}
+          input-version: ${{ steps.input_version.outputs.VERSION }}
 
       - name: Get Bake Options
         id: bake-options
