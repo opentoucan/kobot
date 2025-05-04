@@ -90,7 +90,7 @@ jobs:
         uses: ./.github/actions/image-versions
         id: image-version
         with:
-          input-version: ${{ steps.input_version.outputs.VERSION }}
+          version-to-parse: ${{ steps.input_version.outputs.VERSION }}
 
       - name: Get Bake Options
         id: bake-options
