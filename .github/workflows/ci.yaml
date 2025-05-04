@@ -83,7 +83,8 @@ jobs:
         env:
           INPUT_VERSION: ${{ inputs.version }}
         run: |
-          echo '${INPUT_VERSION:-${GITHUB_REF#refs/tags/}}' >> $GITHUB_OUTPUT
+          echo "TAG=${GITHUB_REF#refs/tags/}"
+          echo "VERSION=${INPUT_VERSION:-$TAG}" >> $GITHUB_OUTPUT
 
       - name: Get semantic version
         uses: ./.github/actions/image-versions
