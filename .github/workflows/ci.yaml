@@ -64,9 +64,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint
     outputs:
+      valid-release: ${{ steps.image-version.outputs.valid-release }}
       version: ${{ steps.image-version.outputs.semantic }}
       platforms: ${{ steps.bake-options.outputs.platforms }}
-      valid-release: ${{ steps.image-version.outputs.valid-release }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
@@ -78,19 +78,13 @@ jobs:
             core.setOutput('repository-owner', '${{ github.repository_owner }}'.toLowerCase());
             core.setOutput('repository-name', '${{ github.event.repository.name }}'.toLowerCase());
 
-      - name: Set input version
-        id: input_version
-        env:
-          SOURCE_TAG: ${GITHUB_REF#refs/tags/}
-          INPUT_VERSION: ${{ inputs.version }}
-        run: |
-          echo "VERSION=${INPUT_VERSION:-$SOURCE_TAG}" >> $GITHUB_OUTPUT
-
       - name: Get semantic version
         uses: ./.github/actions/image-versions
         id: image-version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         with:
-          input-version: ${{ steps.input_version.outputs.VERSION }}
+          version-to-parse: ${INPUT_VERSION:-${GITHUB_REF#refs/tags/}}
 
       - name: Get Bake Options
         id: bake-options
