@@ -93,6 +93,10 @@ jobs:
         with:
           version-to-parse: ${{ steps.input_version.outputs.VERSION }}
 
+      - name: Semver step output
+        run: |
+          echo "Step output: ${{ steps.image-version.outputs.valid-release }}"
+
       - name: Get Bake Options
         id: bake-options
         uses: ./.github/actions/bake-options
@@ -133,6 +137,10 @@ jobs:
             core.setOutput('repository-owner', '${{ github.repository_owner }}'.toLowerCase());
             core.setOutput('repository-name', '${{ github.event.repository.name }}'.toLowerCase());
             core.setOutput('target-arch', '${{ matrix.platform }}'.split('/').pop());
+
+      - name: Log
+        run: |
+          echo "Valid release var: ${{ needs.prepare.outputs.valid-release }}"
 
       - name: Login to Github Packages
         if: needs.prepare.outputs.valid-release
