@@ -85,6 +85,7 @@ jobs:
         run: |
           echo "TAG=${GITHUB_REF#refs/tags/}"
           echo "VERSION=${INPUT_VERSION:-$TAG}" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
 
       - name: Get semantic version
         uses: ./.github/actions/image-versions
