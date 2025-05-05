@@ -40,5 +40,3 @@ runs:
           const isValidSemver = parsedSemver !== null;
           core.setOutput('valid-release', isValidSemver);
           core.setOutput('semantic', parsedSemver?.version);
-          console.log('Is valid release: ' + isValidSemver);
-          console.log('semver: ' + parsedSemver?.version);

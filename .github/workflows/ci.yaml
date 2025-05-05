@@ -18,11 +18,6 @@ on:
       - 'docs/**'
       - '**.md'
   workflow_dispatch:
-    inputs:
-      version:
-        type: string
-        description: Release version
-        required: false
 
 jobs:
   lint:
@@ -80,22 +75,14 @@ jobs:
 
       - name: Set input version
         id: input_version
-        env:
-          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          echo "TAG=${GITHUB_REF#refs/tags/}"
-          echo "VERSION=${INPUT_VERSION:-$TAG}" >> $GITHUB_OUTPUT
-          echo "Version: $VERSION"
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Get semantic version
         uses: ./.github/actions/image-versions
         id: image-version
         with:
           version-to-parse: ${{ steps.input_version.outputs.VERSION }}
-
-      - name: Semver step output
-        run: |
-          echo "Step output: ${{ steps.image-version.outputs.valid-release }}"
 
       - name: Get Bake Options
         id: bake-options
@@ -137,10 +124,6 @@ jobs:
             core.setOutput('repository-owner', '${{ github.repository_owner }}'.toLowerCase());
             core.setOutput('repository-name', '${{ github.event.repository.name }}'.toLowerCase());
             core.setOutput('target-arch', '${{ matrix.platform }}'.split('/').pop());
-
-      - name: Log
-        run: |
-          echo "Valid release var: ${{ needs.prepare.outputs.valid-release }}"
 
       - name: Login to Github Packages
         if: ${{ needs.prepare.outputs.valid-release == 'true' }}
