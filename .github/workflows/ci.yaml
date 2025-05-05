@@ -62,6 +62,7 @@ jobs:
       valid-release: ${{ steps.image-version.outputs.valid-release }}
       version: ${{ steps.image-version.outputs.semantic }}
       platforms: ${{ steps.bake-options.outputs.platforms }}
+      original-tag: ${{ steps.input-version.outputs.VERSION }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
@@ -74,7 +75,7 @@ jobs:
             core.setOutput('repository-name', '${{ github.event.repository.name }}'.toLowerCase());
 
       - name: Set input version
-        id: input_version
+        id: input-version
         run: |
           echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
@@ -82,7 +83,7 @@ jobs:
         uses: ./.github/actions/image-versions
         id: image-version
         with:
-          version-to-parse: ${{ steps.input_version.outputs.VERSION }}
+          version-to-parse: ${{ steps.input-version.outputs.VERSION }}
 
       - name: Get Bake Options
         id: bake-options
@@ -249,9 +250,9 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ steps.app-token.outputs.token }}"
         run: |
-          gh release create "${{ needs.prepare.outputs.version }}" \
+          gh release create "${{ needs.prepare.outputs.original-tag }}" \
               --repo="${GITHUB_REPOSITORY}" \
-              --title="${{ needs.prepare.outputs.version }}" \
+              --title="${{ needs.prepare.outputs.original-tag }}" \
               --generate-notes
 
   attest:
