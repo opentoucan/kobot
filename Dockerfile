@@ -1,9 +1,10 @@
-ARG VERSION
 FROM gradle:jdk23 AS build
+ARG VERSION
 COPY . /app/
 RUN cd /app && gradle --build-cache assemble
 
 FROM openjdk:23-slim
+ARG VERSION
 ENV KOBOT_VERSION=${VERSION}
 RUN mkdir /app
 COPY --from=build /app/build/libs/*.jar /app/KotlinBot.jar
