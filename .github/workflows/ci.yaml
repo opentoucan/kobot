@@ -152,6 +152,7 @@ jobs:
             cwd://${{ runner.temp }}/docker-metadata-action-bake.json
           set: |
             *.args.VENDOR=${{ steps.vars.outputs.repository-owner }}
+            *.args.VERSION=${{ needs.prepare.outputs.version }}
             *.cache-from=${{ format('type=registry,ref=ghcr.io/{0}/build_cache:{1}-{2},mode=max', steps.vars.outputs.repository-owner, steps.vars.outputs.repository-name, steps.vars.outputs.target-arch) }}
             *.cache-to=${{ needs.prepare.outputs.valid-release == 'true' && format('type=registry,ref=ghcr.io/{0}/build_cache:{1}-{2},mode=max,compression=zstd,force-compression=true', steps.vars.outputs.repository-owner, steps.vars.outputs.repository-name, steps.vars.outputs.target-arch) || '' }}
             *.labels.org.opencontainers.image.title=${{ steps.vars.outputs.repository-name }}
