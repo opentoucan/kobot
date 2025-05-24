@@ -3,12 +3,12 @@ import me.qoomon.gradle.gitversioning.GitVersioningPluginConfig.VersionDescripti
 
 plugins {
     `java-library`
-    id("org.springframework.boot") version "3.4.5"
+    id("org.springframework.boot") version "3.5.0"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jetbrains.kotlin.jvm") version "2.1.21"
-    id("org.jetbrains.kotlin.plugin.spring") version "2.1.20"
-    id("org.jetbrains.kotlin.kapt") version "2.1.20"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.20"
+    id("org.jetbrains.kotlin.plugin.spring") version "2.1.21"
+    id("org.jetbrains.kotlin.kapt") version "2.1.21"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.21"
     id("me.qoomon.git-versioning") version "4.3.0"
     id("org.barfuin.gradle.jacocolog") version "3.1.0"
     jacoco
@@ -56,21 +56,21 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.4.5")
-    implementation("org.springframework.boot:spring-boot-starter-web:3.4.5")
-    implementation("org.springframework.boot:spring-boot-starter-actuator:3.4.5")
-    implementation("org.springframework.boot:spring-boot-starter-amqp:3.4.5")
-    developmentOnly("org.springframework.boot:spring-boot-devtools:3.4.5")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:3.4.5")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:3.4.5") {
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.5.0")
+    implementation("org.springframework.boot:spring-boot-starter-web:3.5.0")
+    implementation("org.springframework.boot:spring-boot-starter-actuator:3.5.0")
+    implementation("org.springframework.boot:spring-boot-starter-amqp:3.5.0")
+    developmentOnly("org.springframework.boot:spring-boot-devtools:3.5.0")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:3.5.0")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:3.5.0") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
     implementation("net.dv8tion:JDA:5.5.1")
     implementation("dev.arbjerg:lavaplayer:2.2.3")
     implementation("dev.lavalink.youtube:common:1.13.2")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.19.0")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:2.1.20")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.20")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.1.21")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.21")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
     implementation("io.ktor:ktor-client-cio:3.1.3")
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
@@ -82,7 +82,7 @@ dependencies {
         "io.kotest:kotest-assertions-core-jvm:5.9.1",
     ) // for kotest core jvm assertions
     testImplementation("io.kotest:kotest-property-jvm:5.9.1") // for kotest property test
-    testImplementation(group = "org.mockito", name = "mockito-core", version = "5.17.0")
+    testImplementation(group = "org.mockito", name = "mockito-core", version = "5.18.0")
     testImplementation("org.hamcrest:hamcrest:3.0")
 }
 
