@@ -1,41 +1,63 @@
 {
-  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
   extends: [
-    'local>opentoucan/renovate-config'
+    'local>opentoucan/renovate-config',
   ],
   packageRules: [
     {
-      description: ["Spring Boot Group"],
-      groupName: "SpringBoot",
-      matchPackagePatterns: ["/^org.springframework.boot/"],
-      matchDatasources: ["gradle"],
+      description: [
+        'Spring Boot Group',
+      ],
+      groupName: 'SpringBoot',
+      matchDatasources: [
+        'gradle',
+      ],
       group: {
-        commitMessageTopic: "{{{groupName}}} group"
-      }
+        commitMessageTopic: '{{{groupName}}} group',
+      },
+      matchPackageNames: [
+        '//^org.springframework.boot//',
+      ],
     },
     {
-      description: ["Kotlin Group"],
-      groupName: "Kotlin",
-      matchPackagePatterns: ["/^org.jetbrains.kotlin/"],
-      matchDatasources: ["gradle"],
+      description: [
+        'Kotlin Group',
+      ],
+      groupName: 'Kotlin',
+      matchDatasources: [
+        'gradle',
+      ],
       group: {
-        commitMessageTopic: "{{{groupName}}} group"
-      }
+        commitMessageTopic: '{{{groupName}}} group',
+      },
+      matchPackageNames: [
+        '//^org.jetbrains.kotlin//',
+      ],
     },
     {
-      description: ["Kotest Group"],
-      groupName: "Kotest",
-      matchPackagePatterns: ["/^io.kotest/"],
-      matchDatasources: ["gradle"],
+      description: [
+        'Kotest Group',
+      ],
+      groupName: 'Kotest',
+      matchDatasources: [
+        'gradle',
+      ],
       group: {
-        commitMessageTopic: "{{{groupName}}} group"
-      }
+        commitMessageTopic: '{{{groupName}}} group',
+      },
+      matchPackageNames: [
+        '//^io.kotest//',
+      ],
     },
     {
-      matchManagers: ["gradle"],
-      semanticCommitScope: "gradle",
-      commitMessageTopic: "gradle {{depName}}",
-      addLabels: ["renovate/gradle"]
-    }
-  ]
+      matchManagers: [
+        'gradle',
+      ],
+      semanticCommitScope: 'gradle',
+      commitMessageTopic: 'gradle {{depName}}',
+      addLabels: [
+        'renovate/gradle',
+      ],
+    },
+  ],
 }
