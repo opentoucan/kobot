@@ -3,7 +3,7 @@ import me.qoomon.gradle.gitversioning.GitVersioningPluginConfig.VersionDescripti
 
 plugins {
     `java-library`
-    id("org.springframework.boot") version "3.5.0"
+    id("org.springframework.boot") version "3.5.3"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jetbrains.kotlin.jvm") version "2.1.21"
     id("org.jetbrains.kotlin.plugin.spring") version "2.1.21"
@@ -56,13 +56,13 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.5.0")
-    implementation("org.springframework.boot:spring-boot-starter-web:3.5.0")
-    implementation("org.springframework.boot:spring-boot-starter-actuator:3.5.0")
-    implementation("org.springframework.boot:spring-boot-starter-amqp:3.5.0")
-    developmentOnly("org.springframework.boot:spring-boot-devtools:3.5.0")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:3.5.0")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:3.5.0") {
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.5.3")
+    implementation("org.springframework.boot:spring-boot-starter-web:3.5.3")
+    implementation("org.springframework.boot:spring-boot-starter-actuator:3.5.3")
+    implementation("org.springframework.boot:spring-boot-starter-amqp:3.5.3")
+    developmentOnly("org.springframework.boot:spring-boot-devtools:3.5.3")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:3.5.3")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:3.5.3") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
     implementation("net.dv8tion:JDA:5.5.1")
