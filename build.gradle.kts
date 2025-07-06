@@ -66,7 +66,7 @@ dependencies {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
     implementation("net.dv8tion:JDA:5.5.1")
-    implementation("dev.arbjerg:lavaplayer:2.2.3")
+    implementation("dev.arbjerg:lavaplayer:2.2.4")
     implementation("dev.lavalink.youtube:common:1.13.3")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.19.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.1.21")
@@ -76,7 +76,7 @@ dependencies {
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
     implementation("org.apache.commons:commons-lang3:3.17.0")
     implementation("commons-io:commons-io:2.19.0")
-    testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:4.20.0")
+    testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:4.20.1")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:5.9.1") // for kotest framework
     testImplementation(
         "io.kotest:kotest-assertions-core-jvm:5.9.1",
