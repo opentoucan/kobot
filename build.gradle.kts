@@ -72,7 +72,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.2.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.2.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
-    implementation("io.ktor:ktor-client-cio:3.2.1")
+    implementation("io.ktor:ktor-client-cio:3.2.2")
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
     implementation("org.apache.commons:commons-lang3:3.18.0")
     implementation("commons-io:commons-io:2.19.0")
