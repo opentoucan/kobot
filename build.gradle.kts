@@ -12,7 +12,6 @@ plugins {
     id("me.qoomon.git-versioning") version "4.3.0"
     id("org.barfuin.gradle.jacocolog") version "3.1.0"
     jacoco
-    id("io.gitlab.arturbosch.detekt").version("1.23.8")
 }
 
 group = "uk.me.danielharman"
@@ -31,7 +30,7 @@ gitVersioning.apply(
     },
 )
 
-java { toolchain { languageVersion = JavaLanguageVersion.of(23) } }
+java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 springBoot { buildInfo() }
 

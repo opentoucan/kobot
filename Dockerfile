@@ -1,9 +1,9 @@
-FROM gradle:jdk23 AS build
+FROM gradle:jdk21 AS build
 ARG VERSION
 COPY . /app/
 RUN cd /app && gradle --build-cache assemble
 
-FROM openjdk:23-slim
+FROM openjdk:21-slim
 ARG VERSION
 ENV KOBOT_VERSION=${VERSION}
 RUN mkdir /app

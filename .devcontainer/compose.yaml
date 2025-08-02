@@ -3,13 +3,9 @@ x-podman:
 
 services:
   workspace:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: mcr.microsoft.com/devcontainers/java:21-bookworm
     container_name: workspace
     env_file: devcontainer.env
-    environment:
-      - ASPNETCORE_ENVIRONMENT=local
     volumes:
       - ..:/workspace:cached
     ports:
