@@ -4,8 +4,8 @@ name: Image Versions
 description: Takes a version string and returns a valid semantic version if possible
 
 inputs:
-  version-to-parse:
-    description: Version to parse
+  input-version:
+    description: Input Version
     required: true
 
 outputs:
@@ -35,7 +35,7 @@ runs:
         script: |
           const semver = require('semver');
 
-          const inputVersion = '${{ inputs.version-to-parse }}';
+          const inputVersion = '${{ inputs.input-version }}';
           const parsedSemver = semver.coerce(inputVersion, { includePrerelease: true });
           const isValidSemver = parsedSemver !== null;
           core.setOutput('valid-release', isValidSemver);

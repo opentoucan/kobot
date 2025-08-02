@@ -1,4 +1,8 @@
-target "docker-metadata-action" {}
+target "docker-metadata-action" {
+  tags = []
+}
+
+variable "TAG_BASE" {}
 
 target "image" {
   inherits = ["docker-metadata-action"]
@@ -10,9 +14,18 @@ target "image-local" {
 }
 
 target "image-all" {
-  inherits = ["image"]
+  name = "${tgt}"
+  matrix = {
+    tgt = ["kobot"]
+  }
+  target = tgt
   platforms = [
     "linux/amd64",
     "linux/arm64"
   ]
+}
+
+target "kobot" {
+  dockerfile = "./Dockerfile"
+  tags = [for tag in target.docker-metadata-action.tags : "${TAG_BASE}/kobot:${tag}"]
 }
