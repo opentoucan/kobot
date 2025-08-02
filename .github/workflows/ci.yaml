@@ -44,10 +44,7 @@ jobs:
         run: ktlint --reporter=sarif,output=ktlint.sarif --editorconfig .editorconfig ./src/**/*.kt build.gradle.kts
 
       - name: Code analysis
-        run: detekt --config detekt.yaml --input ./src,build.gradle.kts --report sarif:detekt.sarif
-
-      - name: Merge sarif files
-        run: uvx --no-cache --no-config --from sarif-tools@latest sarif copy *.sarif --out report.sarif
+        run: detekt --config detekt.yaml --input ./src,build.gradle.kts --report sarif:report.sarif
 
       - name: Upload SARIF to GitHub using the upload-sarif action
         uses: github/codeql-action/upload-sarif@51f77329afa6477de8c49fc9c7046c15b9a4e79d # v3
