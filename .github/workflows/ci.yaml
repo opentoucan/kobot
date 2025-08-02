@@ -59,7 +59,7 @@ jobs:
     outputs:
       valid-release: ${{ steps.image-version.outputs.valid-release }}
       version: ${{ steps.image-version.outputs.semantic }}
-      images: ${{ steps.bake-options.outputs.targets }}
+      images: ${{ steps.bake-images.outputs.images }}
       original-tag: ${{ steps.input-version.outputs.VERSION }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -78,7 +78,7 @@ jobs:
           input-version: ${{ steps.input-version.outputs.VERSION }}
 
       - name: Get Bake Images
-        id: bake-options
+        id: bake-images
         uses: ./.github/actions/bake-images
 
   create-docker-tags:
