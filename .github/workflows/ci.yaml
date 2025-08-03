@@ -58,7 +58,7 @@ jobs:
     outputs:
       images: ${{ steps.bake-images.outputs.images }}
       version: ${{ steps.input-version.outputs.semantic }}
-      release: ${{ steps.image-version.outputs.valid-release == 'true' && github.event_name != 'pull_request' }}
+      valid-release: ${{ steps.image-version.outputs.valid-release == 'true' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
@@ -98,7 +98,7 @@ jobs:
     with:
       image: ${{ matrix.image }}
       version: ${{ needs.prepare.outputs.version }}
-      release: ${{ needs.prepare.outputs.release }}
+      release: ${{ needs.prepare.outputs.valid-release && github.event_name != 'pull_request' }}
 
   github-release:
     name: Create GitHub Release
