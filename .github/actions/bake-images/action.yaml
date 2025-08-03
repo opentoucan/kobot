@@ -16,8 +16,8 @@ runs:
       shell: bash
       run: |
         IMAGES=$(\
-          docker buildx bake image-all --print --progress=quiet \
-            | jq --raw-output --compact-output '.group."image-all".targets' \
+          docker buildx bake release-all --print --progress=quiet \
+            | jq --raw-output --compact-output '.group."release-all".targets' \
         )
 
         echo "images=${IMAGES}" >> $GITHUB_OUTPUT
