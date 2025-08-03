@@ -86,7 +86,8 @@ jobs:
     needs: [prepare]
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.prepare.outputs.images) }}
+      matrix:
+        include: ${{ fromJson(needs.prepare.outputs.images) }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
@@ -118,8 +119,8 @@ jobs:
           retention-days: 1
 
   build-docker:
-    name: Build (${{ matrix.name }} - ${{ matrix.platform }})
-    runs-on: ${{ startsWith(matrix.platform, 'linux/arm') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    name: Build (${{ matrix.name }} - ${{ matrix.platforms.* }})
+    runs-on: ${{ startsWith(matrix.platforms.*, 'linux/arm') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     needs: [prepare, create-docker-tags]
     permissions:
       attestations: write
@@ -129,7 +130,8 @@ jobs:
       security-events: write
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.prepare.outputs.images) }}
+      matrix:
+        include: ${{ fromJson(needs.prepare.outputs.images) }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
@@ -140,7 +142,7 @@ jobs:
         id: vars
         with:
           script: |
-            core.setOutput('target-arch', '${{ matrix.platform }}'.split('/').pop());
+            core.setOutput('target-arch', '${{ matrix.platforms.* }}'.split('/').pop());
             core.setOutput('target-image', '${{ matrix.name }}')
 
       - name: Login to Github Packages
@@ -177,7 +179,7 @@ jobs:
             *.labels.org.opencontainers.image.revision=${{ github.sha }}
             *.labels.org.opencontainers.image.vendor=${{ github.repository_owner }}
             ${{ needs.prepare.outputs.valid-release == 'true' && github.event_name != 'pull_request' && format('*.output=type=image,name=ghcr.io/{0}/{1},push-by-digest=true,name-canonical=true,push=true', github.repository_owner, steps.vars.outputs.target-image) || '*.output=type=docker' }}
-            *.platform=${{ matrix.platform }}
+            *.platform=${{ matrix.platforms.* }}
             *.tags=
           targets: ${{ matrix.name }}
 
@@ -208,7 +210,8 @@ jobs:
       packages: write
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.prepare.outputs.images) }}
+      matrix:
+        include: ${{ fromJson(needs.prepare.outputs.images) }}
     outputs:
       digest: ${{ steps.digest.outputs.digest }}
     steps:
@@ -302,7 +305,8 @@ jobs:
       security-events: write
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.prepare.outputs.images) }}
+      matrix:
+        include: ${{ fromJson(needs.prepare.outputs.images) }}
     steps:
       - name: Setup Vars
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
