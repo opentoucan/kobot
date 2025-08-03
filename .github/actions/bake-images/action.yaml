@@ -17,7 +17,7 @@ runs:
       run: |
         IMAGES=$(\
             docker buildx bake image-all --print --progress=quiet \
-                | jq --raw-output --compact-output '.target | .[] | {name: .target, platforms: .platforms}' \
+                | jq --raw-output --compact-output '.target | .[] | {name: .target, platforms: .platforms | tostring}' \
         )
 
         echo "images=${IMAGES}" >> $GITHUB_OUTPUT
