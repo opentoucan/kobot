@@ -1,0 +1,28 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+name: Bake Platforms
+description: Returns all platforms for a given target from a docker-bake.hcl file
+
+inputs:
+  image:
+    description: The image target to get platforms for
+    required: true
+
+outputs:
+  platforms:
+    description: Platforms
+    value: ${{ steps.options.outputs.platforms }}
+
+runs:
+  using: composite
+  steps:
+    - name: Options
+      id: options
+      shell: bash
+      run: |
+        PLATFORMS=$(\
+          docker buildx bake ${{ inputs.image }} --print --progress=quiet \
+            | jq --raw-output --compact-output '.target.${{ inputs.image }}.platforms' \
+        )
+
+        echo "platforms=${PLATFORMS}" >> $GITHUB_OUTPUT
