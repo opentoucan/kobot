@@ -86,8 +86,7 @@ jobs:
     needs: [prepare]
     strategy:
       fail-fast: false
-      matrix:
-        image: ${{ fromJson(needs.prepare.outputs.images) }}
+      matrix: ${{ fromJson(needs.prepare.outputs.images) }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
@@ -105,7 +104,7 @@ jobs:
         uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f # v5
         with:
           images: |
-            ghcr.io/${{ github.repository_owner }}/${{ steps.vars.outputs.repository-name }}.${{ matrix.image }}
+            ghcr.io/${{ github.repository_owner }}/${{ steps.vars.outputs.repository-name }}.${{ matrix.name }}
           tags: |
             type=raw,value=latest
             type=raw,value=${{ needs.prepare.outputs.version }}
@@ -113,14 +112,14 @@ jobs:
       - name: Upload Bake Metadata
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: ${{ matrix.image.name }}-bake-metadata
+          name: ${{ matrix.name }}-bake-metadata
           path: ${{ steps.meta.outputs.bake-file }}
           if-no-files-found: error
           retention-days: 1
 
   build-docker:
-    name: Build (${{ matrix.image.name }} - ${{ matrix.image.platform }})
-    runs-on: ${{ startsWith(matrix.image.platform, 'linux/arm') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    name: Build (${{ matrix.name }} - ${{ matrix.platform }})
+    runs-on: ${{ startsWith(matrix.platform, 'linux/arm') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     needs: [prepare, create-docker-tags]
     permissions:
       attestations: write
@@ -130,8 +129,7 @@ jobs:
       security-events: write
     strategy:
       fail-fast: false
-      matrix:
-        image: ${{ fromJson(needs.prepare.outputs.images) }}
+      matrix: ${{ fromJson(needs.prepare.outputs.images) }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
@@ -142,8 +140,8 @@ jobs:
         id: vars
         with:
           script: |
-            core.setOutput('target-arch', '${{ matrix.image.platform }}'.split('/').pop());
-            core.setOutput('target-image', '${{ matrix.image.name }}')
+            core.setOutput('target-arch', '${{ matrix.platform }}'.split('/').pop());
+            core.setOutput('target-image', '${{ matrix.name }}')
 
       - name: Login to Github Packages
         if: ${{ needs.prepare.outputs.valid-release == 'true' && github.event_name != 'pull_request' }}
@@ -156,7 +154,7 @@ jobs:
       - name: Download Bake Metadata
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: ${{ matrix.image.name }}-bake-metadata
+          name: ${{ matrix.name }}-bake-metadata
           path: ${{ runner.temp }}
 
       - name: Setup Docker Buildx
@@ -179,22 +177,22 @@ jobs:
             *.labels.org.opencontainers.image.revision=${{ github.sha }}
             *.labels.org.opencontainers.image.vendor=${{ github.repository_owner }}
             ${{ needs.prepare.outputs.valid-release == 'true' && github.event_name != 'pull_request' && format('*.output=type=image,name=ghcr.io/{0}/{1},push-by-digest=true,name-canonical=true,push=true', github.repository_owner, steps.vars.outputs.target-image) || '*.output=type=docker' }}
-            *.platform=${{ matrix.image.platform }}
+            *.platform=${{ matrix.platform }}
             *.tags=
-          targets: ${{ matrix.image.name }}
+          targets: ${{ matrix.name }}
 
       - if: ${{ needs.prepare.outputs.valid-release == 'true' && github.event_name != 'pull_request' }}
         name: Export Digest
         run: |
           mkdir -p ${{ runner.temp }}/digests
-          DIGEST=$(echo '${{ steps.bake.outputs.metadata }}' | jq -r '.${{ matrix.image.name }}."containerimage.digest"')
+          DIGEST=$(echo '${{ steps.bake.outputs.metadata }}' | jq -r '.${{ matrix.name }}."containerimage.digest"')
           touch "${{ runner.temp }}/digests/${DIGEST#sha256:}"
 
       - if: ${{ needs.prepare.outputs.valid-release == 'true' && github.event_name != 'pull_request' }}
         name: Upload Digest
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: ${{ github.event.repository.name }}-${{ matrix.image.name }}-digests-${{ steps.vars.outputs.target-arch }}
+          name: ${{ github.event.repository.name }}-${{ matrix.name }}-digests-${{ steps.vars.outputs.target-arch }}
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
           retention-days: 1
@@ -210,8 +208,7 @@ jobs:
       packages: write
     strategy:
       fail-fast: false
-      matrix:
-        image: ${{ fromJson(needs.prepare.outputs.images) }}
+      matrix: ${{ fromJson(needs.prepare.outputs.images) }}
     outputs:
       digest: ${{ steps.digest.outputs.digest }}
     steps:
@@ -225,19 +222,19 @@ jobs:
         id: vars
         with:
           script: |
-            core.setOutput('target-image', '${{ matrix.image.name }}')
+            core.setOutput('target-image', '${{ matrix.name }}')
 
       - name: Download Bake Metadata
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: ${{ matrix.image.name }}-bake-metadata
+          name: ${{ matrix.name }}-bake-metadata
           path: ${{ runner.temp }}
 
       - name: Download Digests
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           path: ${{ runner.temp }}/digests
-          pattern: ${{ github.event.repository.name }}-${{ matrix.image.name }}-digests-*
+          pattern: ${{ github.event.repository.name }}-${{ matrix.name }}-digests-*
           merge-multiple: true
 
       - name: Login to GitHub Container Registry
@@ -305,15 +302,14 @@ jobs:
       security-events: write
     strategy:
       fail-fast: false
-      matrix:
-        image: ${{ fromJson(needs.prepare.outputs.images) }}
+      matrix: ${{ fromJson(needs.prepare.outputs.images) }}
     steps:
       - name: Setup Vars
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         id: vars
         with:
           script: |
-            core.setOutput('target-image', '${{ matrix.image.name }}')
+            core.setOutput('target-image', '${{ matrix.name }}')
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
