@@ -3,11 +3,6 @@
 name: Bake Platforms
 description: Returns all platforms for a given target from a docker-bake.hcl file
 
-inputs:
-  image:
-    description: The image target to get platforms for
-    required: true
-
 outputs:
   platforms:
     description: Platforms
@@ -21,8 +16,8 @@ runs:
       shell: bash
       run: |
         PLATFORMS=$(\
-          docker buildx bake ${{ inputs.image }} --print --progress=quiet \
-            | jq --raw-output --compact-output '.target.${{ inputs.image }}.platforms' \
+          docker buildx bake release --print --progress=quiet \
+            | jq --raw-output --compact-output '.target.release.platforms' \
         )
 
         echo "platforms=${PLATFORMS}" >> $GITHUB_OUTPUT

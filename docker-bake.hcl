@@ -1,27 +1,22 @@
-target "docker-metadata-action" {
-  tags = []
+target "docker-metadata-action" {}
+
+target "kobot" {
+  dockerfile = "./Dockerfile"
 }
 
-variable "TAG_BASE" {}
-
-target "image-local" {
-  output = ["type=docker"]
+target "release" {
+  inherits = ["docker-metadata-action"]
+  platforms = [
+    "linux/amd64",
+    "linux/arm64"
+  ]
 }
 
-target "image-all" {
+target "release-all" {
+  inherits = ["release"]
   name = "${tgt}"
   matrix = {
     tgt = ["kobot"]
   }
   target = tgt
-}
-
-target "kobot" {
-  inherits = ["docker-metadata-action"]
-  dockerfile = "./Dockerfile"
-  tags = [for tag in target.docker-metadata-action.tags : "${TAG_BASE}/kobot:${tag}"]
-  platforms = [
-    "linux/amd64",
-    "linux/arm64"
-  ]
 }
