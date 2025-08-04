@@ -33,8 +33,6 @@ jobs:
       - name: Get Image Platforms
         id: image-platforms
         uses: ./.github/actions/image-platforms
-        with:
-          image: ${{ inputs.image }}
 
       - name: Build Application Metadata
         uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f # v5.8.0
@@ -106,6 +104,7 @@ jobs:
             cwd://${{ runner.temp }}/docker-metadata-action-bake.json
           set: |
             *.args.VENDOR=${{ github.repository_owner }}
+            *.args.VERSION=${{ inputs.version }}
             *.cache-from=${{ format('type=registry,ref=ghcr.io/{0}/build_cache:{1}-{2},mode=max', github.repository_owner, inputs.image, steps.target.outputs.arch) }}
             *.cache-to=${{ inputs.release && format('type=registry,ref=ghcr.io/{0}/build_cache:{1}-{2},mode=max,compression=zstd,force-compression=true', github.repository_owner, inputs.image, steps.target.outputs.arch) || '' }}
             *.labels.org.opencontainers.image.title=${{ inputs.image }}

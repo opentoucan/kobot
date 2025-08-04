@@ -1,7 +1,14 @@
 target "docker-metadata-action" {}
 
+group "images" {
+  targets = ["kobot"]
+}
+
 target "kobot" {
   dockerfile = "./Dockerfile"
+  labels = {
+    "org.opencontainers.image.source" = "https://github.com/opentoucan/kobot"
+  }
 }
 
 target "release" {
@@ -12,11 +19,14 @@ target "release" {
   ]
 }
 
-target "release-all" {
-  inherits = ["release"]
-  name = "${tgt}"
-  matrix = {
-    tgt = ["kobot"]
+target "kobot-release" {
+  inherits = ["kobot", "release"]
+}
+
+target "kobot-local" {
+  inherits = ["kobot"]
+  tags = ["localhost/kobot:latest"]
+  args = {
+    VERSION = "local"
   }
-  target = tgt
 }

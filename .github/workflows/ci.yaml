@@ -57,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       images: ${{ steps.bake-images.outputs.images }}
-      version: ${{ steps.input-version.outputs.semantic }}
+      version: ${{ steps.image-version.outputs.semantic }}
       valid-release: ${{ steps.image-version.outputs.valid-release == 'true' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
