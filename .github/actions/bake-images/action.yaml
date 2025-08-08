@@ -1,0 +1,23 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+name: Bake Images
+description: Returns all image targets from a docker-bake.hcl file
+
+outputs:
+  images:
+    description: Images
+    value: ${{ steps.options.outputs.images }}
+
+runs:
+  using: composite
+  steps:
+    - name: Application Options
+      id: options
+      shell: bash
+      run: |
+        IMAGES=$(\
+          docker buildx bake images --print --progress=quiet \
+            | jq --raw-output --compact-output '.group.images.targets' \
+        )
+
+        echo "images=${IMAGES}" >> $GITHUB_OUTPUT

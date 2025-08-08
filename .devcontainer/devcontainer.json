@@ -13,7 +13,7 @@
 	},
   "features": {
 		"ghcr.io/devcontainers/features/java:1": {
-			"version": "none",
+			"version": "21",
 			"installMaven": "false",
 			"installGradle": "true",
       "gradleVersion": "latest"

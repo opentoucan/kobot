@@ -1,18 +1,32 @@
 target "docker-metadata-action" {}
 
-target "image" {
+group "images" {
+  targets = ["kobot"]
+}
+
+target "kobot" {
+  dockerfile = "./Dockerfile"
+  labels = {
+    "org.opencontainers.image.source" = "https://github.com/opentoucan/kobot"
+  }
+}
+
+target "release" {
   inherits = ["docker-metadata-action"]
-}
-
-target "image-local" {
-  inherits = ["image"]
-  output = ["type=docker"]
-}
-
-target "image-all" {
-  inherits = ["image"]
   platforms = [
     "linux/amd64",
     "linux/arm64"
   ]
+}
+
+target "kobot-release" {
+  inherits = ["kobot", "release"]
+}
+
+target "kobot-local" {
+  inherits = ["kobot"]
+  tags = ["localhost/kobot:latest"]
+  args = {
+    VERSION = "local"
+  }
 }

@@ -12,7 +12,6 @@ plugins {
     id("me.qoomon.git-versioning") version "4.3.0"
     id("org.barfuin.gradle.jacocolog") version "3.1.0"
     jacoco
-    id("io.gitlab.arturbosch.detekt").version("1.23.8")
 }
 
 group = "uk.me.danielharman"
@@ -31,7 +30,7 @@ gitVersioning.apply(
     },
 )
 
-java { toolchain { languageVersion = JavaLanguageVersion.of(23) } }
+java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 springBoot { buildInfo() }
 
@@ -67,7 +66,7 @@ dependencies {
     }
     implementation("net.dv8tion:JDA:5.6.1")
     implementation("dev.arbjerg:lavaplayer:2.2.4")
-    implementation("dev.lavalink.youtube:common:1.13.3")
+    implementation("dev.lavalink.youtube:common:1.13.4")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.19.2")
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.2.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.2.0")
