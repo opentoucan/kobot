@@ -1,6 +1,3 @@
-import me.qoomon.gradle.gitversioning.GitVersioningPluginConfig
-import me.qoomon.gradle.gitversioning.GitVersioningPluginConfig.VersionDescription
-
 plugins {
     `java-library`
     id("org.springframework.boot") version "3.5.4"
@@ -9,7 +6,6 @@ plugins {
     id("org.jetbrains.kotlin.plugin.spring") version "2.2.0"
     id("org.jetbrains.kotlin.kapt") version "2.2.0"
     id("org.jetbrains.kotlin.plugin.serialization") version "2.2.0"
-    id("me.qoomon.git-versioning") version "4.3.0"
     id("org.barfuin.gradle.jacocolog") version "3.1.0"
     jacoco
 }
@@ -17,18 +13,6 @@ plugins {
 group = "uk.me.danielharman"
 
 version = "Kobot"
-
-gitVersioning.apply(
-    closureOf<GitVersioningPluginConfig> {
-        tag(closureOf<VersionDescription> { versionFormat = "\${version} \${tag}" })
-        branch(
-            closureOf<VersionDescription> {
-                versionFormat =
-                    "\${version} \${branch}.\${commit.short}.\${commit.timestamp.datetime}"
-            },
-        )
-    },
-)
 
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
