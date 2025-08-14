@@ -33,6 +33,7 @@
       matchPackageNames: [
         '//^org.jetbrains.kotlin//',
       ],
+      minimumGroupSize: 5,
     },
     {
       description: [
