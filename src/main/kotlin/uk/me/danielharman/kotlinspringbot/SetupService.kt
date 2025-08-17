@@ -37,7 +37,7 @@ class SetupService(
     fun setup() {
         // Kotlin objects are lazy
         ApplicationInfo.startTime = LocalDateTime.now()
-        ApplicationInfo.version = System.getenv("VERSION") ?: buildProperties.version
+        ApplicationInfo.version = System.getenv("KOBOT_VERSION") ?: buildProperties.version
 
         logger.info("Running bot version ${ApplicationInfo.version}")
 
