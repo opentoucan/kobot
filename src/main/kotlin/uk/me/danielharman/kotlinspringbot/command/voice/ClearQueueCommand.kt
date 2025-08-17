@@ -8,10 +8,11 @@ import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
 
 @Component
-class SkipTrackCommand(
+class ClearQueueCommand(
     private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
-) : Command("skip", "Skip the currently playing track"),
+) : Command("clearqueue", "Clear the track queue"),
     ISlashCommand {
+
     override fun execute(event: DiscordMessageEvent) {
         if (event.guild == null) {
             event.reply(Embeds.createErrorEmbed("This command can only be used in Servers"))
@@ -19,12 +20,7 @@ class SkipTrackCommand(
         }
 
         val musicManager = guildMusicPlayerProvider.getGuildAudioPlayer(event.guild)
-        val isStillPlaying = musicManager.scheduler.nextTrack()
-
-        if (isStillPlaying) {
-            event.reply("Skipped to next track.")
-        } else {
-            event.reply("Reached end of queue.")
-        }
+        musicManager.scheduler.clearQueue()
+        event.reply("Cleared queue.")
     }
 }
