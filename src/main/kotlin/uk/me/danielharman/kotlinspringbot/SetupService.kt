@@ -35,7 +35,11 @@ class SetupService(
 
     @PostConstruct
     fun setup() {
-        logger.info("Running bot version ${buildProperties.version}")
+        // Kotlin objects are lazy
+        ApplicationInfo.startTime = LocalDateTime.now()
+        ApplicationInfo.version = System.getenv("VERSION") ?: buildProperties.version
+
+        logger.info("Running bot version ${ApplicationInfo.version}")
 
         SchemaUpdater(mongoOperations).updateSchema()
 
@@ -69,10 +73,6 @@ class SetupService(
         } else {
             logger.info("Running with Discord disabled")
         }
-
-        // Kotlin objects are lazy
-        ApplicationInfo.startTime = LocalDateTime.now()
-        ApplicationInfo.version = buildProperties.version
     }
 
     @PreDestroy

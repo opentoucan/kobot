@@ -38,11 +38,15 @@ class ShowQueueCommand(private val guildMusicPlayerProvider: GuildMusicPlayerPro
                 "${playingTrack.position.formatDurationString()}/${playingTrack.duration.formatDurationString()}\n",
         )
 
-        queue.stream().forEach { (track, _) ->
-            run {
-                stringBuilder.append("${track.info.title} ${track.duration.formatDurationString()}\n")
+        if (queue.isNotEmpty()) {
+            val upNext = queue.first().first
+            stringBuilder.append("Up Next: ${upNext.info.title} ${upNext.duration.formatDurationString()}\n")
+            for (i in 1..<queue.size) {
+                val track = queue[i].first
+                stringBuilder.append("${i + 1}: ${track.info.title} ${track.duration.formatDurationString()}\n")
             }
         }
+
         event.reply(
             EmbedBuilder()
                 .appendDescription(stringBuilder.toString())

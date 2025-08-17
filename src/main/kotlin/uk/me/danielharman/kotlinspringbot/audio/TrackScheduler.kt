@@ -25,8 +25,18 @@ class TrackScheduler(
         }
     }
 
-    fun nextTrack() {
-        val trackMessageChannelPair = queue.poll() ?: return
+    fun clearQueue() {
+        queue.clear()
+        player.stopTrack()
+    }
+
+    fun nextTrack(): Boolean {
+        val trackMessageChannelPair = queue.poll()
+
+        if (trackMessageChannelPair == null) {
+            player.stopTrack()
+            return false
+        }
 
         when (val guild = discordService.getGuild(guildId)) {
             is Success -> {
@@ -36,6 +46,7 @@ class TrackScheduler(
             is Failure -> {}
         }
         player.startTrack(trackMessageChannelPair.first, false)
+        return true
     }
 
     override fun onTrackEnd(player: AudioPlayer, track: AudioTrack, endReason: AudioTrackEndReason) {
