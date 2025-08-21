@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    id("org.springframework.boot") version "3.5.4"
+    id("org.springframework.boot") version "3.5.5"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jetbrains.kotlin.jvm") version "2.2.10"
     id("org.jetbrains.kotlin.plugin.spring") version "2.2.10"
@@ -39,13 +39,13 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.5.4")
-    implementation("org.springframework.boot:spring-boot-starter-web:3.5.4")
-    implementation("org.springframework.boot:spring-boot-starter-actuator:3.5.4")
-    implementation("org.springframework.boot:spring-boot-starter-amqp:3.5.4")
-    developmentOnly("org.springframework.boot:spring-boot-devtools:3.5.4")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:3.5.4")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:3.5.4") {
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.5.5")
+    implementation("org.springframework.boot:spring-boot-starter-web:3.5.5")
+    implementation("org.springframework.boot:spring-boot-starter-actuator:3.5.5")
+    implementation("org.springframework.boot:spring-boot-starter-amqp:3.5.5")
+    developmentOnly("org.springframework.boot:spring-boot-devtools:3.5.5")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:3.5.5")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:3.5.5") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
     implementation("net.dv8tion:JDA:5.6.1")
