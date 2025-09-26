@@ -5,7 +5,7 @@ plugins {
     id("org.jetbrains.kotlin.jvm") version "2.2.10"
     id("org.jetbrains.kotlin.plugin.spring") version "2.2.20"
     id("org.jetbrains.kotlin.kapt") version "2.2.10"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.10"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.20"
     id("org.barfuin.gradle.jacocolog") version "3.1.0"
     jacoco
 }
