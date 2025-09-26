@@ -2,17 +2,17 @@
   description = "Kobot flake";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
   };
 
-  outputs = { nixpkgs, ... } @ inputs:
+  outputs = { nixpkgs-unstable, ... } @ inputs:
     let
-      pkgs = nixpkgs.legacyPackages."x86_64-linux";
+      pkgs = nixpkgs-unstable.legacyPackages."x86_64-linux";
     in
     {
       devShells."x86_64-linux".default = with pkgs; mkShell {
         packages = [
-          jdk
+          zulu25
           gradle
           ktlint
           detekt
