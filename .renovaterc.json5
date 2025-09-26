@@ -19,6 +19,7 @@
       description: ['Java Version Group'],
       groupName: 'Java Version',
       matchDatasources: ['java-version'],
+      matchPackageNames: ['java', 'openjdk'],
       group: {
         commitMessageTopic: '{{{groupName}}} group'
       }
