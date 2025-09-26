@@ -3,7 +3,26 @@
   extends: [
     'local>opentoucan/renovate-config',
   ],
+  customManagers: [
+    {
+      customType: "regex",
+      description: "Update Java Version",
+      fileMatch: ["(^|.*/)build.gradle.kts$"],
+      matchStrings: ["jvmToolchain\\((?<currentValue>.*)\\)"],
+      datasourceTemplate: "java-version",
+      depNameTemplate: "java",
+      extractVersionTemplate: "^(?<version>\\d+)"
+    }
+  ],
   packageRules: [
+    {
+      description: ['Java Version Group'],
+      groupName: 'Java Version',
+      matchDatasources: ['java-version'],
+      group: {
+        commitMessageTopic: '{{{groupName}}} group'
+      }
+    },
     {
       description: [
         'Spring Boot Group',

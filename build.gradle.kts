@@ -14,8 +14,6 @@ group = "uk.me.danielharman"
 
 version = "Kobot"
 
-java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
-
 springBoot { buildInfo() }
 
 jacoco { toolVersion = "0.8.13" }
@@ -75,4 +73,9 @@ tasks.withType<Test> { useJUnitPlatform() }
 
 tasks.getByName<Jar>("jar") { enabled = false }
 
-kotlin { compilerOptions { freeCompilerArgs.addAll("-Xjsr305=strict") } }
+kotlin {
+    jvmToolchain(21)
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
+    }
+}
