@@ -10,19 +10,33 @@
       fileMatch: ["(^|.*/)build.gradle.kts$"],
       matchStrings: ["jvmToolchain\\((?<currentValue>.*)\\)"],
       datasourceTemplate: "java-version",
-      depNameTemplate: "java",
+      depNameTemplate: "gradle-toolchain",
       extractVersionTemplate: "^(?<version>\\d+)"
+    },
+    {
+      customType: "regex",
+      description: "Gradle Docker version",
+      managerFilePatterns: [
+        "/^Dockerfile$/",
+      ],
+      matchStrings: [
+        "FROM (?<depName>gradle):(?<currentValue>jdk\\d+)"
+      ],
+      datasourceTemplate: "docker",
     }
   ],
   packageRules: [
     {
-      description: ['Java Version Group'],
-      groupName: 'Java Version',
-      matchDatasources: ['java-version'],
-      matchPackageNames: ['java', 'openjdk'],
-      group: {
-        commitMessageTopic: '{{{groupName}}} group'
-      }
+      matchPackageNames: ["gradle"],
+      matchDatasources: ["docker"],
+      versioning: "regex:^(?:jdk)?(?<major>\\d+)$"
+    },
+    {
+      // Disable conflicting gradle dependency update
+      matchPackageNames: ["gradle"],
+      matchDatasources: ["docker"],
+      matchManagers: ["dockerfile"],
+      enabled: false
     },
     {
       description: [
@@ -68,16 +82,6 @@
       matchPackageNames: [
         '/io.kotest/',
       ],
-    },
-    {
-      matchManagers: [
-        'gradle',
-      ],
-      semanticCommitScope: 'gradle',
-      commitMessageTopic: 'gradle {{depName}}',
-      addLabels: [
-        'renovate/gradle',
-      ],
-    },
+    }
   ],
 }
