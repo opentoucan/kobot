@@ -58,7 +58,7 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.19.0")
     implementation("commons-io:commons-io:2.20.0")
     testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:4.21.0")
-    testImplementation("io.kotest:kotest-runner-junit5-jvm:6.0.3") // for kotest framework
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:6.0.4") // for kotest framework
     testImplementation(
         "io.kotest:kotest-assertions-core-jvm:6.0.3",
     ) // for kotest core jvm assertions
