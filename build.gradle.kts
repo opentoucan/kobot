@@ -60,7 +60,7 @@ dependencies {
     testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:4.21.0")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:6.0.3") // for kotest framework
     testImplementation(
-        "io.kotest:kotest-assertions-core-jvm:6.0.3",
+        "io.kotest:kotest-assertions-core-jvm:6.0.4",
     ) // for kotest core jvm assertions
     testImplementation("io.kotest:kotest-property-jvm:6.0.3") // for kotest property test
     testImplementation(group = "org.mockito", name = "mockito-core", version = "5.20.0")
