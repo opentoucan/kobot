@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/java:21-bookworm
+FROM mcr.microsoft.com/devcontainers/java:25-bookworm
 ARG JDK_VERSION=21
 RUN sudo apt-get update && \
     sudo apt-get install -y && \
