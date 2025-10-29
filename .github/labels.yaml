@@ -1,30 +1,22 @@
 ---
-# Areas
-- name: area/docs
-  color: "0e8a16"
-- name: area/github
-  color: "0e8a16"
-- name: area/build
-  color: "D93F0B"
-
 # Renovate Types
 - name: renovate/github-action
-  color: "027fa0"
-- name: renovate/github-release
-  color: "027fa0"
-- name: renovate/java-version
-  color: "B60205"
+  color: "0aa002"
 - name: renovate/docker
   color: "0052CC"
+- name: renovate/jdk-version
+  color: "b0722f"
 - name: renovate/gradle-version
   color: "006B75"
+- name: renovate/gradle-package
+  color: "812df6"
 
 # Semantic Types
 - name: type/digest
-  color: "ffeC19"
+  color: "53b4e5"
 - name: type/patch
-  color: "ffeC19"
+  color: "0e8a16"
 - name: type/minor
-  color: "ff9800"
+  color: "d9640b"
 - name: type/major
-  color: "f6412d"
+  color: "f62d2d"

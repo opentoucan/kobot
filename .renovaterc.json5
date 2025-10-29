@@ -27,9 +27,16 @@
   ],
   packageRules: [
     {
+      matchDatasources: ["gradle"],
+      semanticCommitScope: "gradle",
+      commitMessageTopic: "gradle package {{depName}}",
+      addLabels: ["renovate/gradle-package"]
+    },
+    {
       matchPackageNames: ["gradle"],
       matchDatasources: ["docker"],
-      versioning: "regex:^(?:jdk)?(?<major>\\d+)$"
+      versioning: "regex:^(?:jdk)?(?<major>\\d+)$",
+      addLabels: ["renovate/gradle-version"]
     },
     {
       // Disable conflicting gradle dependency update
@@ -42,6 +49,7 @@
       description: ['Java Version Group'],
       groupName: 'Java Version',
       matchDepNames: ['gradle-toolchain', 'openjdk', 'gradle'],
+      addLabels: ["renovate/jdk-version"]
       group: {
         commitMessageTopic: '{{{groupName}}} group'
       },
