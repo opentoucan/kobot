@@ -23,10 +23,11 @@
   ],
   packageRules: [
     {
-      matchDatasources: ["gradle"],
-      semanticCommitScope: "gradle",
+      matchDatasources: ["maven", "github-releases"],
+      managerFilePatterns: ["(^|.*/)build.gradle.kts$"],
+      semanticCommitScope: "maven",
       commitMessageTopic: "update package {{depName}}",
-      addLabels: ["renovate/gradle-package"]
+      addLabels: ["renovate/maven-package"]
     },
     {
       matchPackageNames: ["gradle"],

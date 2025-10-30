@@ -8,7 +8,7 @@
   color: "b0722f"
 - name: renovate/gradle-version
   color: "006B75"
-- name: renovate/gradle-package
+- name: renovate/maven-package
   color: "812df6"
 
 # Semantic Types
