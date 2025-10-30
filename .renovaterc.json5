@@ -29,7 +29,7 @@
     {
       matchDatasources: ["gradle"],
       semanticCommitScope: "gradle",
-      commitMessageTopic: "gradle package {{depName}}",
+      commitMessageTopic: "update package {{depName}}",
       addLabels: ["renovate/gradle-package"]
     },
     {

@@ -13,9 +13,9 @@
 
 # Semantic Types
 - name: type/digest
-  color: "53b4e5"
+  color: "fce303"
 - name: type/patch
-  color: "0e8a16"
+  color: "fce303"
 - name: type/minor
   color: "d9640b"
 - name: type/major
