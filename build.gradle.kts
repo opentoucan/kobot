@@ -74,7 +74,7 @@ tasks.withType<Test> { useJUnitPlatform() }
 tasks.getByName<Jar>("jar") { enabled = false }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict")
     }
