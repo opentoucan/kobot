@@ -8,16 +8,20 @@ on:
     branches: [ 'main' ]
     tags:
       - '*'
-    paths-ignore:
-      - '.github/**'
-      - 'docs/**'
-      - '**.md'
+    paths:
+      - 'src/**'
+      - '*.kts'
+      - 'Dockerfile'
+      - 'docker-bake.hcl'
+      - 'detekt.yaml'
   pull_request:
     branches: [ 'main' ]
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - '.github/**'
+    paths:
+      - 'src/**'
+      - '*.kts'
+      - 'Dockerfile'
+      - 'docker-bake.hcl'
+      - 'detekt.yaml'
 
 jobs:
   lint:
