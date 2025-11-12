@@ -7,7 +7,7 @@
     {
       customType: "regex",
       description: "Update Java Version",
-      fileMatch: ["(^|.*/)build.gradle.kts$"],
+      managerFilePatterns: ["(^|.*/)build.gradle.kts$"],
       matchStrings: ["jvmToolchain\\((?<currentValue>.*)\\)"],
       datasourceTemplate: "java-version",
       depNameTemplate: "gradle-toolchain",
@@ -16,20 +16,24 @@
     {
       customType: "regex",
       description: "Gradle Docker version",
-      managerFilePatterns: [
-        "/^Dockerfile$/",
-      ],
-      matchStrings: [
-        "FROM (?<depName>gradle):(?<currentValue>jdk\\d+)"
-      ],
+      managerFilePatterns: ["/^Dockerfile$/"],
+      matchStrings: ["FROM (?<depName>gradle):(?<currentValue>jdk\\d+)"],
       datasourceTemplate: "docker",
     }
   ],
   packageRules: [
     {
+      matchDatasources: ["maven", "github-releases"],
+      managerFilePatterns: ["(^|.*/)build.gradle.kts$"],
+      semanticCommitScope: "maven",
+      commitMessageTopic: "update package {{depName}}",
+      addLabels: ["renovate/maven-package"]
+    },
+    {
       matchPackageNames: ["gradle"],
       matchDatasources: ["docker"],
-      versioning: "regex:^(?:jdk)?(?<major>\\d+)$"
+      versioning: "regex:^(?:jdk)?(?<major>\\d+)$",
+      addLabels: ["renovate/gradle-version"]
     },
     {
       // Disable conflicting gradle dependency update
@@ -42,55 +46,27 @@
       description: ['Java Version Group'],
       groupName: 'Java Version',
       matchDepNames: ['gradle-toolchain', 'openjdk', 'gradle'],
-      group: {
-        commitMessageTopic: '{{{groupName}}} group'
-      },
+      addLabels: ["renovate/jdk-version"],
+      group: {commitMessageTopic: '{{{groupName}}} group'},
       minimumGroupSize: 3
     },
     {
-      description: [
-        'Spring Boot Group',
-      ],
-      groupName: 'SpringBoot',
-      matchDatasources: [
-        'gradle',
-      ],
-      group: {
-        commitMessageTopic: '{{{groupName}}} group',
-      },
-      matchPackageNames: [
-        '/org.springframework.boot/',
-      ],
+      description: ['Spring Boot Group'],
+      groupName: 'Spring Boot',
+      group: {commitMessageTopic: '{{{groupName}}} group'},
+      matchPackageNames: ['/org.springframework.boot/'],
     },
     {
-      description: [
-        'Kotlin Group',
-      ],
+      description: ['Kotlin Group'],
       groupName: 'Kotlin',
-      matchDatasources: [
-        'gradle',
-      ],
-      group: {
-        commitMessageTopic: '{{{groupName}}} group',
-      },
-      matchPackageNames: [
-        '/org.jetbrains.kotlin/',
-      ]
+      group: {commitMessageTopic: '{{{groupName}}} group'},
+      matchPackageNames: ['/org.jetbrains.kotlin/']
     },
     {
-      description: [
-        'Kotest Group',
-      ],
+      description: ['Kotest Group'],
       groupName: 'Kotest',
-      matchDatasources: [
-        'gradle',
-      ],
-      group: {
-        commitMessageTopic: '{{{groupName}}} group',
-      },
-      matchPackageNames: [
-        '/io.kotest/',
-      ],
+      group: {commitMessageTopic: '{{{groupName}}} group'},
+      matchPackageNames: ['/io.kotest/'],
     }
   ],
 }
