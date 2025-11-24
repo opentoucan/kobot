@@ -46,16 +46,25 @@ jobs:
 
       - name: Lint check
         run: ktlint --reporter=sarif,output=ktlint.sarif --editorconfig .editorconfig ./src/**/*.kt build.gradle.kts
+      
+      - name: Upload ktlint SARIF file
+        uses: github/codeql-action/upload-sarif@v4
+        if: success() || failure()
+        with:
+          sarif_file: ktlint.sarif
+          category: linter
 
       - name: Code analysis
-        run: detekt --config detekt.yaml --input ./src,build.gradle.kts --report sarif:report.sarif
+        run: detekt --config detekt.yaml --input ./src,build.gradle.kts --report sarif:detekt.sarif
         if: success() || failure()
 
       - name: Upload SARIF to GitHub using the upload-sarif action
         uses: github/codeql-action/upload-sarif@5fe9434cd24fe243e33e7f3305f8a5b519b70280 # v4
         if: success() || failure()
         with:
-          sarif_file: report.sarif
+          sarif_file: detekt.sarif
+          category: code-analysis
+          
 
   prepare:
     name: Prepare
