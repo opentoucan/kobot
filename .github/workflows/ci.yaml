@@ -49,6 +49,7 @@ jobs:
 
       - name: Code analysis
         run: detekt --config detekt.yaml --input ./src,build.gradle.kts --report sarif:report.sarif
+        if: success() || failure()
 
       - name: Upload SARIF to GitHub using the upload-sarif action
         uses: github/codeql-action/upload-sarif@5fe9434cd24fe243e33e7f3305f8a5b519b70280 # v4
