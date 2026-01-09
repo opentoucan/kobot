@@ -3,7 +3,7 @@ x-podman:
 
 services:
   workspace:
-    image: mcr.microsoft.com/devcontainers/java:21-bookworm
+    image: mcr.microsoft.com/devcontainers/java:25-bookworm
     container_name: workspace
     env_file: devcontainer.env
     volumes:
