@@ -63,7 +63,7 @@ dependencies {
         "io.kotest:kotest-assertions-core-jvm:6.0.3",
     ) // for kotest core jvm assertions
     testImplementation("io.kotest:kotest-property-jvm:6.0.3") // for kotest property test
-    testImplementation(group = "org.mockito", name = "mockito-core", version = "5.20.0")
+    testImplementation(group = "org.mockito", name = "mockito-core", version = "5.21.0")
     testImplementation("org.hamcrest:hamcrest:3.0")
 }
 
