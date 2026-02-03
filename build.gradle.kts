@@ -49,7 +49,7 @@ dependencies {
     implementation("net.dv8tion:JDA:5.6.1")
     implementation("dev.arbjerg:lavaplayer:2.2.4")
     implementation("dev.lavalink.youtube:common:1.14.0")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.20.0")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.2.20")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.2.20")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
