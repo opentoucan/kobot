@@ -16,7 +16,7 @@ version = "Kobot"
 
 springBoot { buildInfo() }
 
-jacoco { toolVersion = "0.8.13" }
+jacoco { toolVersion = "0.8.14" }
 
 tasks.test {
     finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
