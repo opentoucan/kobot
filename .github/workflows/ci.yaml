@@ -48,7 +48,7 @@ jobs:
         run: ktlint --reporter=sarif,output=ktlint.sarif --editorconfig .editorconfig ./src/**/*.kt build.gradle.kts
       
       - name: Upload ktlint SARIF file
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@89a39a4e59826350b863aa6b6252a07ad50cf83e # v4
         if: success() || failure()
         with:
           sarif_file: ktlint.sarif
