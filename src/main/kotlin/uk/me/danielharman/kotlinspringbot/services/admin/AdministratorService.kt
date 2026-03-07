@@ -85,6 +85,7 @@ class AdministratorService(
         roles: Set<Role>,
     ): OperationResult<Administrator, String> = when (val admin = getBotAdministratorById(userId)) {
         is Failure -> admin
+
         is Success -> {
             val administrator = repository.save(Administrator(discordId, roles))
             logToAdmins("${administrator.discordId} added as admin by $userId")
@@ -107,6 +108,7 @@ class AdministratorService(
     ): OperationResult<String, String> {
         return when (val guild = springGuildService.getGuild(guildId)) {
             is Failure -> guild
+
             is Success -> {
                 if (!guild.value.privilegedUsers.contains(userId)) {
                     return Failure("Insufficient permissions.")
@@ -123,6 +125,7 @@ class AdministratorService(
     ): OperationResult<String, String> {
         return when (val guild = springGuildService.getGuild(guildId)) {
             is Failure -> guild
+
             is Success -> {
                 if (!guild.value.privilegedUsers.contains(userId)) {
                     return Failure("Insufficient permissions.")
@@ -140,6 +143,7 @@ class AdministratorService(
     ): OperationResult<String, String> {
         return when (val guild = springGuildService.getGuild(guildId)) {
             is Failure -> guild
+
             is Success -> {
                 if (!guild.value.privilegedUsers.contains(userId)) {
                     return Failure("Insufficient permissions.")
@@ -155,6 +159,7 @@ class AdministratorService(
     ): OperationResult<SpringGuild, String> {
         when (val guild = springGuildService.getGuild(guildId)) {
             is Failure -> return guild
+
             is Success -> {
                 if (!guild.value.privilegedUsers.contains(userId)) {
                     return Failure("Insufficient permissions.")
@@ -166,6 +171,7 @@ class AdministratorService(
 
     fun syncGuildAdmins(): OperationResult<String, String> = when (val guildsWithoutAdmins = springGuildService.getGuildsWithoutModerators()) {
         is Failure -> guildsWithoutAdmins
+
         is Success -> {
             for (guild in guildsWithoutAdmins.value) {
                 syncGuildAdmin(guild)
@@ -180,6 +186,7 @@ class AdministratorService(
                 logger.error("Failed to retrieve guild ${springGuild.guildId} from JDA.")
                 return Failure("Failed to retrieve guild ${springGuild.guildId} from JDA.")
             }
+
             is Success -> {
                 val owner = guild.value.owner
 
@@ -211,6 +218,7 @@ class AdministratorService(
     ): OperationResult<Set<Role>, String> {
         when (val admin = getBotAdministratorByDiscordId(discordId)) {
             is Failure -> return admin
+
             is Success -> {
                 if (hasRoles(userId, Role.ManageAdmin) is Failure) {
                     return Failure("Does not have permission to manage administrators.")
@@ -237,6 +245,7 @@ class AdministratorService(
     ): OperationResult<Set<Role>, String> {
         when (val admin = getBotAdministratorByDiscordId(discordId)) {
             is Failure -> return admin
+
             is Success -> {
                 if (hasRoles(userId, Role.ManageAdmin) is Failure) {
                     return Failure("Does not have permission to manage administrators.")
@@ -275,6 +284,7 @@ class AdministratorService(
     ): OperationResult<Set<Role>, String> {
         when (val admin = getBotAdministratorByDiscordId(userId)) {
             is Failure -> return admin
+
             is Success -> {
                 val id = admin.value.id
                 if (hasRoles(id, Role.InspectAdmin) is Failure) {
@@ -295,6 +305,7 @@ class AdministratorService(
     ): OperationResult<String, String> {
         when (val admin = getBotAdministratorById(userId)) {
             is Failure -> return admin
+
             is Success -> {
                 val adminRoles = admin.value.roles
                 if (!adminRoles.containsAll(roles.toList()) && !adminRoles.contains(Role.Primary)) {

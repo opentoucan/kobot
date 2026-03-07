@@ -96,6 +96,7 @@ class SchemaUpdater(
                             SpringGuild.CommandType.STRING -> {
                                 content = c.value.value
                             }
+
                             SpringGuild.CommandType.FILE -> {
                                 fileName = c.value.value
                                 type = DiscordCommand.CommandType.FILE

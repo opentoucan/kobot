@@ -43,6 +43,7 @@ class TrackScheduler(
                 val channel = guild.value.getTextChannelById(trackMessageChannelPair.second)
                 channel?.sendMessage("Now playing ${trackMessageChannelPair.first.info.title}")?.queue()
             }
+
             is Failure -> {}
         }
         player.startTrack(trackMessageChannelPair.first, false)

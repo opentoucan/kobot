@@ -31,8 +31,8 @@ class MemeRepostIntegrationEventHandler(
 
     @Bean
     fun binding(
-        queue: Queue?,
-        exchange: TopicExchange?,
+        queue: Queue,
+        exchange: TopicExchange,
     ): Binding = BindingBuilder.bind(queue).to(exchange).with("meme-repost-exchange")
 
     @RabbitListener(queues = ["meme-repost-queue"])

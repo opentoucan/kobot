@@ -70,6 +70,7 @@ class GetMemesCommand(
                             "Channel: $channelName\nUpvotes: ${meme.upvotes} Downvotes: ${meme.downvotes}",
                         )
                 }
+
                 Meme.UrlType.Link -> {
                     description.setDescription(
                         "Channel: $channelName\nUpvotes: ${meme.upvotes} Downvotes: ${meme.downvotes} \n ${meme.url}",

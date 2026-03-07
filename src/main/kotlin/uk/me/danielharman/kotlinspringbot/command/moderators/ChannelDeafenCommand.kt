@@ -22,6 +22,7 @@ class ChannelDeafenCommand(
         val message =
             when (springGuildService.deafenChannel(event.guild.id, event.channel.id)) {
                 is Failure -> "Failed to deafen channel."
+
                 is Success ->
                     "Channel has been deafened. Use '${unDeafenCommand.getCommandString()}' command to undo."
             }

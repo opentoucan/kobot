@@ -21,6 +21,7 @@ class InspectRolesCommand(
                     .sendMessageEmbeds(Embeds.createErrorEmbed("You are not an admin."))
                     .queue()
             }
+
             is Success -> {
                 val split = event.message.contentRaw.split(' ')
 
@@ -45,6 +46,7 @@ class InspectRolesCommand(
                         event.channel
                             .sendMessageEmbeds(Embeds.createErrorEmbed(roles.reason))
                             .queue()
+
                     is Success ->
                         event.channel
                             .sendMessageEmbeds(

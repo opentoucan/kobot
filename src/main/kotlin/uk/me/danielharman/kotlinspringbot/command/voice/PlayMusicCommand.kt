@@ -38,7 +38,7 @@ class PlayMusicCommand(
         }
 
         val paramValue = event.getParamValue(this.commandParameters[0])
-        var url = paramValue.asString()
+        val url = paramValue.asString()
 
         if (url == null || paramValue.error) {
             val player = guildMusicPlayerProvider.getGuildAudioPlayer(guild).player
@@ -74,6 +74,7 @@ class PlayMusicCommand(
                 logger.info("Bot's voice channel: " + botVoiceChannel.value.id)
                 guild.audioManager.openAudioConnection(botVoiceChannel.value)
             }
+
             is Failure<*> -> logger.info("Not in voice channel yet")
         }
 

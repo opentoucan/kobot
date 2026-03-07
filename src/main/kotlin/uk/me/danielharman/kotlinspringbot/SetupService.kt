@@ -37,7 +37,7 @@ class SetupService(
     fun setup() {
         // Kotlin objects are lazy
         ApplicationInfo.startTime = LocalDateTime.now()
-        ApplicationInfo.version = System.getenv("KOBOT_VERSION") ?: buildProperties.version
+        ApplicationInfo.version = System.getenv("KOBOT_VERSION") ?: buildProperties.version ?: "?"
 
         logger.info("Running bot version ${ApplicationInfo.version}")
 
@@ -63,6 +63,7 @@ class SetupService(
 
             when (val dc = discordService.startDiscordConnection()) {
                 is Failure -> logger.error("Discord connection failed to start ${dc.reason}")
+
                 is Success -> {
                     logger.info(dc.value)
                     administratorService.logToAdmins("Bot started")

@@ -22,9 +22,11 @@ class ListAdminCommand(
                 event.channel
                     .sendMessageEmbeds(Embeds.createErrorEmbed("You are not an admin."))
                     .queue()
+
             is Success -> {
                 when (val admins = administratorService.getAdministrators()) {
                     is Failure -> Embeds.createErrorEmbed(admins.reason)
+
                     is Success -> {
                         val infoEmbedBuilder = Embeds.infoEmbedBuilder()
                         for (admin in admins.value) {

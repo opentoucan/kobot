@@ -42,6 +42,7 @@ class SpringGuildService(
 
     fun deleteSpringGuild(guildId: String): OperationResult<String, String> = when (val guild = getGuild(guildId)) {
         is Failure -> guild
+
         is Success -> {
             guildRepository.deleteByGuildId(guild.value.guildId)
             Success(guild.value.id)
@@ -97,6 +98,7 @@ class SpringGuildService(
         userId: String,
     ): OperationResult<String, String> = when (val guild = getGuild(guildId)) {
         is Failure -> guild
+
         is Success -> {
             if (guild.value.privilegedUsers.contains(userId)) {
                 Success(userId)
@@ -112,6 +114,7 @@ class SpringGuildService(
     ): OperationResult<String, String> {
         return when (val guild = createGuildIfNotExists(guildId)) {
             is Failure -> guild
+
             is Success -> {
                 guildRepository.addModeratorId(guild.value.guildId, userId)
                     ?: return Failure("Could not update guild")
@@ -126,6 +129,7 @@ class SpringGuildService(
     ): OperationResult<String, String> {
         when (val guild = getGuild(guildId)) {
             is Failure -> return guild
+
             is Success -> {
                 guildRepository.removeModeratorId(guild.value.guildId, userId)
                     ?: return Failure("Could not update guild")
@@ -140,6 +144,7 @@ class SpringGuildService(
     ): OperationResult<String, String> {
         return when (val guild = createGuildIfNotExists(guildId)) {
             is Failure -> guild
+
             is Success -> {
                 guildRepository.addMemeChannelId(guild.value.guildId, channelId)
                     ?: return Failure("Could not update guild")
@@ -154,6 +159,7 @@ class SpringGuildService(
     ): OperationResult<String, String> {
         return when (val guild = getGuild(guildId)) {
             is Failure -> guild
+
             is Success -> {
                 guildRepository.removeMemeChannelId(guild.value.guildId, channelId)
                     ?: return Failure("Could not update guild")
@@ -173,6 +179,7 @@ class SpringGuildService(
     ): OperationResult<String, String> {
         return when (val guild = getGuild(guildId)) {
             is Failure -> guild
+
             is Success -> {
                 guildRepository.addDeafenChannelId(guild.value.guildId, channelId)
                     ?: return Failure("Could not update guild")
@@ -187,6 +194,7 @@ class SpringGuildService(
     ): OperationResult<String, String> {
         return when (val guild = getGuild(guildId)) {
             is Failure -> guild
+
             is Success -> {
                 guildRepository.removeDeafenChannelId(guild.value.guildId, channelId)
                     ?: return Failure("Could not update guild")

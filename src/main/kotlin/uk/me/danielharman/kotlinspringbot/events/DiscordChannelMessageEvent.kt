@@ -60,21 +60,25 @@ class DiscordChannelMessageEvent(
             val finalVal: Any? =
                 when (commandParameter.type) {
                     CommandParameter.ParamType.Word -> value
+
                     CommandParameter.ParamType.String -> {
                         val subList = split.subList(paramsPointer - 1, split.size).joinToString(" ")
                         paramsPointer = split.size
                         subList
                     }
+
                     CommandParameter.ParamType.Long -> {
                         val parseVal = value.toLongOrNull()
                         commandParameter.error = parseVal == null
                         parseVal
                     }
+
                     CommandParameter.ParamType.Boolean -> {
                         val parseVal = value.toBooleanStrictOrNull()
                         commandParameter.error = parseVal == null
                         parseVal
                     }
+
                     CommandParameter.ParamType.Mentionable -> {
                         if (!mentionedUsers.isNullOrEmpty()) {
                             mentionedUsers[0].id
