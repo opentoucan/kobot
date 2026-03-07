@@ -26,6 +26,7 @@ class RemoveRoleCommand(
                 event.channel
                     .sendMessageEmbeds(Embeds.createErrorEmbed("You are not an admin."))
                     .queue()
+
             is Success -> {
                 val split = event.message.contentRaw.split(' ')
 

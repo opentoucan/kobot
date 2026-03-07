@@ -54,7 +54,8 @@ object DiscordObject {
                 )
                 .setAudioModuleConfig(
                     AudioModuleConfig()
-                        .withDaveSessionFactory(JDaveSessionFactory()))
+                        .withDaveSessionFactory(JDaveSessionFactory()),
+                )
                 .setActivity(
                     Activity.of(
                         Activity.ActivityType.CUSTOM_STATUS,

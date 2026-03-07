@@ -21,6 +21,7 @@ class IsChannelDeafenedCommand(
         val message =
             when (val deafenedChannels = springGuildService.getDeafenedChannels(event.guild.id)) {
                 is Failure -> deafenedChannels.reason
+
                 is Success -> {
                     if (deafenedChannels.value.contains(event.channel.id)) {
                         "Channel is currently deafened."

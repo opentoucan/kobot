@@ -29,6 +29,7 @@ class ModeratorsListCommand(
 
     private fun createAdminUsersEmbed(message: MessageReceivedEvent): MessageEmbed = when (val guild = springGuildService.getGuild(message.guild.id)) {
         is Failure -> Embeds.createErrorEmbed("Could not find data for ${message.guild.name}")
+
         is Success -> {
             val stringBuilder = StringBuilder()
             val primaryAdmin =

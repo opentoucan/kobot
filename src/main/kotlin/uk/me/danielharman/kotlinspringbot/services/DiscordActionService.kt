@@ -50,6 +50,7 @@ class DiscordActionService {
     fun getBotVoiceChannel(guildId: String): OperationResult<VoiceChannel, String> {
         return when (val guild = getGuild(guildId)) {
             is Failure -> Failure(guild.reason)
+
             is Success -> {
                 val channel =
                     guild.value

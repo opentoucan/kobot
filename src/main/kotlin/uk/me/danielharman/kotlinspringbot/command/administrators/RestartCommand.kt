@@ -16,6 +16,7 @@ class RestartCommand(
     override fun execute(event: MessageReceivedEvent) {
         when (val getAdmin = administratorService.getBotAdministratorByDiscordId(event.author.id)) {
             is Failure -> event.channel.sendMessage("You are not an admin").queue()
+
             is Success -> {
                 event.channel.sendMessage("Restarting").complete()
                 administratorService.restartDiscordConnection(getAdmin.value.id)

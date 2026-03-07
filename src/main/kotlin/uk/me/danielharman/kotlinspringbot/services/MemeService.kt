@@ -101,6 +101,7 @@ class MemeService(
                 lte = Criteria("created").lte(now)
                 gte = lte.gte(LocalDateTime.now().minusDays(THE_NUMBER_OF_DAYS_IN_A_WEEK_YOU_STUPID_LINTER))
             }
+
             MemeInterval.MONTH -> {
                 lte = Criteria("created").lte(now)
                 gte = lte.gte(LocalDateTime.now().minusMonths(1))

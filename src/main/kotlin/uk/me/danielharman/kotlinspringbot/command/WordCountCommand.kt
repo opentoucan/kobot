@@ -31,6 +31,7 @@ class WordCountCommand(private val springGuildService: SpringGuildService) :
 
         val message = when (val getSpringGuild = springGuildService.getGuild(guildId)) {
             is Failure -> EmbedBuilder().addField("error", "Could not find stats for server", false).build()
+
             is Success -> {
                 val stringBuilder = StringBuilder()
 

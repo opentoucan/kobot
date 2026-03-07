@@ -94,6 +94,7 @@ class DiscordService(
                 is Failure -> {
                     logger.warn(sg.reason)
                 }
+
                 is Success -> {
                     result.add(sg.value)
                 }

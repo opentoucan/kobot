@@ -63,6 +63,7 @@ class SetupService(
 
             when (val dc = discordService.startDiscordConnection()) {
                 is Failure -> logger.error("Discord connection failed to start ${dc.reason}")
+
                 is Success -> {
                     logger.info(dc.value)
                     administratorService.logToAdmins("Bot started")
