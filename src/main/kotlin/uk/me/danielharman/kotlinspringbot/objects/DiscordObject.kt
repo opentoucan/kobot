@@ -1,7 +1,9 @@
 package uk.me.danielharman.kotlinspringbot.objects
 
+import club.minnced.discord.jdave.interop.JDaveSessionFactory
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.audio.AudioModuleConfig
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.OptionType
@@ -36,6 +38,7 @@ object DiscordObject {
         if (commands.size > DISCORD_SLASH_LIMIT) {
             throw RuntimeException("Too many commands, discord limits slash commands to 100")
         }
+
         val builder: JDABuilder =
             JDABuilder
                 .create(
@@ -48,7 +51,11 @@ object DiscordObject {
                     GatewayIntent.GUILD_VOICE_STATES,
                     GatewayIntent.GUILD_EXPRESSIONS,
                     GatewayIntent.GUILD_MESSAGE_REACTIONS,
-                ).setActivity(
+                )
+                .setAudioModuleConfig(
+                    AudioModuleConfig()
+                        .withDaveSessionFactory(JDaveSessionFactory()))
+                .setActivity(
                     Activity.of(
                         Activity.ActivityType.CUSTOM_STATUS,
                         "${properties.commandPrefix}help",

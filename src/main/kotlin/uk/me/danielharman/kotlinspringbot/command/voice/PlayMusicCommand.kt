@@ -38,7 +38,7 @@ class PlayMusicCommand(
         }
 
         val paramValue = event.getParamValue(this.commandParameters[0])
-        var url = paramValue.asString()
+        val url = paramValue.asString()
 
         if (url == null || paramValue.error) {
             val player = guildMusicPlayerProvider.getGuildAudioPlayer(guild).player
