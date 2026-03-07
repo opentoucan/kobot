@@ -3,7 +3,7 @@ ARG VERSION
 COPY . /app/
 RUN cd /app && gradle --build-cache assemble
 
-FROM openjdk:25-slim
+FROM amazoncorretto:25-headless
 ARG VERSION
 ENV KOBOT_VERSION=${VERSION}
 RUN mkdir /app
