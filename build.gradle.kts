@@ -37,6 +37,7 @@ repositories {
 }
 
 dependencies {
+    implementation("org.springframework:spring-jcl:6.2.16")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb:4.0.3")
     implementation("org.springframework.boot:spring-boot-starter-web:4.0.3")
     implementation("org.springframework.boot:spring-boot-starter-actuator:4.0.3")
@@ -71,7 +72,7 @@ dependencies {
         "io.kotest:kotest-assertions-core-jvm:6.1.4",
     ) // for kotest core jvm assertions
     testImplementation("io.kotest:kotest-property-jvm:6.1.4") // for kotest property test
-    testImplementation(group = "org.mockito", name = "mockito-core", version = "5.22.0")
+    testImplementation("org.mockito:mockito-core:5.22.0")
     testImplementation("org.hamcrest:hamcrest:3.0")
 }
 
