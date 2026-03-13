@@ -36,3 +36,6 @@ gradle
 ### VS Code ###
 .vscode/
 src/main/resources/public/*
+
+### Local dev ###
+.env

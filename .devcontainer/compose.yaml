@@ -13,3 +13,15 @@ services:
     command: sleep infinity
     user: vscode
     userns_mode: keep-id:uid=1000,gid=1000
+  mongo:
+    image: docker.io/library/mongo:latest
+    ports:
+      - "27017:27017"
+  rabbitmq:
+    image: docker.io/library/rabbitmq:4-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: guest

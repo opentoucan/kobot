@@ -1,0 +1,39 @@
+services:
+  kobot:
+    environment:
+      SPRING_RABBITMQ_ADDRESSES: amqp://guest:guest@rabbitmq:5672
+      SPRING_MONGODB_URI: mongodb://local:local@mongo:27017
+      SPRING_MONGODB_DATABASE: local
+    build:
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    networks:
+      - services
+    depends_on:
+      - mongo
+      - rabbitmq
+  mongo:
+    image: docker.io/library/mongo:8.2.5
+    hostname: mongo
+    environment:
+      MONGO_INITDB_DATABASE: local
+      MONGO_INITDB_ROOT_USERNAME: local
+      MONGO_INITDB_ROOT_PASSWORD: local
+    ports:
+      - "27017:27017"
+    networks:
+      - services
+  rabbitmq:
+    image: docker.io/library/rabbitmq:4-management
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: guest
+    networks:
+      - services
+networks:
+  services: {}
