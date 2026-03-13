@@ -16,7 +16,7 @@ runs:
       shell: bash
       run: |
         PLATFORMS=$(\
-          docker buildx bake release --print --progress=quiet \
+          docker buildx bake release --print --progress=quiet --file docker-bake.hcl \
             | jq --raw-output --compact-output '.target.release.platforms' \
         )
 

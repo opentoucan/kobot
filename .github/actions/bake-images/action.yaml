@@ -16,7 +16,7 @@ runs:
       shell: bash
       run: |
         IMAGES=$(\
-          docker buildx bake images --print --progress=quiet \
+          docker buildx bake images --print --progress=quiet --file docker-bake.hcl \
             | jq --raw-output --compact-output '.group.images.targets' \
         )
 
