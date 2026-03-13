@@ -3,7 +3,7 @@ ARG VERSION
 COPY . /app/
 RUN cd /app && gradle --build-cache assemble
 
-FROM amazoncorretto:25-headless
+FROM eclipse-temurin:25
 ARG VERSION
 ENV KOBOT_VERSION=${VERSION}
 RUN mkdir /app
