@@ -37,7 +37,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework:spring-jcl:6.2.16")
+    implementation("org.springframework:spring-jcl:6.2.17")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb:4.0.3")
     implementation("org.springframework.boot:spring-boot-starter-web:4.0.3")
     implementation("org.springframework.boot:spring-boot-starter-actuator:4.0.3")
