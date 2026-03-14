@@ -67,11 +67,11 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.20.0")
     implementation("commons-io:commons-io:2.21.0")
     testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:4.24.0")
-    testImplementation("io.kotest:kotest-runner-junit5-jvm:6.1.4") // for kotest framework
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:6.1.7") // for kotest framework
     testImplementation(
-        "io.kotest:kotest-assertions-core-jvm:6.1.4",
+        "io.kotest:kotest-assertions-core-jvm:6.1.7",
     ) // for kotest core jvm assertions
-    testImplementation("io.kotest:kotest-property-jvm:6.1.4") // for kotest property test
+    testImplementation("io.kotest:kotest-property-jvm:6.1.7") // for kotest property test
     testImplementation("org.mockito:mockito-core:5.22.0")
     testImplementation("org.hamcrest:hamcrest:3.0")
 }
