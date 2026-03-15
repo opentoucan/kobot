@@ -47,7 +47,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test:4.0.3") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
-    implementation("net.dv8tion:JDA:6.3.1")
+    implementation("net.dv8tion:JDA:6.3.2")
     implementation("dev.arbjerg:lavaplayer:2.2.6")
 
     // Interface to use for libraries
