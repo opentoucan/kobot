@@ -2,10 +2,10 @@ plugins {
     `java-library`
     id("org.springframework.boot") version "4.0.3"
     id("io.spring.dependency-management") version "1.1.7"
-    id("org.jetbrains.kotlin.jvm") version "2.3.10"
-    id("org.jetbrains.kotlin.plugin.spring") version "2.3.10"
-    id("org.jetbrains.kotlin.kapt") version "2.3.10"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.10"
+    id("org.jetbrains.kotlin.jvm") version "2.3.21"
+    id("org.jetbrains.kotlin.plugin.spring") version "2.3.21"
+    id("org.jetbrains.kotlin.kapt") version "2.3.21"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.21"
     id("org.barfuin.gradle.jacocolog") version "4.0.1"
     jacoco
 }
@@ -59,9 +59,9 @@ dependencies {
 
     implementation("dev.lavalink.youtube:common:1.18.0")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.1")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.10")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.10")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.21")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.21")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
     implementation("io.ktor:ktor-client-cio:3.4.1")
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
     implementation("org.apache.commons:commons-lang3:3.20.0")
