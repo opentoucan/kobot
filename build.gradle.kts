@@ -54,7 +54,7 @@ dependencies {
     implementation("club.minnced:jdave-api:0.1.7")
 
     // Compiled natives for libdave for the specified platform
-    implementation("club.minnced:jdave-native-linux-x86-64:0.1.7")
+    implementation("club.minnced:jdave-native-linux-x86-64:0.1.8")
     implementation("club.minnced:jdave-native-win-x86-64:0.1.7")
 
     implementation("dev.lavalink.youtube:common:1.18.0")
