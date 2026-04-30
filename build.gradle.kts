@@ -55,7 +55,7 @@ dependencies {
 
     // Compiled natives for libdave for the specified platform
     implementation("club.minnced:jdave-native-linux-x86-64:0.1.7")
-    implementation("club.minnced:jdave-native-win-x86-64:0.1.7")
+    implementation("club.minnced:jdave-native-win-x86-64:0.1.8")
 
     implementation("dev.lavalink.youtube:common:1.18.0")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.1")
