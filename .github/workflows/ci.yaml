@@ -29,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
       - name: Setup Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+        uses: Homebrew/actions/setup-homebrew@cf31444e770b9919bb21e695d66f56c39cfd3dee # master
 
       - name: Setup Workflow Tools
         run: brew install ktlint detekt
@@ -48,7 +48,7 @@ jobs:
         run: ktlint --reporter=sarif,output=ktlint.sarif --editorconfig .editorconfig ./src/**/*.kt build.gradle.kts
       
       - name: Upload ktlint SARIF file
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@e46ed2cbd01164d986452f91f178727624ae40d7 # v4
         if: success() || failure()
         with:
           sarif_file: ktlint.sarif
