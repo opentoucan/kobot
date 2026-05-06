@@ -14,7 +14,7 @@ services:
       - mongo
       - rabbitmq
   mongo:
-    image: docker.io/library/mongo:8.2.5
+    image: docker.io/library/mongo:8.3.1
     hostname: mongo
     environment:
       MONGO_INITDB_DATABASE: local
