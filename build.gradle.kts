@@ -48,7 +48,7 @@ dependencies {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
     implementation("net.dv8tion:JDA:6.3.1")
-    implementation("dev.arbjerg:lavaplayer:2.2.6")
+    implementation("dev.arbjerg:lavaplayer:2.2.7")
 
     // Interface to use for libraries
     implementation("club.minnced:jdave-api:0.1.7")
