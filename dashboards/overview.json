@@ -638,7 +638,7 @@
             "uid": "${DS_VICTORIALOGS}"
           },
           "editorMode": "builder",
-          "expr": "kubernetes.labels.app.kubernetes.io/name: \"kobot\"",
+          "expr": "kubernetes.pod_labels.app.kubernetes.io/name: \"kobot\"",
           "queryType": "instant",
           "refId": "A"
         }
