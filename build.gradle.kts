@@ -51,7 +51,7 @@ dependencies {
     implementation("dev.arbjerg:lavaplayer:2.2.6")
 
     // Interface to use for libraries
-    implementation("club.minnced:jdave-api:0.1.7")
+    implementation("club.minnced:jdave-api:0.1.8")
 
     // Compiled natives for libdave for the specified platform
     implementation("club.minnced:jdave-native-linux-x86-64:0.1.7")
