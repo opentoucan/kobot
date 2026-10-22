@@ -64,7 +64,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
     implementation("io.ktor:ktor-client-cio:3.4.1")
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
-    implementation("org.apache.commons:commons-lang3:3.20.0")
+    implementation("org.apache.commons:commons-lang3:3.21.0")
     implementation("commons-io:commons-io:2.21.0")
     testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:4.24.0")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:6.1.4") // for kotest framework
