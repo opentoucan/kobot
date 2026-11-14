@@ -31,23 +31,15 @@ class ModeratorsListCommand(
         is Failure -> Embeds.createErrorEmbed("Could not find data for ${message.guild.name}")
 
         is Success -> {
-            val stringBuilder = StringBuilder()
-            val primaryAdmin =
-                message.guild.retrieveMemberById(properties.primaryPrivilegedUserId).complete()
-
-            stringBuilder.append(
-                "Bot controller:  ${primaryAdmin.nickname ?: primaryAdmin.user.asTag}\n",
-            )
-
-            guild.value.privilegedUsers.forEach { s ->
-                run {
-                    val member = message.guild.retrieveMemberById(s).complete()
-                    stringBuilder.append(member?.nickname ?: member.user.asTag ?: s)
-                }
+            val primaryAdmin = message.guild.getMemberById(properties.primaryPrivilegedUserId)
+                ?.effectiveName
+                ?: properties.primaryPrivilegedUserId.ifBlank { "Unknown" }
+            val moderators = guild.value.privilegedUsers.joinToString("\n") { userId ->
+                message.guild.getMemberById(userId)?.effectiveName ?: userId
             }
 
             EmbedBuilder()
-                .appendDescription(stringBuilder.toString())
+                .appendDescription("Bot controller: $primaryAdmin\n$moderators")
                 .setColor(PURPLE)
                 .setTitle("Moderators for ${message.guild.name}")
                 .build()

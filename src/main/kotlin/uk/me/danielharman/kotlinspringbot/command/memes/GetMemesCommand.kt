@@ -24,19 +24,20 @@ class GetMemesCommand(
 ),
     ISlashCommand {
     override fun execute(event: DiscordMessageEvent) {
+        val guild = event.guild
+        if (guild == null) {
+            event.reply("This command can only be used in Servers")
+            return
+        }
+
         val paramValue = event.getParamValue(commandParameters[0])
         val intervalString = paramValue.asString()
 
-        var interval = MemeService.MemeInterval.WEEK
-
-        if (!paramValue.error && intervalString != null) {
-            interval =
-                when (intervalString.lowercase(Locale.getDefault())) {
-                    "month" -> MemeService.MemeInterval.MONTH
-                    else -> MemeService.MemeInterval.WEEK
-                }
+        val interval = when {
+            !paramValue.error && intervalString?.lowercase(Locale.ROOT) == "month" -> MemeService.MemeInterval.MONTH
+            else -> MemeService.MemeInterval.WEEK
         }
-        val memes = memeService.getTop3ByInterval(event.guild?.id ?: "", interval)
+        val memes = memeService.getTop3ByInterval(guild.id, interval)
 
         if (memes.isEmpty()) {
             event.reply("No memes found")
@@ -49,11 +50,7 @@ class GetMemesCommand(
                 EmbedBuilder()
                     .setTitle("#$i")
                     .setAuthor(
-                        event.guild!!
-                            .retrieveMemberById(meme.userId)
-                            .complete()
-                            ?.nickname
-                            ?: meme.userId,
+                        guild.getMemberById(meme.userId)?.effectiveName ?: meme.userId,
                     )
 
             val channelName =

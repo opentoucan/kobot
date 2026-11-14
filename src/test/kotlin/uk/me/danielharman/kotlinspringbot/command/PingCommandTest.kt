@@ -2,21 +2,20 @@ package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.entities.User
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
+import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
-import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
+import org.mockito.junit.jupiter.MockitoExtension
 import uk.me.danielharman.kotlinspringbot.events.DiscordChannelMessageEvent
 import uk.me.danielharman.kotlinspringbot.events.DiscordSlashCommandEvent
-import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 
-@SpringBootTest
-@EnableConfigurationProperties(value = [KotlinBotProperties::class])
-@ActiveProfiles("test")
+@ExtendWith(MockitoExtension::class)
 internal class PingCommandTest {
     @InjectMocks private lateinit var pingCommand: PingCommand
+
+    @Mock private lateinit var event: DiscordChannelMessageEvent
 
     @Test
     fun shouldPingOnChannelMessage() {

@@ -49,7 +49,7 @@ class PlayMusicCommand(
             return
         }
 
-        val member = guild.retrieveMember(event.author).complete()
+        val member = guild.getMember(event.author)
 
         if (member == null) {
             event.reply("Can't find member!!!!")

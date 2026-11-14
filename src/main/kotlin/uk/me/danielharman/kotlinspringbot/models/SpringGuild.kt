@@ -25,7 +25,7 @@ data class SpringGuild(
         var id: String = ObjectId.get().toHexString(),
     )
 
-    @Id lateinit var id: String
+    @Id var id: String = ObjectId.get().toHexString()
 
     var wordCounts: HashMap<String, Int> = hashMapOf()
     var commandCounts: HashMap<String, Int> = hashMapOf()

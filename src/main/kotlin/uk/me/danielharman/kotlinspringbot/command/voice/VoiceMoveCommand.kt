@@ -19,8 +19,9 @@ class VoiceMoveCommand(
             return
         }
 
-        val audioManager = event.guild.audioManager
-        val member = event.guild.retrieveMember(event.author).complete()
+        val guild = event.guild
+        val audioManager = guild.audioManager
+        val member = guild.getMember(event.author)
 
         if (member == null) {
             event.reply("Could not find member.")

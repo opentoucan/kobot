@@ -131,8 +131,8 @@ class MemeService(
     ): Boolean {
         val meme = getMeme(guildId, messageId) ?: return false
 
-        val push = Update().push("downvoters", userId)
-        mongoTemplate.findAndModify(Query(where("id").`is`(meme.id)), push, Meme::class.java)
+        val add = Update().addToSet("downvoters", userId)
+        mongoTemplate.findAndModify(Query(where("id").`is`(meme.id)), add, Meme::class.java)
         return true
     }
 
@@ -155,8 +155,8 @@ class MemeService(
     ): Boolean {
         val meme = getMeme(guildId, messageId) ?: return false
 
-        val push = Update().push("upvoters", userId)
-        mongoTemplate.findAndModify(Query(where("id").`is`(meme.id)), push, Meme::class.java)
+        val add = Update().addToSet("upvoters", userId)
+        mongoTemplate.findAndModify(Query(where("id").`is`(meme.id)), add, Meme::class.java)
         return true
     }
 

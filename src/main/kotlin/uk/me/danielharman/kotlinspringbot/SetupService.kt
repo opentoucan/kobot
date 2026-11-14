@@ -51,11 +51,15 @@ class SetupService(
             logger.info("Bot is running in development mode.")
         }
 
-        // Create default admin
-        administratorService.createBotAdministrator(
-            kotlinBotProperties.primaryPrivilegedUserId,
-            setOf(Role.Primary),
-        )
+        // Create default admin only when configured.
+        if (kotlinBotProperties.primaryPrivilegedUserId.isNotBlank()) {
+            administratorService.createBotAdministrator(
+                kotlinBotProperties.primaryPrivilegedUserId,
+                setOf(Role.Primary),
+            )
+        } else {
+            logger.warn("No primary privileged user ID configured; skipping default admin creation.")
+        }
 
         if (!activeProfiles.contains("discordDisabled")) {
             // Injecting listeners here otherwise we'll get circular dependencies

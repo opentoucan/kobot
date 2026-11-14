@@ -1,7 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
@@ -13,7 +12,7 @@ import uk.me.danielharman.kotlinspringbot.helpers.PURPLE
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
-private const val LIST_OF_USERS_LIMIT = 20L
+private const val LIST_OF_USERS_LIMIT = 20
 
 @Component
 class WordCountCommand(private val springGuildService: SpringGuildService) :
@@ -26,35 +25,23 @@ class WordCountCommand(private val springGuildService: SpringGuildService) :
             return
         }
 
-        val guildId = event.guild.id
-        val guildName = event.guild.name
+        val guild = event.guild
+        val guildId = guild.id
+        val guildName = guild.name
 
         val message = when (val getSpringGuild = springGuildService.getGuild(guildId)) {
             is Failure -> EmbedBuilder().addField("error", "Could not find stats for server", false).build()
 
             is Success -> {
-                val stringBuilder = StringBuilder()
-
-                getSpringGuild.value.userWordCounts.entries
-                    .stream()
-                    .sorted(Comparators.mapStrIntComparator)
-                    .limit(LIST_OF_USERS_LIMIT)
-                    .forEach { (s, i) ->
-                        run {
-                            try {
-                                stringBuilder.append(
-                                    "${
-                                        event.guild.retrieveMemberById(s).complete()?.effectiveName ?: s
-                                    } - $i words\n",
-                                )
-                            } catch (e: ErrorResponseException) {
-                                logger.error("Failed to find user $s by id ${e.message}")
-                            }
-                        }
+                val wordCounts = getSpringGuild.value.userWordCounts.entries
+                    .sortedWith(Comparators.mapStrIntComparator)
+                    .take(LIST_OF_USERS_LIMIT)
+                    .joinToString(separator = "\n") { (userId, count) ->
+                        "${guild.getMemberById(userId)?.effectiveName ?: userId} - $count words"
                     }
 
                 EmbedBuilder()
-                    .appendDescription(stringBuilder.toString())
+                    .appendDescription(wordCounts)
                     .setColor(PURPLE)
                     .setTitle("Words said per user for $guildName")
                     .build()

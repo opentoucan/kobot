@@ -9,14 +9,13 @@ import org.hamcrest.Matchers.emptyCollectionOf
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.hasProperty
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.BDDMockito.times
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito
-import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.boot.test.context.SpringBootTest
+import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.data.mongodb.core.MongoOperations
-import org.springframework.test.context.ActiveProfiles
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.helpers.assertFailure
 import uk.me.danielharman.kotlinspringbot.helpers.assertSuccess
@@ -29,9 +28,7 @@ import uk.me.danielharman.kotlinspringbot.services.DiscordService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import java.util.Optional
 
-@SpringBootTest
-@EnableConfigurationProperties(value = [KotlinBotProperties::class])
-@ActiveProfiles("test")
+@ExtendWith(MockitoExtension::class)
 internal class AdministratorServiceTest {
     @InjectMocks lateinit var administratorService: AdministratorService
 

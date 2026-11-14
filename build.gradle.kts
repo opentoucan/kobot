@@ -60,7 +60,6 @@ dependencies {
     implementation("dev.lavalink.youtube:common:1.18.2")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.1")
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.10")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.10")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
     implementation("io.ktor:ktor-client-cio:3.4.1")
     implementation("me.xdrop:fuzzywuzzy:1.4.0")

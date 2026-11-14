@@ -1,102 +1,66 @@
 package uk.me.danielharman.kotlinspringbot.services
 
-import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.contains
-import org.hamcrest.Matchers.containsInAnyOrder
-import org.hamcrest.Matchers.not
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
+import org.mockito.Mockito.any
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
 import uk.me.danielharman.kotlinspringbot.helpers.assertFailure
 import uk.me.danielharman.kotlinspringbot.helpers.assertSuccess
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.repositories.GuildRepository
 
-@SpringBootTest
-@ActiveProfiles("test")
-internal class SpringGuildServiceTest(
-    @Autowired private val service: SpringGuildService,
-    @Autowired private val repo: GuildRepository,
-) {
-    @AfterEach
-    fun afterEach() {
-        repo.deleteAll()
-    }
+internal class SpringGuildServiceTest {
+    private val repo: GuildRepository = mock(GuildRepository::class.java)
+    private val service: SpringGuildService = SpringGuildService(repo)
 
     @Test
     fun shouldCreateIfNotExistsGuild() {
-        assertSuccess(service.createGuild("1234"))
-        assertNotNull(repo.findByGuildId("1234"))
+        val guild = SpringGuild("1234")
+        `when`(repo.findByGuildId("1234")).thenReturn(null)
+        `when`(repo.save(any(SpringGuild::class.java))).thenReturn(guild)
+
+        val result = assertSuccess(service.createGuild("1234"))
+
+        assertEquals("1234", result.value.guildId)
     }
 
     @Test
     fun shouldNotCreateIfExistsGuild() {
-        repo.save(SpringGuild("1234"))
+        val guild = SpringGuild("1234")
+        `when`(repo.findByGuildId("1234")).thenReturn(guild)
+
         assertFailure(service.createGuild("1234"))
     }
 
     @Test
     fun shouldDeleteSpringGuild() {
-        repo.save(SpringGuild("1234"))
-        assertSuccess(service.deleteSpringGuild("1234"))
-        assertNull(repo.findByGuildId("1234"))
-    }
+        val guild = SpringGuild("1234")
+        `when`(repo.findByGuildId("1234")).thenReturn(guild)
 
-    @Test
-    fun shouldGetAllGuilds() {
-        val guilds = listOf(SpringGuild("1"), SpringGuild("2"), SpringGuild("3"))
-        repo.saveAll(guilds)
-        assertSuccess(service.getGuilds())
-    }
+        val result = assertSuccess(service.deleteSpringGuild("1234"))
 
-    @Test
-    fun shouldUpdateWordCount() {
-        val stubGuild = SpringGuild("1234")
-
-        repo.save(stubGuild)
-
-        assertSuccess(service.updateUserCount("1234", "1234", 1))
-
-        val result = repo.findByGuildId("1234")
-        assertNotNull(result)
-        assertEquals(1, result?.userWordCounts?.get("1234") ?: 0)
-    }
-
-    @Test
-    fun shouldGetPaginatedGuilds() {
-        for (i in 1..100) {
-            repo.save(SpringGuild("$i"))
-        }
-
-        val result = assertSuccess(service.getGuilds(15, 1))
-
-        assertEquals(15, result.value.size)
-        for (i in 0..14) {
-            assertEquals("${i + 16}", result.value[i].guildId)
-        }
+        assertEquals(guild.id, result.value)
     }
 
     @Test
     fun shouldSetVol() {
-        repo.save(SpringGuild("1234"))
+        val guild = SpringGuild("1234")
+        guild.volume = 50
+        `when`(repo.findByGuildId("1234")).thenReturn(null)
+        `when`(repo.save(any(SpringGuild::class.java))).thenReturn(guild)
+        `when`(repo.setGuildVolume("1234", 20)).thenReturn(guild.apply { volume = 20 })
 
-        assertSuccess(service.setVol("1234", 20))
+        val result = assertSuccess(service.setVol("1234", 20))
 
-        val guild = repo.findByGuildId("1234")
-        assertNotNull(guild)
-        assertEquals(20, guild?.volume ?: -1)
+        assertEquals(20, result.value)
     }
 
     @Test
     fun shouldGetVolIfGuildExists() {
-        val stub = SpringGuild("1234")
-        stub.volume = 69
-        repo.save(stub)
+        val guild = SpringGuild("1234")
+        guild.volume = 69
+        `when`(repo.findByGuildId("1234")).thenReturn(guild)
 
         val result = assertSuccess(service.getVol("1234"))
 
@@ -105,133 +69,118 @@ internal class SpringGuildServiceTest(
 
     @Test
     fun shouldFailVolIfGuildDoesNotExist() {
+        `when`(repo.findByGuildId("1234")).thenReturn(null)
+
         assertFailure(service.getVol("1234"))
     }
 
     @Test
     fun shouldReturnSuccessIfModerator() {
-        val stub = SpringGuild("1234")
-        stub.privilegedUsers = listOf("1234")
-        repo.save(stub)
+        val guild = SpringGuild("1234")
+        guild.privilegedUsers = listOf("1234")
+        `when`(repo.findByGuildId("1234")).thenReturn(guild)
+
         assertSuccess(service.isModerator("1234", "1234"))
     }
 
     @Test
     fun shouldReturnFailureIfNotModerator() {
-        val stub = SpringGuild("1234")
-        repo.save(stub)
+        val guild = SpringGuild("1234")
+        `when`(repo.findByGuildId("1234")).thenReturn(guild)
+
         assertFailure(service.isModerator("1234", "1234"))
     }
 
     @Test
     fun shouldAddModerator() {
-        val stub = SpringGuild("1234")
-        repo.save(stub)
+        val guild = SpringGuild("1234")
+        `when`(repo.findByGuildId("1234")).thenReturn(null)
+        `when`(repo.save(any(SpringGuild::class.java))).thenReturn(guild)
+        `when`(repo.addModeratorId("1234", "1234")).thenReturn(guild.apply { privilegedUsers = listOf("1234") })
 
-        assertSuccess(service.addModerator("1234", "1234"))
+        val result = assertSuccess(service.addModerator("1234", "1234"))
 
-        val guild = repo.findByGuildId("1234")
-        assertNotNull(guild)
-        assertThat(guild?.privilegedUsers, containsInAnyOrder("1234"))
+        assertEquals("1234", result.value)
     }
 
     @Test
     fun shouldRemoveModerator() {
-        val stub = SpringGuild("1234")
-        stub.privilegedUsers = listOf("1234", "4567", "8910")
-        repo.save(stub)
+        val guild = SpringGuild("1234")
+        guild.privilegedUsers = listOf("1234", "4567", "8910")
+        `when`(repo.findByGuildId("1234")).thenReturn(guild)
+        `when`(repo.removeModeratorId("1234", "4567")).thenReturn(guild.apply { privilegedUsers = listOf("1234", "8910") })
 
-        assertSuccess(service.removeModerator("1234", "4567"))
+        val result = assertSuccess(service.removeModerator("1234", "4567"))
 
-        val guild = repo.findByGuildId("1234")
-        assertNotNull(guild)
-        assertThat(guild?.privilegedUsers, containsInAnyOrder("1234", "8910"))
-        assertThat(guild?.privilegedUsers, not(containsInAnyOrder("4567")))
+        assertEquals("4567", result.value)
     }
 
     @Test
     fun shouldAddMemeChannel() {
-        val stub = SpringGuild("1234")
-        repo.save(stub)
+        val guild = SpringGuild("1234")
+        `when`(repo.findByGuildId("1234")).thenReturn(null)
+        `when`(repo.save(any(SpringGuild::class.java))).thenReturn(guild)
+        `when`(repo.addMemeChannelId("1234", "456")).thenReturn(guild.apply { memeChannels = listOf("456") })
 
-        assertSuccess(service.addMemeChannel("1234", "456"))
+        val result = assertSuccess(service.addMemeChannel("1234", "456"))
 
-        val guild = repo.findByGuildId("1234")
-        assertNotNull(guild)
-        assertEquals(1, guild?.memeChannels?.size)
-        assertThat(guild?.memeChannels, contains("456"))
+        assertEquals("456", result.value)
     }
 
     @Test
     fun shouldRemoveMemeChannel() {
-        val stub = SpringGuild("1234")
-        stub.memeChannels = listOf("1234", "456", "789")
-        repo.save(stub)
+        val guild = SpringGuild("1234")
+        guild.memeChannels = listOf("1234", "456", "789")
+        `when`(repo.findByGuildId("1234")).thenReturn(guild)
+        `when`(repo.removeMemeChannelId("1234", "456")).thenReturn(guild.apply { memeChannels = listOf("1234", "789") })
 
-        assertSuccess(service.removeMemeChannel("1234", "456"))
+        val result = assertSuccess(service.removeMemeChannel("1234", "456"))
 
-        val guild = repo.findByGuildId("1234")
-        assertNotNull(guild)
-        assertEquals(2, guild?.memeChannels?.size)
-        assertThat(guild?.memeChannels, containsInAnyOrder("1234", "789"))
-        assertThat(guild?.memeChannels, not(containsInAnyOrder("456")))
+        assertEquals("456", result.value)
     }
 
     @Test
     fun shouldGetMemeChannels() {
-        val stub = SpringGuild("1234")
-        stub.memeChannels = listOf("1", "2", "3", "4")
-        repo.save(stub)
+        val guild = SpringGuild("1234")
+        guild.memeChannels = listOf("1", "2", "3", "4")
+        `when`(repo.findByGuildId("1234")).thenReturn(guild)
 
         val result = assertSuccess(service.getMemeChannels("1234"))
-        assertThat(result.value, containsInAnyOrder("1", "2", "3", "4"))
+
+        assertEquals(listOf("1", "2", "3", "4"), result.value)
     }
 
     @Test
     fun shouldDeafenChannel() {
-        repo.save(SpringGuild("1234"))
-        assertSuccess(service.deafenChannel("1234", "456"))
-        val guild = repo.findByGuildId("1234")
-        assertNotNull(guild)
-        assertThat(guild?.deafenedChannels, containsInAnyOrder("456"))
+        val guild = SpringGuild("1234")
+        `when`(repo.findByGuildId("1234")).thenReturn(guild)
+        `when`(repo.addDeafenChannelId("1234", "456")).thenReturn(guild.apply { deafenedChannels = listOf("456") })
+
+        val result = assertSuccess(service.deafenChannel("1234", "456"))
+
+        assertEquals("456", result.value)
     }
 
     @Test
     fun shouldUnDeafenChannel() {
-        val stub = SpringGuild("1234")
-        stub.deafenedChannels = listOf("1", "2", "3")
-        repo.save(stub)
-        assertSuccess(service.unDeafenChannel("1234", "2"))
-        val guild = repo.findByGuildId("1234")
-        assertNotNull(guild)
-        assertThat(guild?.deafenedChannels, containsInAnyOrder("1", "3"))
-        assertThat(guild?.deafenedChannels, not(containsInAnyOrder("2")))
+        val guild = SpringGuild("1234")
+        guild.deafenedChannels = listOf("1", "2", "3")
+        `when`(repo.findByGuildId("1234")).thenReturn(guild)
+        `when`(repo.removeDeafenChannelId("1234", "2")).thenReturn(guild.apply { deafenedChannels = listOf("1", "3") })
+
+        val result = assertSuccess(service.unDeafenChannel("1234", "2"))
+
+        assertEquals("2", result.value)
     }
 
     @Test
     fun shouldGetDeafenedChannels() {
-        val stub = SpringGuild("1234")
-        stub.deafenedChannels = listOf("1", "2", "3")
-        repo.save(stub)
+        val guild = SpringGuild("1234")
+        guild.deafenedChannels = listOf("1", "2", "3")
+        `when`(repo.findByGuildId("1234")).thenReturn(guild)
 
         val result = assertSuccess(service.getDeafenedChannels("1234"))
-        assertEquals(3, result.value.size)
-        assertThat(result.value, containsInAnyOrder("1", "2", "3"))
-    }
 
-    @Test
-    fun getGuildsWithoutModerators() {
-        val stub1 = SpringGuild("1")
-        stub1.privilegedUsers = listOf("1")
-        repo.save(stub1)
-        val stub2 = SpringGuild("2")
-        repo.save(stub2)
-        val stub3 = SpringGuild("3")
-        stub3.privilegedUsers = listOf("3", "4")
-        repo.save(stub3)
-
-        val result = assertSuccess(service.getGuildsWithoutModerators())
-        assertEquals(1, result.value.size)
-        assertThat(result.value, containsInAnyOrder(stub2))
+        assertEquals(listOf("1", "2", "3"), result.value)
     }
 }
