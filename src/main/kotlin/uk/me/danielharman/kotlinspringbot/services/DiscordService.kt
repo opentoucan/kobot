@@ -3,6 +3,7 @@ package uk.me.danielharman.kotlinspringbot.services
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.utils.FileUpload
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -28,11 +29,15 @@ class DiscordService(
     fun sendUserMessage(
         msg: String,
         userId: String,
-    ): PrivateChannel? {
+    ): OperationResult<PrivateChannel, String> = try {
         val user = DiscordObject.jda.retrieveUserById(userId).complete()
         val privateChannel = user.openPrivateChannel().complete()
         privateChannel.sendMessage(msg).queue()
-        return privateChannel
+        Success(privateChannel)
+    } catch (e: NumberFormatException) {
+        Failure("Failed to send message: invalid user id $userId")
+    } catch (e: ErrorResponseException) {
+        Failure("Failed to send message to user $userId: ${e.message}")
     }
 
     fun sendChannelMessage(msg: DiscordChannelMessage): OperationResult<TextChannel, String> {

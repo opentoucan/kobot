@@ -7,6 +7,7 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.helpers.fold
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import uk.me.danielharman.kotlinspringbot.models.Meme
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
@@ -37,7 +38,15 @@ class GetMemesCommand(
             !paramValue.error && intervalString?.lowercase(Locale.ROOT) == "month" -> MemeService.MemeInterval.MONTH
             else -> MemeService.MemeInterval.WEEK
         }
-        val memes = memeService.getTop3ByInterval(guild.id, interval)
+        val memes =
+            when (val result = memeService.getTop3ByInterval(guild.id, interval)) {
+                is Failure -> {
+                    event.reply("Failed to get memes: ${result.reason}")
+                    return
+                }
+
+                is Success -> result.value
+            }
 
         if (memes.isEmpty()) {
             event.reply("No memes found")
@@ -54,10 +63,10 @@ class GetMemesCommand(
                     )
 
             val channelName =
-                when (val channel = discordActionService.getTextChannel(meme.channelId)) {
-                    is Failure -> "Channel not found"
-                    is Success -> channel.value.name
-                }
+                discordActionService.getTextChannel(meme.channelId).fold(
+                    onSuccess = { it.name },
+                    onFailure = { "Channel not found" },
+                )
 
             when (meme.urlType) {
                 Meme.UrlType.Image -> {

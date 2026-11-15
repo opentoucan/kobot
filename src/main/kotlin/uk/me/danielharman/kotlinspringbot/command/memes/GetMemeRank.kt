@@ -6,6 +6,8 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import uk.me.danielharman.kotlinspringbot.services.MemeService
 import java.awt.Color
@@ -31,7 +33,17 @@ class GetMemeRank(
 
         val asc = (!paramValue.error && sort != null && sort.lowercase() == "asc")
 
-        val ranking = memeService.getMemerIds(guild.id, asc)
+        val rankings =
+            when (val result = memeService.getMemerIds(guild.id, asc)) {
+                is Failure -> {
+                    event.reply(Embeds.createErrorEmbed("Failed to get meme ranking: ${result.reason}"))
+                    return
+                }
+
+                is Success -> result.value
+            }
+
+        val ranking = rankings
             .mapIndexed { index, (userId, score) ->
                 val name = guild.getMemberById(userId)?.effectiveName ?: userId
                 val rank = if (asc) "" else "#${index + 1} "

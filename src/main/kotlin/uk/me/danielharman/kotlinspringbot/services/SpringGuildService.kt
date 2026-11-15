@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.helpers.map
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.repositories.GuildRepository
 import kotlin.math.max
@@ -88,10 +89,7 @@ class SpringGuildService(
         return Success(findAndModify.volume)
     }
 
-    fun getVol(guildId: String): OperationResult<Int, String> = when (val guild = getGuild(guildId)) {
-        is Failure -> guild
-        is Success -> Success(guild.value.volume)
-    }
+    fun getVol(guildId: String): OperationResult<Int, String> = getGuild(guildId).map { it.volume }
 
     fun isModerator(
         guildId: String,
@@ -168,10 +166,7 @@ class SpringGuildService(
         }
     }
 
-    fun getMemeChannels(guildId: String): OperationResult<List<String>, String> = when (val guild = getGuild(guildId)) {
-        is Failure -> guild
-        is Success -> Success(guild.value.memeChannels)
-    }
+    fun getMemeChannels(guildId: String): OperationResult<List<String>, String> = getGuild(guildId).map { it.memeChannels }
 
     fun deafenChannel(
         guildId: String,
@@ -211,12 +206,7 @@ class SpringGuildService(
         is Success -> guild.value.deafenedChannels.contains(channelId)
     }
 
-    fun getDeafenedChannels(guildId: String): OperationResult<List<String>, String> = when (
-        val guild = getGuild(guildId)
-    ) {
-        is Failure -> guild
-        is Success -> Success(guild.value.deafenedChannels)
-    }
+    fun getDeafenedChannels(guildId: String): OperationResult<List<String>, String> = getGuild(guildId).map { it.deafenedChannels }
 
     fun getGuildsWithoutModerators(): OperationResult<List<SpringGuild>, String> = Success(
         guildRepository.getGuildsWithModeratorCount(0),

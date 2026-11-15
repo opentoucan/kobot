@@ -113,7 +113,10 @@ class AdministratorService(
                 if (!guild.value.privilegedUsers.contains(userId)) {
                     return Failure("Insufficient permissions.")
                 }
-                Success((springGuildService.addModerator(guildId, newAdminId) as Success).value)
+                return when (val result = springGuildService.addModerator(guildId, newAdminId)) {
+                    is Failure -> result
+                    is Success -> Success(result.value)
+                }
             }
         }
     }
@@ -130,9 +133,10 @@ class AdministratorService(
                 if (!guild.value.privilegedUsers.contains(userId)) {
                     return Failure("Insufficient permissions.")
                 }
-                return Success(
-                    (springGuildService.removeModerator(guildId, adminId) as Success).value,
-                )
+                return when (val result = springGuildService.removeModerator(guildId, adminId)) {
+                    is Failure -> result
+                    is Success -> Success(result.value)
+                }
             }
         }
     }
@@ -148,7 +152,10 @@ class AdministratorService(
                 if (!guild.value.privilegedUsers.contains(userId)) {
                     return Failure("Insufficient permissions.")
                 }
-                return Success((springGuildService.deleteSpringGuild(guildId) as Success).value)
+                return when (val result = springGuildService.deleteSpringGuild(guildId)) {
+                    is Failure -> result
+                    is Success -> Success(result.value)
+                }
             }
         }
     }
@@ -173,10 +180,18 @@ class AdministratorService(
         is Failure -> guildsWithoutAdmins
 
         is Success -> {
+            val failures = mutableListOf<String>()
             for (guild in guildsWithoutAdmins.value) {
-                syncGuildAdmin(guild)
+                when (val result = syncGuildAdmin(guild)) {
+                    is Failure -> failures.add(result.reason)
+                    is Success -> Unit
+                }
             }
-            Success("Updated ${guildsWithoutAdmins.value.size} guilds.")
+            if (failures.isNotEmpty()) {
+                Failure("Failed to update guild administrators: ${failures.joinToString("; ")}")
+            } else {
+                Success("Updated ${guildsWithoutAdmins.value.size} guilds.")
+            }
         }
     }
 
@@ -184,7 +199,7 @@ class AdministratorService(
         when (val guild = discordService.getGuild(springGuild.guildId)) {
             is Failure -> {
                 logger.error("Failed to retrieve guild ${springGuild.guildId} from JDA.")
-                return Failure("Failed to retrieve guild ${springGuild.guildId} from JDA.")
+                return guild
             }
 
             is Success -> {
@@ -195,14 +210,28 @@ class AdministratorService(
                     return Failure("Failed to get guild owner for ${springGuild.guildId} from JDA.")
                 }
 
-                springGuildService.addModerator(springGuild.guildId, owner.user.id)
+                when (val result = springGuildService.addModerator(springGuild.guildId, owner.user.id)) {
+                    is Failure -> return result
+                    is Success -> Unit
+                }
 
-                discordService.sendUserMessage(
-                    "You have been added as a bot moderator for " +
-                        "${discordService.getBotName()} in server ${guild.value.name} as you are the owner." +
-                        " Use ${properties.privilegedCommandPrefix}help in your server for more information.",
-                    owner.user.id,
-                )
+                val botName =
+                    when (val result = discordService.getBotName()) {
+                        is Failure -> return result
+                        is Success -> result.value
+                    }
+
+                when (
+                    val result = discordService.sendUserMessage(
+                        "You have been added as a bot moderator for " +
+                            "$botName in server ${guild.value.name} as you are the owner." +
+                            " Use ${properties.privilegedCommandPrefix}help in your server for more information.",
+                        owner.user.id,
+                    )
+                ) {
+                    is Failure -> return result
+                    is Success -> Unit
+                }
                 logger.info("Set ${owner.user.id} as admin of ${springGuild.guildId}")
                 return Success("Set ${owner.user.id} as admin of ${springGuild.guildId}")
             }
@@ -273,7 +302,10 @@ class AdministratorService(
         for (admin in admins) {
             if (admin.roles.contains(Role.Logging)) {
                 logger.info("[System]: $message ${admin.discordId}")
-                discordService.sendUserMessage("[System]: $message", admin.discordId)
+                when (val result = discordService.sendUserMessage("[System]: $message", admin.discordId)) {
+                    is Failure -> logger.error("Failed to send admin log to ${admin.discordId}: ${result.reason}")
+                    is Success -> Unit
+                }
             }
         }
     }

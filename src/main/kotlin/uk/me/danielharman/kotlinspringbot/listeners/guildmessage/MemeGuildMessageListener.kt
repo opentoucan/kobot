@@ -15,6 +15,7 @@ import uk.me.danielharman.kotlinspringbot.events.integration.MemePostedIntegrati
 import uk.me.danielharman.kotlinspringbot.helpers.EmojiCodes
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions.getAuthorIdFromMessageId
+import uk.me.danielharman.kotlinspringbot.helpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.Meme
 import uk.me.danielharman.kotlinspringbot.properties.FeatureProperties
@@ -109,14 +110,17 @@ class MemeGuildMessageListener(
 
             message.addReaction(EmojiCodes.ThumbsUp).queue()
             message.addReaction(EmojiCodes.ThumbsDown).queue()
-            memeService.saveMeme(
-                Meme(
-                    message.id,
-                    guildId,
-                    authorId,
-                    attachment.url,
-                    channelId,
-                    Meme.UrlType.Image,
+            logMemeFailure(
+                "Failed to save meme",
+                memeService.saveMeme(
+                    Meme(
+                        message.id,
+                        guildId,
+                        authorId,
+                        attachment.url,
+                        channelId,
+                        Meme.UrlType.Image,
+                    ),
                 ),
             )
         } else {
@@ -124,8 +128,11 @@ class MemeGuildMessageListener(
                 val url = if (force) message.jumpUrl else URI(message.contentRaw).toURL().toString()
                 message.addReaction(EmojiCodes.ThumbsUp).queue()
                 message.addReaction(EmojiCodes.ThumbsDown).queue()
-                memeService.saveMeme(
-                    Meme(message.id, guildId, authorId, url, channelId, Meme.UrlType.Link),
+                logMemeFailure(
+                    "Failed to save meme",
+                    memeService.saveMeme(
+                        Meme(message.id, guildId, authorId, url, channelId, Meme.UrlType.Link),
+                    ),
                 )
             } catch (ex: URISyntaxException) {
                 logger.info("Invalid URL in message: ${ex.message}")
@@ -183,6 +190,15 @@ class MemeGuildMessageListener(
         }
     }
 
+    private fun logMemeFailure(
+        operation: String,
+        result: OperationResult<*, String>,
+    ) {
+        if (result is Failure) {
+            logger.error("$operation: ${result.reason}")
+        }
+    }
+
     override fun onMessageReactionAdd(event: MessageReactionAddEvent) {
         if (!event.isFromGuild || event.userId == event.jda.selfUser.id || event.user?.isBot == true) return
 
@@ -215,7 +231,10 @@ class MemeGuildMessageListener(
 
                     EmojiCodes.Cross -> {
                         logger.info("Deleting meme by user request")
-                        memeService.deleteMeme(event.guild.id, event.messageId)
+                        logMemeFailure(
+                            "Failed to delete meme",
+                            memeService.deleteMeme(event.guild.id, event.messageId),
+                        )
                         message.clearReactions(EmojiCodes.ThumbsUp).queue()
                         message.clearReactions(EmojiCodes.ThumbsDown).queue()
                         message.clearReactions(EmojiCodes.Cross).queue()
@@ -238,13 +257,15 @@ class MemeGuildMessageListener(
             }
 
             if (emoji == EmojiCodes.ThumbsUp) {
-                if (!memeService.addUpvote(guild.guildId, event.messageId, event.userId)) {
-                    logger.error("[MessageListener] Failed to upvote")
-                }
+                logMemeFailure(
+                    "[MessageListener] Failed to upvote",
+                    memeService.addUpvote(guild.guildId, event.messageId, event.userId),
+                )
             } else if (emoji == EmojiCodes.ThumbsDown) {
-                if (!memeService.addDownvote(guild.guildId, event.messageId, event.userId)) {
-                    logger.error("[MessageListener] Failed to downvote")
-                }
+                logMemeFailure(
+                    "[MessageListener] Failed to downvote",
+                    memeService.addDownvote(guild.guildId, event.messageId, event.userId),
+                )
             }
         }
     }
@@ -272,9 +293,15 @@ class MemeGuildMessageListener(
             }
 
             if (emoji == EmojiCodes.ThumbsUp) {
-                memeService.removeUpvote(guild.guildId, event.messageId, event.userId)
+                logMemeFailure(
+                    "[MessageListener] Failed to remove upvote",
+                    memeService.removeUpvote(guild.guildId, event.messageId, event.userId),
+                )
             } else if (emoji == EmojiCodes.ThumbsDown) {
-                memeService.removeDownvote(guild.guildId, event.messageId, event.userId)
+                logMemeFailure(
+                    "[MessageListener] Failed to remove downvote",
+                    memeService.removeDownvote(guild.guildId, event.messageId, event.userId),
+                )
             }
         }
     }
@@ -290,7 +317,10 @@ class MemeGuildMessageListener(
         val guild = (getGuild as Success).value
 
         if (guild.memeChannels.contains(event.channel.id)) {
-            memeService.deleteMeme(guild.guildId, event.messageId)
+            logMemeFailure(
+                "Failed to delete meme",
+                memeService.deleteMeme(guild.guildId, event.messageId),
+            )
         }
     }
 }

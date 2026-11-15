@@ -3,6 +3,7 @@ package uk.me.danielharman.kotlinspringbot.services.admin
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.emptyCollectionOf
@@ -16,6 +17,7 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.data.mongodb.core.MongoOperations
+import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.helpers.assertFailure
 import uk.me.danielharman.kotlinspringbot.helpers.assertSuccess
@@ -137,6 +139,19 @@ internal class AdministratorServiceTest {
     }
 
     @Test
+    fun shouldPropagateSpringGuildServiceFailureWhenAddingAdmin() {
+        val stubSpringGuild = Success(SpringGuild("123"))
+        stubSpringGuild.value.privilegedUsers = listOf("892")
+
+        Mockito.`when`(springGuildService.getGuild("123")).thenReturn(stubSpringGuild)
+        Mockito.`when`(springGuildService.addModerator("123", "456")).thenReturn(Failure("Could not update guild"))
+
+        val result = administratorService.addSpringGuildAdministrator("892", "123", "456")
+
+        assertFailure(result)
+    }
+
+    @Test
     fun shouldRemoveSpringAdmin() {
         val stubSpringGuild = Success(SpringGuild("123"))
         stubSpringGuild.value.privilegedUsers = listOf("892")
@@ -248,6 +263,12 @@ internal class AdministratorServiceTest {
         Mockito.`when`(springGuildService.getGuildsWithoutModerators()).thenReturn(stubSpringGuilds)
         Mockito.`when`(discordService.getGuild("123")).thenReturn(Success(stubGuild1))
         Mockito.`when`(discordService.getGuild("456")).thenReturn(Success(stubGuild2))
+        Mockito.`when`(springGuildService.addModerator("123", "8910")).thenReturn(Success("8910"))
+        Mockito.`when`(springGuildService.addModerator("456", "8911")).thenReturn(Success("8911"))
+        Mockito.`when`(discordService.getBotName()).thenReturn(Success("Kobot"))
+        Mockito
+            .`when`(discordService.sendUserMessage(Mockito.anyString(), Mockito.anyString()))
+            .thenReturn(Success(Mockito.mock(PrivateChannel::class.java)))
 
         val result = administratorService.syncGuildAdmins()
 
