@@ -4,33 +4,29 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import uk.me.danielharman.kotlinspringbot.commands.CommandPermission
+import uk.me.danielharman.kotlinspringbot.commands.CommandRegistry
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
-import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
-import uk.me.danielharman.kotlinspringbot.factories.ModeratorCommandFactory
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
-import uk.me.danielharman.kotlinspringbot.helpers.Failure
-import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.mappers.toMessageEvent
 import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
-import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @Component
 class CommandGuildMessageListener(
-    private val moderatorCommandFactory: ModeratorCommandFactory,
-    private val commandFactory: CommandFactory,
+    private val commandRegistry: CommandRegistry,
     private val properties: KotlinBotProperties,
     private val springGuildService: SpringGuildService,
-    private val discordService: DiscordActionService,
 ) : ListenerAdapter() {
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
-        val isDeafened = springGuildService.isChannelDeafened(event.guild.id, event.channel.id)
+        if (!event.isFromGuild || event.isWebhookMessage || event.author.isBot) return
 
         when {
             event.message.contentStripped.startsWith(properties.commandPrefix) -> {
+                val isDeafened = springGuildService.isChannelDeafened(event.guild.id, event.channel.id)
                 if (!isDeafened) runCommand(event.toMessageEvent())
             }
 
@@ -41,15 +37,8 @@ class CommandGuildMessageListener(
     }
 
     private fun runCommand(event: DiscordMessageEvent) {
-        val selfUser = discordService.getSelfUser() as Success
-
-        if (event.author.id == selfUser.value.id || event.author.isBot) {
-            logger.info("Not running command as author is me or a bot")
-            return
-        }
-
         val cmd = event.content.split(" ")[0].removePrefix(properties.commandPrefix)
-        val command = commandFactory.getCommand(cmd)
+        val command = commandRegistry.publicCommand(cmd)
 
         if (command == null) {
             event.reply(
@@ -72,25 +61,18 @@ class CommandGuildMessageListener(
     }
 
     private fun runAdminCommand(event: MessageReceivedEvent) {
-        if (event.author.id == event.jda.selfUser.id || event.author.isBot) {
-            logger.info("Not running command as author is me or a bot")
-            return
-        }
-
         val cmd =
             event.message.contentStripped
                 .split(" ")[0]
                 .removePrefix(properties.privilegedCommandPrefix)
         val channel = event.channel
 
-        val isModerator = springGuildService.isModerator(event.guild.id, event.author.id)
-
-        if (event.author.id != properties.primaryPrivilegedUserId && isModerator is Failure) {
+        if (!commandRegistry.isAuthorized(CommandPermission.GUILD_MODERATOR, event.author.id, event.guild.id)) {
             channel.sendMessage("You are not an admin!").queue()
             return
         }
 
-        val command = moderatorCommandFactory.getCommand(cmd)
+        val command = commandRegistry.moderatorCommand(cmd)
         command.execute(event)
     }
 }

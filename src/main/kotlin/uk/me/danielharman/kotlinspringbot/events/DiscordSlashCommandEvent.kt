@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.utils.FileUpload
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
+import uk.me.danielharman.kotlinspringbot.models.ParsedCommandParameter
 import java.io.InputStream
 
 class DiscordSlashCommandEvent(
@@ -51,42 +52,31 @@ class DiscordSlashCommandEvent(
         event.reply(msg).setEphemeral(invokerOnly).queue()
     }
 
-    override fun getParamValue(commandParameter: CommandParameter): CommandParameter {
-        commandParameter.reset()
+    override fun getParamValue(commandParameter: CommandParameter): ParsedCommandParameter {
+        val option = event.options.firstOrNull { candidate ->
+            candidate.name.equals(commandParameter.name, ignoreCase = true) &&
+                matchType(candidate.type, commandParameter.type)
+        }
 
-        val findFirst =
-            this.event.options
-                .stream()
-                .filter { x ->
-                    x.name.lowercase() == commandParameter.name.lowercase() &&
-                        matchType(x.type, commandParameter.type)
-                }.findFirst()
-
-        if (findFirst.isPresent) {
-            val get = findFirst.get()
-
-            val value: Any? =
-                when (get.type) {
+        val value =
+            option?.let { selected ->
+                when (selected.type) {
                     OptionType.UNKNOWN -> null
                     OptionType.SUB_COMMAND -> null
                     OptionType.SUB_COMMAND_GROUP -> null
-                    OptionType.STRING -> get.asString
-                    OptionType.INTEGER -> get.asLong
-                    OptionType.BOOLEAN -> get.asBoolean
-                    OptionType.USER -> get.asUser
-                    OptionType.CHANNEL -> get.asChannel
-                    OptionType.ROLE -> get.asRole
-                    OptionType.MENTIONABLE -> get.asMentionable
+                    OptionType.STRING -> selected.asString
+                    OptionType.INTEGER -> selected.asLong
+                    OptionType.BOOLEAN -> selected.asBoolean
+                    OptionType.USER -> selected.asUser
+                    OptionType.CHANNEL -> selected.asChannel
+                    OptionType.ROLE -> selected.asRole
+                    OptionType.MENTIONABLE -> selected.asMentionable
                     else -> null
                 }
-            commandParameter.value = value
-        }
+            }
 
-        if (commandParameter.required && commandParameter.value == null) {
-            commandParameter.error = true
-        }
-
-        return commandParameter
+        val error = commandParameter.required && value == null
+        return ParsedCommandParameter(commandParameter, value, error)
     }
 
     private fun matchType(

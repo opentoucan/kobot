@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.utils.FileUpload
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
+import uk.me.danielharman.kotlinspringbot.models.ParsedCommandParameter
 import java.io.InputStream
 
 class DiscordChannelMessageEvent(
@@ -49,17 +50,17 @@ class DiscordChannelMessageEvent(
 
     private var paramsPointer: Int = 1
 
-    override fun getParamValue(commandParameter: CommandParameter): CommandParameter {
-        commandParameter.reset()
-
+    override fun getParamValue(commandParameter: CommandParameter): ParsedCommandParameter {
         val split = content.split(" ")
+        var value: Any? = null
+        var error = false
 
         if (paramsPointer < split.size) {
-            val value = split[paramsPointer++]
+            val rawValue = split[paramsPointer++]
 
-            val finalVal: Any? =
+            value =
                 when (commandParameter.type) {
-                    CommandParameter.ParamType.Word -> value
+                    CommandParameter.ParamType.Word -> rawValue
 
                     CommandParameter.ParamType.String -> {
                         val subList = split.subList(paramsPointer - 1, split.size).joinToString(" ")
@@ -68,15 +69,15 @@ class DiscordChannelMessageEvent(
                     }
 
                     CommandParameter.ParamType.Long -> {
-                        val parseVal = value.toLongOrNull()
-                        commandParameter.error = parseVal == null
-                        parseVal
+                        val parsedValue = rawValue.toLongOrNull()
+                        error = parsedValue == null
+                        parsedValue
                     }
 
                     CommandParameter.ParamType.Boolean -> {
-                        val parseVal = value.toBooleanStrictOrNull()
-                        commandParameter.error = parseVal == null
-                        parseVal
+                        val parsedValue = rawValue.toBooleanStrictOrNull()
+                        error = parsedValue == null
+                        parsedValue
                     }
 
                     CommandParameter.ParamType.Mentionable -> {
@@ -87,13 +88,12 @@ class DiscordChannelMessageEvent(
                         }
                     }
                 }
-            commandParameter.value = finalVal
         }
 
-        if (commandParameter.required && commandParameter.value == null) {
-            commandParameter.error = true
+        if (commandParameter.required && value == null) {
+            error = true
         }
 
-        return commandParameter
+        return ParsedCommandParameter(commandParameter, value, error)
     }
 }

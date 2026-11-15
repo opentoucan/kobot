@@ -9,9 +9,6 @@ data class CommandParameter(
     val description: String,
     val required: Boolean = false,
 ) {
-    var value: Any? = null
-    var error: Boolean = false
-
     enum class ParamType {
         Word,
         String,
@@ -19,37 +16,41 @@ data class CommandParameter(
         Boolean,
         Mentionable,
     }
+}
 
-    fun reset() {
-        value = null
-        error = false
-    }
+data class ParsedCommandParameter(
+    val definition: CommandParameter,
+    val value: Any?,
+    val error: Boolean,
+) {
+    private val type: CommandParameter.ParamType
+        get() = definition.type
 
     fun asBoolean(): Boolean? {
-        if (type == ParamType.Boolean && value != null) {
+        if (type == CommandParameter.ParamType.Boolean && value != null) {
             return value as Boolean
         }
         return null
     }
 
     fun asString(): String? {
-        if ((type == ParamType.String || type == ParamType.Word) && value != null) {
+        if ((type == CommandParameter.ParamType.String || type == CommandParameter.ParamType.Word) && value != null) {
             return value as String
         }
         return null
     }
 
     fun asLong(): Long? {
-        if (type == ParamType.Long && value != null) {
+        if (type == CommandParameter.ParamType.Long && value != null) {
             return value as Long
         }
         return null
     }
 
     fun asMentionable(): String? {
-        if (type == ParamType.Mentionable && value != null) {
+        if (type == CommandParameter.ParamType.Mentionable && value != null) {
             return if (value is IMentionable) {
-                (value as IMentionable).id
+                value.id
             } else {
                 value as String
             }

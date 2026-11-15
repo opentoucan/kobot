@@ -79,11 +79,13 @@ class MemeService(
         }
 
         return if (asc) {
-            idMap.toList().sortedBy { (_, value) -> value.score }.take(MAX_MEME_LIST_SIZE)
+            idMap.toList()
+                .sortedWith(compareBy<Pair<String, MemeRanking>> { (_, value) -> value.score }.thenBy { it.first })
+                .take(MAX_MEME_LIST_SIZE)
         } else {
             idMap
                 .toList()
-                .sortedByDescending { (_, value) -> value.score }
+                .sortedWith(compareByDescending<Pair<String, MemeRanking>> { (_, value) -> value.score }.thenBy { it.first })
                 .filter { (_, value) -> value.score > 0 }.take(MAX_MEME_LIST_SIZE)
         }
     }

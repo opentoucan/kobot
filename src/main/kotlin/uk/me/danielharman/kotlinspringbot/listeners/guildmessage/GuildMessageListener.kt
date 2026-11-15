@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
+import uk.me.danielharman.kotlinspringbot.commands.CommandRegistry
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.mappers.toMessageEvent
@@ -16,7 +16,7 @@ import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 @Component
 class GuildMessageListener(
     private val springGuildService: SpringGuildService,
-    private val commandFactory: CommandFactory,
+    private val commandRegistry: CommandRegistry,
 ) : ListenerAdapter() {
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
@@ -67,7 +67,7 @@ class GuildMessageListener(
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         val messageEvent = event.toMessageEvent()
         try {
-            commandFactory.getCommand(event.name)?.execute(messageEvent)
+            commandRegistry.publicCommand(event.name)?.execute(messageEvent)
         } catch (e: Exception) {
             messageEvent.reply("An internal error occurred while executing the command.", true)
             throw e

@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.utils.FileUpload
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
+import uk.me.danielharman.kotlinspringbot.commands.CommandRegistry
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.Success
@@ -21,7 +21,7 @@ import java.time.LocalDateTime
 class DiscordService(
     private val springGuildService: SpringGuildService,
     private val properties: KotlinBotProperties,
-    private val commands: List<ISlashCommand>,
+    private val commandRegistry: CommandRegistry,
 ) {
     private val logger = LoggerFactory.getLogger(DiscordService::class.java)
 
@@ -70,7 +70,7 @@ class DiscordService(
 
     fun startDiscordConnection(): OperationResult<String, String> {
         if (!DiscordObject.initialised) {
-            DiscordObject.init(properties, commands)
+            DiscordObject.init(properties, commandRegistry.slashCommands())
             return Success(
                 "Discord connection up at ${DiscordObject.startTime?.toString() ?: "????"}",
             )

@@ -3,6 +3,7 @@ package uk.me.danielharman.kotlinspringbot.events
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
+import uk.me.danielharman.kotlinspringbot.models.ParsedCommandParameter
 
 abstract class MessageEvent(
     val content: String,
@@ -19,10 +20,10 @@ abstract class MessageEvent(
         invokerOnly: Boolean = false,
     )
 
-    abstract fun getParamValue(commandParameter: CommandParameter): CommandParameter
+    abstract fun getParamValue(commandParameter: CommandParameter): ParsedCommandParameter
 
-    fun parseParams(commandParameters: List<CommandParameter>): List<CommandParameter> {
-        val parsed = mutableListOf<CommandParameter>()
+    fun parseParams(commandParameters: List<CommandParameter>): List<ParsedCommandParameter> {
+        val parsed = mutableListOf<ParsedCommandParameter>()
         for (param in commandParameters) {
             parsed.add(getParamValue(param))
         }

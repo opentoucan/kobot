@@ -6,9 +6,9 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import org.apache.commons.io.IOUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.core.task.TaskExecutor
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.events.integration.MemePostedIntegrationEvent
 import uk.me.danielharman.kotlinspringbot.events.integration.MemePostedIntegrationEventPublisher
@@ -27,6 +27,11 @@ import java.net.URISyntaxException
 import java.util.Base64
 import java.util.Locale
 
+private const val CONNECTION_TIMEOUT_MILLIS = 5_000
+private const val READ_TIMEOUT_MILLIS = 5_000
+private const val MAX_IMAGE_BYTES = 8 * 1024 * 1024
+private const val MAX_AVATAR_BYTES = 1024 * 1024
+
 @Component
 class MemeGuildMessageListener(
     private val properties: KotlinBotProperties,
@@ -34,62 +39,42 @@ class MemeGuildMessageListener(
     private val memeService: MemeService,
     private val memePostedIntegrationEventPublisher: MemePostedIntegrationEventPublisher,
     private val featureProperties: FeatureProperties,
+    private val taskExecutor: TaskExecutor,
 ) : ListenerAdapter() {
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
-        event.message.contentRaw
         if (
             event.message.contentStripped.startsWith(properties.commandPrefix) ||
             event.message.contentStripped.startsWith(properties.privilegedCommandPrefix) ||
             !event.isFromGuild ||
+            event.isWebhookMessage ||
             event.author.isBot
         ) {
             return
         }
 
-        val isDeafened = springGuildService.isChannelDeafened(event.guild.id, event.channel.id)
+        val attachment = event.message.attachments.firstOrNull()
+        if (attachment != null) {
+            val memeChannels = when (val result = springGuildService.getMemeChannels(event.guild.id)) {
+                is Failure -> emptyList()
+                is Success -> result.value
+            }
 
-        val getMemeChannels = springGuildService.getMemeChannels(event.guild.id)
-        var memeChannels = listOf<String>()
-        if (getMemeChannels is Success) {
-            memeChannels = getMemeChannels.value
-        }
+            if (event.channel.id in memeChannels) {
+                createMeme(event.message, event.guild.id, event.author.id, event.channel.id)
 
-        if (memeChannels.contains(event.channel.id) && event.message.attachments.isNotEmpty()) {
-            createMeme(event.message, event.guild.id, event.author.id, event.channel.id)
-
-            val memeFileUrl = URI(event.message.attachments[0].url).toURL()
-
-            val content = memeFileUrl.openConnection().contentType
-            if (
-                content.startsWith("image") &&
-                event.message.attachments.isNotEmpty() &&
-                featureProperties.memeRepost
-            ) {
-                val authorName = event.author.effectiveName
-                val rgb = event.member?.color?.rgb ?: Color.WHITE.rgb
-                val colour = "#${Integer.toHexString(rgb).substring(2)}"
-                val avatar =
-                    Base64
-                        .getEncoder()
-                        .encodeToString(
-                            URI(event.author.effectiveAvatarUrl).toURL().openStream().readBytes(),
-                        )
-
-                memePostedIntegrationEventPublisher.publish(
-                    MemePostedIntegrationEvent(
-                        authorName,
-                        colour,
-                        avatar,
-                        Base64
-                            .getEncoder()
-                            .encodeToString(IOUtils.toByteArray((memeFileUrl).openStream())),
+                if (attachment.isImage && featureProperties.memeRepost) {
+                    scheduleMemeRepost(
+                        attachment.url,
+                        event.author.effectiveAvatarUrl,
+                        event.author.effectiveName,
+                        event.member?.colors?.primary?.rgb ?: Color.WHITE.rgb,
                         event.guild.id,
                         event.channel.id,
                         event.messageId,
-                    ),
-                )
+                    )
+                }
             }
         }
 
@@ -100,7 +85,11 @@ class MemeGuildMessageListener(
                 .split(" ")
                 .filter { s -> s.isNotBlank() }
 
-        if (!isDeafened && words.size == 1 && words[0] == "lol") {
+        if (
+            words.size == 1 &&
+            words[0] == "lol" &&
+            !springGuildService.isChannelDeafened(event.guild.id, event.channel.id)
+        ) {
             event.message.addReaction(EmojiCodes.Rofl).queue()
         }
 
@@ -114,7 +103,10 @@ class MemeGuildMessageListener(
         channelId: String,
         force: Boolean = false,
     ) {
-        if (message.attachments.isNotEmpty()) {
+        val attachment = message.attachments.firstOrNull()
+        if (attachment != null) {
+            if (!attachment.isImage) return
+
             message.addReaction(EmojiCodes.ThumbsUp).queue()
             message.addReaction(EmojiCodes.ThumbsDown).queue()
             memeService.saveMeme(
@@ -122,7 +114,7 @@ class MemeGuildMessageListener(
                     message.id,
                     guildId,
                     authorId,
-                    message.attachments[0].url,
+                    attachment.url,
                     channelId,
                     Meme.UrlType.Image,
                 ),
@@ -141,8 +133,58 @@ class MemeGuildMessageListener(
         }
     }
 
+    private fun scheduleMemeRepost(
+        imageUrl: String,
+        avatarUrl: String,
+        authorName: String,
+        authorColor: Int,
+        guildId: String,
+        channelId: String,
+        messageId: String,
+    ) {
+        try {
+            taskExecutor.execute {
+                try {
+                    val avatar = Base64.getEncoder().encodeToString(downloadBytes(avatarUrl, MAX_AVATAR_BYTES))
+                    val image = Base64.getEncoder().encodeToString(downloadBytes(imageUrl, MAX_IMAGE_BYTES))
+                    val colour = "#${Integer.toHexString(authorColor).substring(2)}"
+
+                    memePostedIntegrationEventPublisher.publish(
+                        MemePostedIntegrationEvent(
+                            authorName,
+                            colour,
+                            avatar,
+                            image,
+                            guildId,
+                            channelId,
+                            messageId,
+                        ),
+                    )
+                } catch (exception: Exception) {
+                    logger.warn("Failed to repost image for message $messageId", exception)
+                }
+            }
+        } catch (exception: RuntimeException) {
+            logger.warn("Could not schedule image repost for message $messageId", exception)
+        }
+    }
+
+    private fun downloadBytes(url: String, maxBytes: Int): ByteArray {
+        val connection = URI(url).toURL().openConnection().apply {
+            connectTimeout = CONNECTION_TIMEOUT_MILLIS
+            readTimeout = READ_TIMEOUT_MILLIS
+            useCaches = false
+        }
+
+        return connection.getInputStream().use { input ->
+            val bytes = input.readNBytes(maxBytes + 1)
+            require(bytes.size <= maxBytes) { "Downloaded file exceeds the $maxBytes byte limit" }
+            bytes
+        }
+    }
+
     override fun onMessageReactionAdd(event: MessageReactionAddEvent) {
-        if (event.userId == event.jda.selfUser.id || event.user?.isBot == true) return
+        if (!event.isFromGuild || event.userId == event.jda.selfUser.id || event.user?.isBot == true) return
 
         val emoji = event.reaction.emoji
 
@@ -208,7 +250,7 @@ class MemeGuildMessageListener(
     }
 
     override fun onMessageReactionRemove(event: MessageReactionRemoveEvent) {
-        if (event.userId == event.jda.selfUser.id) return
+        if (!event.isFromGuild || event.userId == event.jda.selfUser.id || event.user?.isBot == true) return
 
         val emoji = event.reaction.emoji
         val getGuild = springGuildService.getGuild(event.guild.id)
@@ -238,6 +280,8 @@ class MemeGuildMessageListener(
     }
 
     override fun onMessageDelete(event: MessageDeleteEvent) {
+        if (!event.isFromGuild) return
+
         val getGuild = springGuildService.getGuild(event.guild.id)
         if (getGuild is Failure) {
             logger.error("onMessageDelete: ${getGuild.reason}")

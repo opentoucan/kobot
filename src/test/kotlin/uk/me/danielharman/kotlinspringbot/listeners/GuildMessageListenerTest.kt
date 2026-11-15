@@ -16,7 +16,7 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
-import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
+import uk.me.danielharman.kotlinspringbot.commands.CommandRegistry
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.listeners.guildmessage.GuildMessageListener
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
@@ -28,7 +28,7 @@ internal class GuildMessageListenerTest {
 
     @Mock private lateinit var springGuildService: SpringGuildService
 
-    @Mock private lateinit var commandFactory: CommandFactory
+    @Mock private lateinit var commandRegistry: CommandRegistry
 
     @Test
     fun onGuildJoin() {

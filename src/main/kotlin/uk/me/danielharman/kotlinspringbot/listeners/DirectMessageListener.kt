@@ -5,12 +5,13 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import uk.me.danielharman.kotlinspringbot.factories.AdminCommandFactory
+import uk.me.danielharman.kotlinspringbot.commands.CommandPermission
+import uk.me.danielharman.kotlinspringbot.commands.CommandRegistry
 import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 
 @Component
 class DirectMessageListener(
-    private val commandFactory: AdminCommandFactory,
+    private val commandRegistry: CommandRegistry,
     private val properties: KotlinBotProperties,
 ) : ListenerAdapter() {
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
@@ -31,13 +32,16 @@ class DirectMessageListener(
             return
         }
 
-        event.channel
+        if (!commandRegistry.isAuthorized(CommandPermission.BOT_ADMIN, event.author.id)) {
+            event.channel.sendMessage("You are not an admin!").queue()
+            return
+        }
 
         val cmd =
             event.message.contentStripped
                 .split(" ")[0]
                 .removePrefix(properties.privilegedCommandPrefix)
-        val command = commandFactory.getCommand(cmd)
+        val command = commandRegistry.adminCommand(cmd)
         command.execute(event)
     }
 }
