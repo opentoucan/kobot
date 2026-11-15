@@ -37,8 +37,8 @@ class MemeRepostIntegrationEventHandler(
 
     @RabbitListener(queues = ["meme-repost-queue"])
     @ConditionalOnProperty(name = ["features.meme-repost"])
+    @OptIn(ExperimentalSerializationApi::class)
     fun handle(content: String) {
-        @OptIn(ExperimentalSerializationApi::class)
         val format = Json { namingStrategy = JsonNamingStrategy.SnakeCase }
         val memeRepostEvent = format.decodeFromString<MemeRepostIntegrationEvent>(content)
         val bytes = Base64.getDecoder().decode(memeRepostEvent.replyImage)
