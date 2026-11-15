@@ -34,6 +34,7 @@ tasks.jacocoTestReport {
 repositories {
     mavenCentral()
     maven(url = "https://maven.lavalink.dev/releases")
+    maven(url = "https://maven.lavalink.dev/snapshots")
 }
 
 dependencies {

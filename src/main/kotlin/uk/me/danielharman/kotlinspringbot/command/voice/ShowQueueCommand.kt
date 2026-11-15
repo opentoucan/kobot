@@ -33,10 +33,12 @@ class ShowQueueCommand(private val guildMusicPlayerProvider: GuildMusicPlayerPro
 
         val stringBuilder = StringBuilder()
 
-        stringBuilder.append(
-            "Now Playing: ${playingTrack.info.title} " +
-                "${playingTrack.position.formatDurationString()}/${playingTrack.duration.formatDurationString()}\n",
-        )
+        if (playingTrack != null) {
+            stringBuilder.append(
+                "Now Playing: ${playingTrack.info.title} " +
+                    "${playingTrack.position.formatDurationString()}/${playingTrack.duration.formatDurationString()}\n",
+            )
+        }
 
         if (queue.isNotEmpty()) {
             val upNext = queue.first().first

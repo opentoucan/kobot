@@ -41,18 +41,19 @@ class VoiceMoveCommand(
             return
         }
 
-        if (!audioManager.isConnected) {
-            audioManager.openAudioConnection(voiceChannel)
-        }
-
         try {
-            event.reply("Voice move enabled!")
-            discordActionService.enableVoiceMove()
+            if (!audioManager.isConnected) {
+                audioManager.openAudioConnection(voiceChannel)
+            }
         } catch (e: InsufficientPermissionException) {
             logger.error(
                 "Bot encountered an exception when attempting to join a voice channel ${e.message}",
             )
-            event.channel.sendMessage("I don't have permission to join.").queue()
+            event.reply("I don't have permission to join.")
+            return
         }
+
+        discordActionService.enableVoiceMove()
+        event.reply("Voice move enabled!")
     }
 }

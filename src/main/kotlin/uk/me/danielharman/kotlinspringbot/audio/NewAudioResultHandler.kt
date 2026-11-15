@@ -27,8 +27,9 @@ class NewAudioResultHandler(
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun trackLoaded(track: AudioTrack) {
-        play(track)
-        event.reply("Queued ${track.info.title}")
+        if (play(track)) {
+            event.reply("Queued ${track.info.title}")
+        }
     }
 
     override fun playlistLoaded(playlist: AudioPlaylist) {
@@ -38,8 +39,9 @@ class NewAudioResultHandler(
             firstTrack = playlist.tracks[0]
         }
 
-        event.reply("Adding to queue ${firstTrack.info.title} (first track of playlist ${playlist.name}")
-        play(firstTrack)
+        if (play(firstTrack)) {
+            event.reply("Adding to queue ${firstTrack.info.title} (first track of playlist ${playlist.name}")
+        }
     }
 
     override fun noMatches() {
@@ -50,25 +52,29 @@ class NewAudioResultHandler(
         event.reply("Could not play: ${exception.message}")
     }
 
-    fun play(track: AudioTrack) {
+    fun play(track: AudioTrack): Boolean {
         if (voiceChannel == null) {
-            return
+            event.reply("Could not find a voice channel.")
+            return false
         }
-
-        musicManager.registerCallback(track.identifier, partialWrapper(::onErrorEvent, event))
 
         if (!guild.audioManager.isConnected) {
             try {
                 guild.audioManager.openAudioConnection(voiceChannel)
             } catch (e: InsufficientPermissionException) {
                 logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
+                event.reply("I don't have permission to join that voice channel.")
+                return false
             }
         }
+
+        musicManager.registerCallback(track, partialWrapper(::onErrorEvent, event))
         when (val vol = springGuildService.getVol(guild.id)) {
             is Failure -> logger.error("Failed to get guild volume ${vol.reason}")
             is Success -> musicManager.player.volume = vol.value
         }
         musicManager.scheduler.queue(track, event.channel)
+        return true
     }
 
     private fun onErrorEvent(event: DiscordMessageEvent, message: String) {

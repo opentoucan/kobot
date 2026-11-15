@@ -1,6 +1,7 @@
 package uk.me.danielharman.kotlinspringbot.command.voice
 
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
@@ -69,19 +70,25 @@ class PlayMusicCommand(
             event.reply("Can't find voice channel! Are you in a channel?")
             return
         }
-        when (val botVoiceChannel = discordActionService.getBotVoiceChannel(guild.id)) {
-            is Success -> {
-                logger.info("Bot's voice channel: " + botVoiceChannel.value.id)
-                guild.audioManager.openAudioConnection(botVoiceChannel.value)
+        try {
+            when (val botVoiceChannel = discordActionService.getBotVoiceChannel(guild.id)) {
+                is Success -> {
+                    logger.info("Bot's voice channel: " + botVoiceChannel.value.id)
+                    guild.audioManager.openAudioConnection(botVoiceChannel.value)
+                }
+
+                is Failure<*> -> logger.info("Not in voice channel yet")
             }
 
-            is Failure<*> -> logger.info("Not in voice channel yet")
-        }
-
-        if (voiceChannel != guild.audioManager.connectedChannel) {
-            logger.info("My voice channel: " + voiceChannel.id)
-            guild.audioManager.closeAudioConnection()
-            guild.audioManager.openAudioConnection(voiceChannel)
+            if (voiceChannel != guild.audioManager.connectedChannel) {
+                logger.info("My voice channel: " + voiceChannel.id)
+                guild.audioManager.closeAudioConnection()
+                guild.audioManager.openAudioConnection(voiceChannel)
+            }
+        } catch (e: InsufficientPermissionException) {
+            logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
+            event.reply("I don't have permission to join that voice channel.")
+            return
         }
 
         logger.info("Connected voice channel from manager: " + guild.audioManager.connectedChannel?.id)

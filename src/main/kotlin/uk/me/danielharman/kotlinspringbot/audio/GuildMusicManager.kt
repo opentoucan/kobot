@@ -6,7 +6,9 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEvent
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventListener
 import com.sedmelluq.discord.lavaplayer.player.event.TrackEndEvent
 import com.sedmelluq.discord.lavaplayer.player.event.TrackExceptionEvent
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
+import java.util.concurrent.ConcurrentHashMap
 
 class GuildMusicManager(
     manager: AudioPlayerManager,
@@ -17,7 +19,7 @@ class GuildMusicManager(
     var player: AudioPlayer = manager.createPlayer()
     var scheduler: TrackScheduler = TrackScheduler(player, guildId, discordService)
 
-    private val callbacks: HashMap<String, (String) -> Unit> = HashMap()
+    private val callbacks: MutableMap<AudioTrack, (String) -> Unit> = ConcurrentHashMap()
 
     init {
         player.addListener(scheduler)
@@ -26,14 +28,14 @@ class GuildMusicManager(
 
     fun getSendHandler(): AudioPlayerSendHandler = AudioPlayerSendHandler(player)
 
-    fun registerCallback(trackIdentifier: String, func: (String) -> Unit) {
-        callbacks[trackIdentifier] = func
+    fun registerCallback(track: AudioTrack, func: (String) -> Unit) {
+        callbacks[track] = func
     }
 
     override fun onEvent(event: AudioEvent) {
         when (event) {
             is TrackExceptionEvent -> {
-                callbacks[event.track.identifier]?.let {
+                callbacks.remove(event.track)?.let {
                     it(
                         "An error occurred when trying to play the track," +
                             " the track may be age restricted or have embedding disabled.",
@@ -42,7 +44,7 @@ class GuildMusicManager(
             }
 
             is TrackEndEvent -> {
-                callbacks.remove(event.track.identifier)
+                callbacks.remove(event.track)
             }
         }
     }
