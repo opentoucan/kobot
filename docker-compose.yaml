@@ -11,8 +11,10 @@ services:
     networks:
       - services
     depends_on:
-      - mongo
-      - rabbitmq
+      mongo:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
   mongo:
     image: docker.io/library/mongo:8.2.5
     hostname: mongo
@@ -24,6 +26,16 @@ services:
       - "27017:27017"
     networks:
       - services
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --username \"$${MONGO_INITDB_ROOT_USERNAME}\" --password \"$${MONGO_INITDB_ROOT_PASSWORD}\" --authenticationDatabase admin --eval 'db.adminCommand(\"ping\").ok' | grep -qx 1",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
   rabbitmq:
     image: docker.io/library/rabbitmq:4-management
     hostname: rabbitmq
@@ -35,5 +47,11 @@ services:
       RABBITMQ_DEFAULT_USER: guest
     networks:
       - services
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
 networks:
   services: {}

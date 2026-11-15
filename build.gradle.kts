@@ -43,11 +43,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator:4.0.3")
     implementation("org.springframework.boot:spring-boot-starter-amqp:4.0.3")
     developmentOnly("org.springframework.boot:spring-boot-devtools:4.0.3")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:4.0.3")
+    kapt("org.springframework.boot:spring-boot-configuration-processor:4.0.3")
     testImplementation("org.springframework.boot:spring-boot-starter-test:4.0.3") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
-    implementation("net.dv8tion:JDA:6.3.1")
+    implementation("net.dv8tion:JDA:6.7.0")
     implementation("dev.arbjerg:lavaplayer:2.2.7")
 
     // Interface to use for libraries
@@ -73,6 +73,7 @@ dependencies {
     testImplementation("io.kotest:kotest-property-jvm:6.1.4") // for kotest property test
     testImplementation("org.mockito:mockito-core:5.22.0")
     testImplementation("org.hamcrest:hamcrest:3.0")
+    testImplementation(kotlin("test"))
 }
 
 configurations { runtimeOnly { exclude(group = "commons-logging", module = "commons-logging") } }

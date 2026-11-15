@@ -8,6 +8,8 @@ A Kotlin Spring Boot Discord bot.
 2. Start the required backing services:
    - MongoDB
    - RabbitMQ
+   - The default MongoDB URI in `.env.example` is configured for the local Compose
+     database, including its authentication credentials.
 3. Run the app:
 
    ./gradlew bootRun
