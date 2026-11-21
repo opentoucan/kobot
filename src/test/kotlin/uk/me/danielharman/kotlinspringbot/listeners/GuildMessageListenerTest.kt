@@ -18,7 +18,9 @@ import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
+import uk.me.danielharman.kotlinspringbot.TestcontainersConfiguration
 import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.listeners.guildmessage.GuildMessageListener
@@ -28,6 +30,7 @@ import uk.me.danielharman.kotlinspringbot.services.CommandExecutionService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @SpringBootTest
+@Import(TestcontainersConfiguration::class)
 @ExtendWith(MockitoExtension::class)
 @EnableConfigurationProperties(value = [KotlinBotProperties::class])
 @ActiveProfiles("test")

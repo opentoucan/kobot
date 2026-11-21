@@ -47,7 +47,7 @@ Code lives under `src/main/kotlin/uk/me/danielharman/kotlinspringbot`; tests mir
 - Keep changes focused. Avoid unrelated reformatting or refactoring, and preserve existing command behaviour.
 - Add or update tests with behaviour changes, using:
   - JUnit 5 tests with Mockito and Hamcrest (Kotest is also available)
-  - for persistence and service tests, `@SpringBootTest` + `@ActiveProfiles("test")` against embedded MongoDB (flapdoodle), cleaning repositories in `@AfterEach`
+  - for persistence and service tests, `@SpringBootTest` + `@ActiveProfiles("test")` + `@Import(TestcontainersConfiguration::class)`, which runs MongoDB through Testcontainers, cleaning repositories in `@AfterEach`. Docker must be running for `./gradlew test`
   - `assertSuccess`/`assertFailure` from the test `helpers/OperationResult.kt`
 - Update `README.md` when setup, configuration or user-facing behaviour changes.
 

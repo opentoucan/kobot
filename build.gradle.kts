@@ -66,8 +66,8 @@ dependencies {
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
     implementation("org.apache.commons:commons-lang3:3.20.0")
     implementation("commons-io:commons-io:2.21.0")
-    testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:4.24.0")
-    testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo.spring4x:4.24.0")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers:4.0.3")
+    testImplementation("org.testcontainers:testcontainers-mongodb:2.0.3")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:6.1.4") // for kotest framework
     testImplementation(
         "io.kotest:kotest-assertions-core-jvm:6.1.4",
