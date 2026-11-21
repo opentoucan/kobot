@@ -9,10 +9,12 @@ import org.hamcrest.Matchers.emptyCollectionOf
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.hasProperty
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.BDDMockito.times
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito
+import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.MongoOperations
@@ -30,6 +32,7 @@ import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 import java.util.Optional
 
 @SpringBootTest
+@ExtendWith(MockitoExtension::class)
 @EnableConfigurationProperties(value = [KotlinBotProperties::class])
 @ActiveProfiles("test")
 internal class AdministratorServiceTest {
@@ -45,11 +48,21 @@ internal class AdministratorServiceTest {
 
     @Mock lateinit var mongoOperations: MongoOperations
 
+    private fun stubAdmin(
+        id: String,
+        discordId: String,
+        roles: Set<Role> = setOf(),
+    ): Administrator {
+        val admin = Administrator(discordId, roles)
+        admin.id = id
+        return admin
+    }
+
     @Test
     fun shouldCreateAdmin() {
         val stubAdministrator = Administrator("123", setOf())
-        val stubAdmin2 = Administrator("abc")
-        Mockito.`when`(repository.findById("abc")).thenReturn(Optional.of(stubAdmin2))
+        val caller = stubAdmin("abc", "999", setOf(Role.ManageAdmin))
+        Mockito.`when`(repository.findById("abc")).thenReturn(Optional.of(caller))
         Mockito
             .`when`(repository.save(Mockito.any(Administrator::class.java)))
             .thenReturn(stubAdministrator)
@@ -67,10 +80,23 @@ internal class AdministratorServiceTest {
     }
 
     @Test
+    fun shouldNotCreateAdminWithoutManageAdminRole() {
+        val caller = stubAdmin("abc", "999")
+        Mockito.`when`(repository.findById("abc")).thenReturn(Optional.of(caller))
+
+        val sut = administratorService.createBotAdministrator("abc", "123", setOf())
+
+        assertFailure(sut)
+        Mockito.verify(repository, times(0)).save(Mockito.any(Administrator::class.java))
+    }
+
+    @Test
     fun shouldRemoveAdmin() {
+        val caller = stubAdmin("abc", "999", setOf(Role.ManageAdmin))
+        Mockito.`when`(repository.findById("abc")).thenReturn(Optional.of(caller))
         Mockito.`when`(properties.primaryPrivilegedUserId).thenReturn("456")
 
-        val removeAdmin = administratorService.removeBotAdministrator("1234")
+        val removeAdmin = administratorService.removeBotAdministrator("abc", "1234")
 
         Mockito.verify(repository, times(1)).deleteByDiscordId("1234")
 
@@ -78,14 +104,61 @@ internal class AdministratorServiceTest {
     }
 
     @Test
-    fun shouldNotRemovePrimaryAdmin() {
-        Mockito.`when`(properties.primaryPrivilegedUserId).thenReturn("1234")
+    fun shouldNotRemoveAdminWithoutManageAdminRole() {
+        val caller = stubAdmin("abc", "999")
+        Mockito.`when`(repository.findById("abc")).thenReturn(Optional.of(caller))
 
-        val removeAdmin = administratorService.removeBotAdministrator("1234")
+        val removeAdmin = administratorService.removeBotAdministrator("abc", "1234")
 
         Mockito.verify(repository, times(0)).deleteByDiscordId("1234")
 
         assertFailure(removeAdmin)
+    }
+
+    @Test
+    fun shouldNotRemovePrimaryAdmin() {
+        val caller = stubAdmin("abc", "999", setOf(Role.Primary))
+        Mockito.`when`(repository.findById("abc")).thenReturn(Optional.of(caller))
+        Mockito.`when`(properties.primaryPrivilegedUserId).thenReturn("1234")
+
+        val removeAdmin = administratorService.removeBotAdministrator("abc", "1234")
+
+        Mockito.verify(repository, times(0)).deleteByDiscordId("1234")
+
+        assertFailure(removeAdmin)
+    }
+
+    @Test
+    fun shouldAddRoleWhenCallerIdentifiedByDiscordId() {
+        val caller = stubAdmin("abc", "999", setOf(Role.ManageAdmin))
+        val target = stubAdmin("def", "123")
+        Mockito.`when`(repository.getByDiscordId("999")).thenReturn(caller)
+        Mockito.`when`(repository.getByDiscordId("123")).thenReturn(target)
+        Mockito.`when`(repository.findById("abc")).thenReturn(Optional.of(caller))
+
+        assertSuccess(administratorService.addRole("999", "123", Role.Logging))
+    }
+
+    @Test
+    fun shouldNotAddRoleWithoutManageAdminRole() {
+        val caller = stubAdmin("abc", "999")
+        val target = stubAdmin("def", "123")
+        Mockito.`when`(repository.getByDiscordId("999")).thenReturn(caller)
+        Mockito.`when`(repository.getByDiscordId("123")).thenReturn(target)
+        Mockito.`when`(repository.findById("abc")).thenReturn(Optional.of(caller))
+
+        assertFailure(administratorService.addRole("999", "123", Role.Logging))
+    }
+
+    @Test
+    fun shouldRemoveRoleWhenCallerIdentifiedByDiscordId() {
+        val caller = stubAdmin("abc", "999", setOf(Role.ManageAdmin))
+        val target = stubAdmin("def", "123", setOf(Role.Logging))
+        Mockito.`when`(repository.getByDiscordId("999")).thenReturn(caller)
+        Mockito.`when`(repository.getByDiscordId("123")).thenReturn(target)
+        Mockito.`when`(repository.findById("abc")).thenReturn(Optional.of(caller))
+
+        assertSuccess(administratorService.removeRole("999", "123", Role.Logging))
     }
 
     @Test

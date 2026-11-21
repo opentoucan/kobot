@@ -1,8 +1,8 @@
 package uk.me.danielharman.kotlinspringbot.helpers
 
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.events.guild.GenericGuildEvent
 
 object JDAHelperFunctions {
@@ -14,9 +14,9 @@ object JDAHelperFunctions {
         ?.asVoiceChannel()
 
     fun getAuthorIdFromMessageId(
-        textChannel: TextChannel?,
+        channel: MessageChannel?,
         msgId: String,
-    ): String = textChannel
+    ): String = channel
         ?.retrieveMessageById(msgId)
         ?.complete()
         ?.author

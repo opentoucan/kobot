@@ -8,28 +8,38 @@ import net.dv8tion.jda.api.events.guild.GuildJoinEvent
 import net.dv8tion.jda.api.requests.restaction.CacheRestAction
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
+import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.listeners.guildmessage.GuildMessageListener
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.services.CommandExecutionService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
 @SpringBootTest
+@ExtendWith(MockitoExtension::class)
 @EnableConfigurationProperties(value = [KotlinBotProperties::class])
 @ActiveProfiles("test")
 internal class GuildMessageListenerTest {
     @InjectMocks private lateinit var listener: GuildMessageListener
 
     @Mock private lateinit var springGuildService: SpringGuildService
+
+    // Not referenced directly; injected into the listener by @InjectMocks
+    @Mock lateinit var commandFactory: CommandFactory
+
+    @Mock lateinit var commandExecutionService: CommandExecutionService
 
     @Test
     fun onGuildJoin() {

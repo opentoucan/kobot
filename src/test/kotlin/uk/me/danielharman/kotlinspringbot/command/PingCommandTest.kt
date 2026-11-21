@@ -2,9 +2,11 @@ package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.entities.User
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
+import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
@@ -13,6 +15,7 @@ import uk.me.danielharman.kotlinspringbot.events.DiscordSlashCommandEvent
 import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 
 @SpringBootTest
+@ExtendWith(MockitoExtension::class)
 @EnableConfigurationProperties(value = [KotlinBotProperties::class])
 @ActiveProfiles("test")
 internal class PingCommandTest {

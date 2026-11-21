@@ -13,6 +13,7 @@ import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.mappers.toMessageEvent
 import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.services.CommandExecutionService
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
 
@@ -23,10 +24,14 @@ class CommandGuildMessageListener(
     private val properties: KotlinBotProperties,
     private val springGuildService: SpringGuildService,
     private val discordService: DiscordActionService,
+    private val commandExecutionService: CommandExecutionService,
 ) : ListenerAdapter() {
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
+        // Direct messages are handled by DirectMessageListener
+        if (!event.isFromGuild) return
+
         val isDeafened = springGuildService.isChannelDeafened(event.guild.id, event.channel.id)
 
         when {
@@ -41,9 +46,17 @@ class CommandGuildMessageListener(
     }
 
     private fun runCommand(event: DiscordMessageEvent) {
-        val selfUser = discordService.getSelfUser() as Success
+        val selfUser =
+            when (val getSelfUser = discordService.getSelfUser()) {
+                is Failure -> {
+                    logger.error("Not running command as the bot user is unavailable: ${getSelfUser.reason}")
+                    return
+                }
 
-        if (event.author.id == selfUser.value.id || event.author.isBot) {
+                is Success -> getSelfUser.value
+            }
+
+        if (event.author.id == selfUser.id || event.author.isBot) {
             logger.info("Not running command as author is me or a bot")
             return
         }
@@ -62,12 +75,11 @@ class CommandGuildMessageListener(
             )
             return
         }
-        try {
+        commandExecutionService.execute(
+            "command $cmd",
+            onError = { event.reply("An internal error occurred while executing the command.", true) },
+        ) {
             command.execute(event)
-        } catch (e: Exception) {
-            logger.error(e.message, e)
-            event.reply("An internal error occurred while executing the command.", true)
-            throw e
         }
     }
 
@@ -91,6 +103,11 @@ class CommandGuildMessageListener(
         }
 
         val command = moderatorCommandFactory.getCommand(cmd)
-        command.execute(event)
+        commandExecutionService.execute(
+            "moderator command $cmd",
+            onError = { channel.sendMessage("An internal error occurred while executing the command.").queue() },
+        ) {
+            command.execute(event)
+        }
     }
 }
