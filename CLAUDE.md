@@ -5,6 +5,11 @@ Kobot is a Discord bot written in Kotlin on Spring Boot 4 and JDA 6. It targets
 Java 25 (`jvmToolchain(25)`) and Kotlin 2.3, persists to MongoDB, and uses
 RabbitMQ for integration events.
 
+## Quality gates
+
+- Before every commit or PR, run `./gradlew build` and both linters (`ktlint` and `detekt`, invoked as shown under Commands; there is no Gradle detekt task) and fix all failures. Never open a PR while the build is red.
+- After the gates pass, review your own diff for logic bugs, such as limits, pagination (e.g. member lists over 100) and parameter handling, before you push.
+
 ## Commands
 
 - `./gradlew test`: compile and run all tests (a JaCoCo report is generated afterwards)
@@ -16,6 +21,15 @@ RabbitMQ for integration events.
   - `detekt --config detekt.yaml --input ./src,build.gradle.kts`
 
 Run the smallest relevant test first, then the full suite and both linters before finishing.
+
+## Running locally
+
+- Start the backing services detached: `docker compose up -d mongo rabbitmq`.
+- Run the bot as a background task (Bash `run_in_background`), so it can be stopped cleanly. Load the token from `.env` without printing it:
+  `set -a && . ./.env && set +a && SPRING_MONGODB_URI=mongodb://local:local@localhost:27017 SPRING_MONGODB_DATABASE=local SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun`
+  Use the `dev` profile for smoke runs so slash commands aren't re-registered with Discord. Drop it only when testing slash command registration itself.
+- Stop the bot by stopping that background task (TaskStop), then `docker compose stop mongo rabbitmq`. Don't leave a `bootRun` running between turns: a second instance logs in with the same token.
+- External processes (yt-dlp via `ProcessRunner`) must keep stdin as a pipe that is closed after start. Don't use `Redirect.DISCARD` for stdin: yt-dlp breaks with it, and the fake-runner unit tests don't catch this. After changing process code, always do one live smoke run (start the bot, `play` a YouTube link once, check the logs, stop it).
 
 ## Layout
 
