@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    id("org.springframework.boot") version "4.0.3"
+    id("org.springframework.boot") version "4.2.0"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jetbrains.kotlin.jvm") version "2.3.10"
     id("org.jetbrains.kotlin.plugin.spring") version "2.3.10"
@@ -38,13 +38,13 @@ repositories {
 
 dependencies {
     implementation("org.springframework:spring-jcl:6.2.16")
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:4.0.3")
-    implementation("org.springframework.boot:spring-boot-starter-web:4.0.3")
-    implementation("org.springframework.boot:spring-boot-starter-actuator:4.0.3")
-    implementation("org.springframework.boot:spring-boot-starter-amqp:4.0.3")
-    developmentOnly("org.springframework.boot:spring-boot-devtools:4.0.3")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:4.0.3")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:4.0.3") {
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:4.2.0")
+    implementation("org.springframework.boot:spring-boot-starter-web:4.2.0")
+    implementation("org.springframework.boot:spring-boot-starter-actuator:4.2.0")
+    implementation("org.springframework.boot:spring-boot-starter-amqp:4.2.0")
+    developmentOnly("org.springframework.boot:spring-boot-devtools:4.2.0")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:4.2.0")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:4.2.0") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
     implementation("net.dv8tion:JDA:6.3.1")
@@ -66,7 +66,7 @@ dependencies {
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
     implementation("org.apache.commons:commons-lang3:3.20.0")
     implementation("commons-io:commons-io:2.21.0")
-    testImplementation("org.springframework.boot:spring-boot-testcontainers:4.0.3")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers:4.2.0")
     testImplementation("org.testcontainers:testcontainers-mongodb:2.0.3")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:6.1.4") // for kotest framework
     testImplementation(
