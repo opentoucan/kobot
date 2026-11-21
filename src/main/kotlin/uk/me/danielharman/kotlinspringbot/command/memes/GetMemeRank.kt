@@ -1,13 +1,13 @@
 package uk.me.danielharman.kotlinspringbot.command.memes
 
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
@@ -38,23 +38,26 @@ class GetMemeRank(
         val memerIds = memeService.getMemerIds(event.guild.id, asc)
         val des = StringBuilder()
 
+        // Fetch members in batches rather than one request per memer
+        val members = JDAHelperFunctions.retrieveMembersById(event.guild, memerIds.map { it.first })
+
         var counter = 1
         memerIds.forEach { pair ->
-            try {
-                val member = event.guild.retrieveMemberById(pair.first).complete()
-                val name =
-                    member?.nickname
-                        ?: when (val user = discordService.getUserById(pair.first)) {
-                            is Failure -> "Unknown"
-                            is Success -> user.value.asTag
-                        }
-                des.append(
-                    "${if (!asc) "#" else ""}${if (!asc) counter++.toString() else ""} $name: S:${pair.second.score}" +
-                        "   U:${pair.second.upvotes}   D:${pair.second.downvotes} of ${pair.second.count} posts\n",
-                )
-            } catch (e: ErrorResponseException) {
-                logger.error(e.message)
+            val member = members[pair.first]
+            if (member == null) {
+                logger.error("Failed to find member ${pair.first}")
+                return@forEach
             }
+            val name =
+                member.nickname
+                    ?: when (val user = discordService.getUserById(pair.first)) {
+                        is Failure -> "Unknown"
+                        is Success -> user.value.asTag
+                    }
+            des.append(
+                "${if (!asc) "#" else ""}${if (!asc) counter++.toString() else ""} $name: S:${pair.second.score}" +
+                    "   U:${pair.second.upvotes}   D:${pair.second.downvotes} of ${pair.second.count} posts\n",
+            )
         }
         event.reply(
             EmbedBuilder()

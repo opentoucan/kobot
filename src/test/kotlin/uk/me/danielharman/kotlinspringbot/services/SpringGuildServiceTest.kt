@@ -11,13 +11,16 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
+import uk.me.danielharman.kotlinspringbot.TestcontainersConfiguration
 import uk.me.danielharman.kotlinspringbot.helpers.assertFailure
 import uk.me.danielharman.kotlinspringbot.helpers.assertSuccess
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.repositories.GuildRepository
 
 @SpringBootTest
+@Import(TestcontainersConfiguration::class)
 @ActiveProfiles("test")
 internal class SpringGuildServiceTest(
     @Autowired private val service: SpringGuildService,

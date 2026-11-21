@@ -1,0 +1,11 @@
+# Secrets
+.env
+.env.*
+**/devcontainer.env
+
+# Build output and local tooling caches
+build
+.gradle
+.kotlin
+.idea
+.git

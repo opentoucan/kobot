@@ -15,7 +15,7 @@ class RemoveAdminCommand(
     private val commandString = "removeadmin"
 
     override fun execute(event: MessageReceivedEvent) {
-        when (administratorService.getBotAdministratorByDiscordId(event.author.id)) {
+        when (val thisAdmin = administratorService.getBotAdministratorByDiscordId(event.author.id)) {
             is Failure ->
                 event.channel
                     .sendMessageEmbeds(Embeds.createErrorEmbed("You are not an admin."))
@@ -40,7 +40,8 @@ class RemoveAdminCommand(
                     return
                 }
 
-                val removeAdministrator = administratorService.removeBotAdministrator(user.id)
+                val removeAdministrator =
+                    administratorService.removeBotAdministrator(thisAdmin.value.id, user.id)
 
                 if (removeAdministrator is Failure) {
                     event.channel

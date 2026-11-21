@@ -83,21 +83,27 @@ class AdministratorService(
         userId: String,
         discordId: String,
         roles: Set<Role>,
-    ): OperationResult<Administrator, String> = when (val admin = getBotAdministratorById(userId)) {
-        is Failure -> admin
+    ): OperationResult<Administrator, String> {
+        val permission = hasRoles(userId, Role.ManageAdmin)
+        if (permission is Failure) return permission
 
-        is Success -> {
-            val administrator = repository.save(Administrator(discordId, roles))
-            logToAdmins("${administrator.discordId} added as admin by $userId")
-            Success(administrator)
-        }
+        val administrator = repository.save(Administrator(discordId, roles))
+        logToAdmins("${administrator.discordId} added as admin by $userId")
+        return Success(administrator)
     }
 
-    fun removeBotAdministrator(id: String): OperationResult<String, String> {
-        if (id == properties.primaryPrivilegedUserId) {
+    fun removeBotAdministrator(
+        userId: String,
+        discordId: String,
+    ): OperationResult<String, String> {
+        val permission = hasRoles(userId, Role.ManageAdmin)
+        if (permission is Failure) return permission
+
+        if (discordId == properties.primaryPrivilegedUserId) {
             return Failure("Cannot remove primary admin")
         }
-        repository.deleteByDiscordId(id)
+        repository.deleteByDiscordId(discordId)
+        logToAdmins("$discordId removed as admin by $userId")
         return Success("Deleted")
     }
 
@@ -113,7 +119,7 @@ class AdministratorService(
                 if (!guild.value.privilegedUsers.contains(userId)) {
                     return Failure("Insufficient permissions.")
                 }
-                Success((springGuildService.addModerator(guildId, newAdminId) as Success).value)
+                springGuildService.addModerator(guildId, newAdminId)
             }
         }
     }
@@ -130,9 +136,7 @@ class AdministratorService(
                 if (!guild.value.privilegedUsers.contains(userId)) {
                     return Failure("Insufficient permissions.")
                 }
-                return Success(
-                    (springGuildService.removeModerator(guildId, adminId) as Success).value,
-                )
+                return springGuildService.removeModerator(guildId, adminId)
             }
         }
     }
@@ -148,7 +152,7 @@ class AdministratorService(
                 if (!guild.value.privilegedUsers.contains(userId)) {
                     return Failure("Insufficient permissions.")
                 }
-                return Success((springGuildService.deleteSpringGuild(guildId) as Success).value)
+                return springGuildService.deleteSpringGuild(guildId)
             }
         }
     }
@@ -212,7 +216,7 @@ class AdministratorService(
     fun getAdministrators(): OperationResult<List<Administrator>, String> = Success(repository.findAll())
 
     fun addRole(
-        userId: String,
+        callerDiscordId: String,
         discordId: String,
         role: Role,
     ): OperationResult<Set<Role>, String> {
@@ -220,7 +224,7 @@ class AdministratorService(
             is Failure -> return admin
 
             is Success -> {
-                if (hasRoles(userId, Role.ManageAdmin) is Failure) {
+                if (hasRolesByDiscordId(callerDiscordId, Role.ManageAdmin) is Failure) {
                     return Failure("Does not have permission to manage administrators.")
                 }
 
@@ -239,7 +243,7 @@ class AdministratorService(
     }
 
     fun removeRole(
-        userId: String,
+        callerDiscordId: String,
         discordId: String,
         role: Role,
     ): OperationResult<Set<Role>, String> {
@@ -247,7 +251,7 @@ class AdministratorService(
             is Failure -> return admin
 
             is Success -> {
-                if (hasRoles(userId, Role.ManageAdmin) is Failure) {
+                if (hasRolesByDiscordId(callerDiscordId, Role.ManageAdmin) is Failure) {
                     return Failure("Does not have permission to manage administrators.")
                 }
 
@@ -297,6 +301,14 @@ class AdministratorService(
                 }
             }
         }
+    }
+
+    private fun hasRolesByDiscordId(
+        discordId: String,
+        vararg roles: Role,
+    ): OperationResult<String, String> = when (val admin = getBotAdministratorByDiscordId(discordId)) {
+        is Failure -> admin
+        is Success -> hasRoles(admin.value.id, *roles)
     }
 
     fun hasRoles(

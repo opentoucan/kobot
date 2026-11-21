@@ -7,16 +7,21 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.events.DiscordSlashCommandEvent
 import uk.me.danielharman.kotlinspringbot.factories.CommandFactory
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.Success
-import uk.me.danielharman.kotlinspringbot.mappers.toMessageEvent
+import uk.me.danielharman.kotlinspringbot.services.CommandExecutionService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
+
+// Discord fails interactions that are not acknowledged within three seconds
+private const val SLASH_DEFER_DELAY_MS = 2000L
 
 @Component
 class GuildMessageListener(
     private val springGuildService: SpringGuildService,
     private val commandFactory: CommandFactory,
+    private val commandExecutionService: CommandExecutionService,
 ) : ListenerAdapter() {
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
@@ -48,9 +53,13 @@ class GuildMessageListener(
     override fun onGuildJoin(event: GuildJoinEvent) {
         logger.info("Joined guild ${event.guild.name}")
 
-        val getGuild = springGuildService.getGuild(event.guild.id)
+        val hasModerators =
+            when (val getGuild = springGuildService.getGuild(event.guild.id)) {
+                is Failure -> false
+                is Success -> getGuild.value.privilegedUsers.isNotEmpty()
+            }
 
-        if ((getGuild is Failure) || (getGuild as Success).value.privilegedUsers.isEmpty()) {
+        if (!hasModerators) {
             val owner = event.guild.retrieveOwner().complete()
             logger.info("Adding ${owner.nickname} as admin of guild")
             springGuildService.addModerator(event.guild.id, owner.id)
@@ -65,12 +74,21 @@ class GuildMessageListener(
     }
 
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
-        val messageEvent = event.toMessageEvent()
-        try {
-            commandFactory.getCommand(event.name)?.execute(messageEvent)
-        } catch (e: Exception) {
-            messageEvent.reply("An internal error occurred while executing the command.", true)
-            throw e
+        val messageEvent = DiscordSlashCommandEvent(event)
+        val command = commandFactory.getCommand(event.name)
+
+        if (command == null) {
+            logger.warn("Received unknown slash command ${event.name}")
+            messageEvent.reply("Unknown command.", true)
+            return
+        }
+
+        commandExecutionService.schedule(SLASH_DEFER_DELAY_MS) { messageEvent.deferIfNotAcknowledged() }
+        commandExecutionService.execute(
+            "slash command ${event.name}",
+            onError = { messageEvent.reply("An internal error occurred while executing the command.", true) },
+        ) {
+            command.execute(messageEvent)
         }
     }
 }

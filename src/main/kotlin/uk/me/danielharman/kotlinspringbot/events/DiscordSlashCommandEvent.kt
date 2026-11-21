@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
 import net.dv8tion.jda.api.utils.FileUpload
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
+import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import java.io.InputStream
@@ -18,13 +19,43 @@ class DiscordSlashCommandEvent(
     event.user,
     event.guild,
 ) {
+    private val replyLock = Any()
+
+    /**
+     * Acknowledges the interaction with a "thinking" response if the command has not replied yet.
+     * Discord fails interactions that are not acknowledged within three seconds.
+     */
+    fun deferIfNotAcknowledged() {
+        synchronized(replyLock) {
+            if (!event.isAcknowledged) event.deferReply().queue()
+        }
+    }
+
+    // The first response must be the interaction reply; anything after that (including the reply
+    // to a deferred interaction) has to go through the interaction hook as a follow-up.
+    private fun send(
+        message: MessageCreateData,
+        invokerOnly: Boolean,
+        waitForResult: Boolean,
+    ) {
+        synchronized(replyLock) {
+            if (event.isAcknowledged) {
+                val action = event.hook.sendMessage(message).setEphemeral(invokerOnly)
+                if (waitForResult) action.complete() else action.queue()
+            } else {
+                val action = event.reply(message).setEphemeral(invokerOnly)
+                if (waitForResult) action.complete() else action.queue()
+            }
+        }
+    }
+
     override fun reply(
         embed: MessageEmbed,
         invokerOnly: Boolean,
     ) {
         val messageCreateBuilder = MessageCreateBuilder()
         messageCreateBuilder.addEmbeds(embed)
-        event.reply(messageCreateBuilder.build()).setEphemeral(invokerOnly).complete()
+        send(messageCreateBuilder.build(), invokerOnly, waitForResult = true)
     }
 
     override fun reply(
@@ -34,7 +65,7 @@ class DiscordSlashCommandEvent(
         val messageCreateBuilder = MessageCreateBuilder()
         messageCreateBuilder.addFiles(FileUpload.fromData(file, filename))
         try {
-            this.channel.sendMessage(messageCreateBuilder.build()).complete()
+            send(messageCreateBuilder.build(), invokerOnly = false, waitForResult = true)
         } catch (e: ErrorResponseException) {
             if (e.message?.contains("40005") == true) {
                 this.reply(Embeds.createErrorEmbed("File was too large to send"), true)
@@ -48,11 +79,13 @@ class DiscordSlashCommandEvent(
         msg: String,
         invokerOnly: Boolean,
     ) {
-        event.reply(msg).setEphemeral(invokerOnly).queue()
+        send(MessageCreateBuilder().setContent(msg).build(), invokerOnly, waitForResult = false)
     }
 
-    override fun getParamValue(commandParameter: CommandParameter): CommandParameter {
-        commandParameter.reset()
+    override fun getParamValue(definition: CommandParameter): CommandParameter {
+        // Commands share their CommandParameter definitions and can run concurrently, so fill in
+        // a copy for this invocation rather than mutating the shared instance
+        val commandParameter = definition.copy()
 
         val findFirst =
             this.event.options

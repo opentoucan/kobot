@@ -19,7 +19,7 @@ abstract class MessageEvent(
         invokerOnly: Boolean = false,
     )
 
-    abstract fun getParamValue(commandParameter: CommandParameter): CommandParameter
+    abstract fun getParamValue(definition: CommandParameter): CommandParameter
 
     fun parseParams(commandParameters: List<CommandParameter>): List<CommandParameter> {
         val parsed = mutableListOf<CommandParameter>()

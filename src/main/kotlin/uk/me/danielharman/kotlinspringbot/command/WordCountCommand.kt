@@ -1,7 +1,6 @@
 package uk.me.danielharman.kotlinspringbot.command
 
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
@@ -9,6 +8,7 @@ import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.helpers.Comparators
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions
 import uk.me.danielharman.kotlinspringbot.helpers.PURPLE
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
@@ -35,23 +35,22 @@ class WordCountCommand(private val springGuildService: SpringGuildService) :
             is Success -> {
                 val stringBuilder = StringBuilder()
 
-                getSpringGuild.value.userWordCounts.entries
-                    .stream()
-                    .sorted(Comparators.mapStrIntComparator)
-                    .limit(LIST_OF_USERS_LIMIT)
-                    .forEach { (s, i) ->
-                        run {
-                            try {
-                                stringBuilder.append(
-                                    "${
-                                        event.guild.retrieveMemberById(s).complete()?.effectiveName ?: s
-                                    } - $i words\n",
-                                )
-                            } catch (e: ErrorResponseException) {
-                                logger.error("Failed to find user $s by id ${e.message}")
-                            }
-                        }
+                val topCounts =
+                    getSpringGuild.value.userWordCounts.entries
+                        .sortedWith(Comparators.mapStrIntComparator)
+                        .take(LIST_OF_USERS_LIMIT.toInt())
+
+                // Fetch members in batches rather than one request per user
+                val members = JDAHelperFunctions.retrieveMembersById(event.guild, topCounts.map { it.key })
+
+                topCounts.forEach { (s, i) ->
+                    val member = members[s]
+                    if (member == null) {
+                        logger.error("Failed to find user $s by id")
+                    } else {
+                        stringBuilder.append("${member.effectiveName} - $i words\n")
                     }
+                }
 
                 EmbedBuilder()
                     .appendDescription(stringBuilder.toString())

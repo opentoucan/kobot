@@ -7,11 +7,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.factories.AdminCommandFactory
 import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.services.CommandExecutionService
 
 @Component
 class DirectMessageListener(
     private val commandFactory: AdminCommandFactory,
     private val properties: KotlinBotProperties,
+    private val commandExecutionService: CommandExecutionService,
 ) : ListenerAdapter() {
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
@@ -38,6 +40,11 @@ class DirectMessageListener(
                 .split(" ")[0]
                 .removePrefix(properties.privilegedCommandPrefix)
         val command = commandFactory.getCommand(cmd)
-        command.execute(event)
+        commandExecutionService.execute(
+            "admin command $cmd",
+            onError = { event.channel.sendMessage("An internal error occurred while executing the command.").queue() },
+        ) {
+            command.execute(event)
+        }
     }
 }
