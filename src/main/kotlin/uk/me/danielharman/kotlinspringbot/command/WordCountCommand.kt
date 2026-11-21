@@ -8,6 +8,7 @@ import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.helpers.Comparators
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions
 import uk.me.danielharman.kotlinspringbot.helpers.PURPLE
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
@@ -39,12 +40,8 @@ class WordCountCommand(private val springGuildService: SpringGuildService) :
                         .sortedWith(Comparators.mapStrIntComparator)
                         .take(LIST_OF_USERS_LIMIT.toInt())
 
-                // Fetch all members in one request rather than one request per user
-                val members =
-                    event.guild
-                        .retrieveMembersByIds(topCounts.map { it.key.toLong() })
-                        .get()
-                        .associateBy { it.id }
+                // Fetch members in batches rather than one request per user
+                val members = JDAHelperFunctions.retrieveMembersById(event.guild, topCounts.map { it.key })
 
                 topCounts.forEach { (s, i) ->
                     val member = members[s]

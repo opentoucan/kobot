@@ -82,8 +82,10 @@ class DiscordSlashCommandEvent(
         send(MessageCreateBuilder().setContent(msg).build(), invokerOnly, waitForResult = false)
     }
 
-    override fun getParamValue(commandParameter: CommandParameter): CommandParameter {
-        commandParameter.reset()
+    override fun getParamValue(definition: CommandParameter): CommandParameter {
+        // Commands share their CommandParameter definitions and can run concurrently, so fill in
+        // a copy for this invocation rather than mutating the shared instance
+        val commandParameter = definition.copy()
 
         val findFirst =
             this.event.options

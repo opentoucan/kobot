@@ -7,6 +7,7 @@ import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
 import uk.me.danielharman.kotlinspringbot.helpers.Embeds
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
+import uk.me.danielharman.kotlinspringbot.helpers.JDAHelperFunctions
 import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
@@ -37,12 +38,8 @@ class GetMemeRank(
         val memerIds = memeService.getMemerIds(event.guild.id, asc)
         val des = StringBuilder()
 
-        // Fetch all members in one request rather than one request per memer
-        val members =
-            event.guild
-                .retrieveMembersByIds(memerIds.map { it.first.toLong() })
-                .get()
-                .associateBy { it.id }
+        // Fetch members in batches rather than one request per memer
+        val members = JDAHelperFunctions.retrieveMembersById(event.guild, memerIds.map { it.first })
 
         var counter = 1
         memerIds.forEach { pair ->

@@ -49,8 +49,10 @@ class DiscordChannelMessageEvent(
 
     private var paramsPointer: Int = 1
 
-    override fun getParamValue(commandParameter: CommandParameter): CommandParameter {
-        commandParameter.reset()
+    override fun getParamValue(definition: CommandParameter): CommandParameter {
+        // Commands share their CommandParameter definitions and can run concurrently, so fill in
+        // a copy for this invocation rather than mutating the shared instance
+        val commandParameter = definition.copy()
 
         val split = content.split(" ")
 
