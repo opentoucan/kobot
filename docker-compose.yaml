@@ -8,6 +8,8 @@ services:
       dockerfile: Dockerfile
     env_file:
       - .env
+    volumes:
+      - audio-cache:/app/audio-cache
     networks:
       - services
     depends_on:
@@ -37,3 +39,5 @@ services:
       - services
 networks:
   services: {}
+volumes:
+  audio-cache: {}

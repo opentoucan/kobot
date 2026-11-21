@@ -5,9 +5,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import uk.me.danielharman.kotlinspringbot.properties.FeatureProperties
 import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
+import uk.me.danielharman.kotlinspringbot.properties.YoutubeDlProperties
 
 @SpringBootApplication
-@EnableConfigurationProperties(KotlinBotProperties::class, FeatureProperties::class)
+@EnableConfigurationProperties(KotlinBotProperties::class, FeatureProperties::class, YoutubeDlProperties::class)
 class KotlinSpringBotApplication
 
 fun main(args: Array<String>) {

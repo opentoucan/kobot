@@ -7,7 +7,8 @@ word counts, and has moderator and bot-administrator commands for managing serve
 - Kotlin 2.3 on Java 25, Spring Boot 4, JDA 6
 - MongoDB for persistence
 - RabbitMQ for meme integration events (optional meme-repost feature)
-- [lavaplayer](https://github.com/lavalink-devs/lavaplayer) for audio playback (YouTube, Vimeo and other sources)
+- [lavaplayer](https://github.com/lavalink-devs/lavaplayer) for audio playback (Vimeo, SoundCloud and other sources)
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) for YouTube, which is downloaded and cached rather than streamed
 
 ## Commands
 
@@ -39,7 +40,7 @@ Voice commands:
 
 | Command | Description |
 | --- | --- |
-| `play <url>` | Play audio via YouTube, Vimeo etc. |
+| `play [url or search]` | Play a YouTube video (url or search terms) or audio from Vimeo, SoundCloud etc. With no input, pause or resume |
 | `summon` | Make the bot join your voice channel |
 | `disconnect` | Disconnect the bot from the current voice channel |
 | `queue` | Get the list of queued tracks |
@@ -51,6 +52,13 @@ Voice commands:
 | `voicemove` | Move everyone in the bot's voice channel to wherever the bot is moved |
 
 The bot leaves a voice channel automatically once only bots are left in it.
+
+`play` downloads YouTube links (`youtube.com`, `youtu.be`, `music.youtube.com`) with yt-dlp, and
+treats anything that isn't a link as a YouTube search, playing the first result. The audio is
+downloaded into a cache directory and reused the next time the same video is requested; once the
+cache exceeds `youtube-dl.max-cache-size` the least recently played files are deleted. YouTube live
+streams and videos longer than `youtube-dl.max-track-duration` are refused. Links to other sites
+(Vimeo, SoundCloud, Bandcamp, Twitch, direct audio files etc.) are streamed by lavaplayer.
 
 ### Moderator commands
 
@@ -108,6 +116,11 @@ variables using Spring's relaxed binding (for example `discord.token` → `DISCO
 | `spring.rabbitmq.addresses` | `amqp://guest:guest@localhost` | RabbitMQ connection |
 | `spring.mongodb.uri` / `spring.mongodb.database` | Spring defaults (`localhost:27017`) | MongoDB connection |
 | `features.meme-repost` | `false` | Publish meme-posted events and handle repost replies |
+| `youtube-dl.executable` | `yt-dlp` | yt-dlp executable name or path |
+| `youtube-dl.cache-directory` | `audio-cache` | Where downloaded audio is cached (relative to the working directory) |
+| `youtube-dl.max-cache-size` | `1GB` | Cache size above which the least recently played files are deleted |
+| `youtube-dl.max-track-duration` | `1h` | Longest YouTube video `play` will download |
+| `youtube-dl.timeout` | `5m` | How long a single yt-dlp run may take before it is killed |
 
 Keep secrets such as the Discord token in a `.env` file (gitignored) or in environment variables,
 never in `application.properties`.
@@ -136,6 +149,9 @@ docker compose up
 
 The RabbitMQ management UI is available at <http://localhost:15672> (`guest` / `guest`).
 
+The image includes yt-dlp and [Deno](https://deno.com) (which yt-dlp needs for YouTube), and the
+YouTube audio cache is kept in the `audio-cache` volume.
+
 ### Locally
 
 Start only the backing services, then run the bot with Gradle:
@@ -147,6 +163,10 @@ SPRING_MONGODB_URI=mongodb://local:local@localhost:27017 \
 SPRING_MONGODB_DATABASE=local \
 ./gradlew bootRun
 ```
+
+Playing YouTube needs [yt-dlp](https://github.com/yt-dlp/yt-dlp#installation) on your
+`PATH` (or `youtube-dl.executable` pointing at it) and a JavaScript runtime such as Deno for
+YouTube downloads. Keep yt-dlp up to date, as YouTube changes often break older versions.
 
 A container image is published to `ghcr.io/opentoucan/kobot` by the `image-builder` workflow.
 

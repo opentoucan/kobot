@@ -19,6 +19,12 @@
       managerFilePatterns: ["/^Dockerfile$/"],
       matchStrings: ["FROM (?<depName>gradle):(?<currentValue>jdk\\d+)"],
       datasourceTemplate: "docker",
+    },
+    {
+      customType: "regex",
+      description: "Dockerfile ARG versions",
+      managerFilePatterns: ["/^Dockerfile$/"],
+      matchStrings: ["# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\nARG \\S+_VERSION=(?<currentValue>\\S+)"],
     }
   ],
   packageRules: [
