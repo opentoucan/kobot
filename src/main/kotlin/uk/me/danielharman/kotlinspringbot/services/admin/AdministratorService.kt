@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.helpers.flatMap
+import uk.me.danielharman.kotlinspringbot.helpers.map
 import uk.me.danielharman.kotlinspringbot.models.SpringGuild
 import uk.me.danielharman.kotlinspringbot.models.admin.Administrator
 import uk.me.danielharman.kotlinspringbot.models.admin.enums.Role
@@ -38,26 +40,11 @@ class AdministratorService(
 
     fun getBotDiscordName(): OperationResult<String, String> = discordService.getBotName()
 
-    fun closeDiscordConnection(userId: String): OperationResult<String, String> = when (
-        val admin = getBotAdministratorById(userId)
-    ) {
-        is Failure -> admin
-        is Success -> discordService.closeDiscordConnection()
-    }
+    fun closeDiscordConnection(userId: String): OperationResult<String, String> = getBotAdministratorById(userId).flatMap { discordService.closeDiscordConnection() }
 
-    fun startDiscordConnection(userId: String): OperationResult<String, String> = when (
-        val admin = getBotAdministratorById(userId)
-    ) {
-        is Failure -> admin
-        is Success -> discordService.startDiscordConnection()
-    }
+    fun startDiscordConnection(userId: String): OperationResult<String, String> = getBotAdministratorById(userId).flatMap { discordService.startDiscordConnection() }
 
-    fun restartDiscordConnection(userId: String): OperationResult<String, String> = when (
-        val closeDiscordConnection = closeDiscordConnection(userId)
-    ) {
-        is Failure -> closeDiscordConnection
-        is Success -> startDiscordConnection(userId)
-    }
+    fun restartDiscordConnection(userId: String): OperationResult<String, String> = closeDiscordConnection(userId).flatMap { startDiscordConnection(userId) }
 
     fun getBotAdministratorById(id: String): OperationResult<Administrator, String> {
         val administrator = repository.findById(id)
@@ -111,16 +98,11 @@ class AdministratorService(
         userId: String,
         guildId: String,
         newAdminId: String,
-    ): OperationResult<String, String> {
-        return when (val guild = springGuildService.getGuild(guildId)) {
-            is Failure -> guild
-
-            is Success -> {
-                if (!guild.value.privilegedUsers.contains(userId)) {
-                    return Failure("Insufficient permissions.")
-                }
-                springGuildService.addModerator(guildId, newAdminId)
-            }
+    ): OperationResult<String, String> = springGuildService.getGuild(guildId).flatMap { guild ->
+        if (guild.privilegedUsers.contains(userId)) {
+            springGuildService.addModerator(guildId, newAdminId)
+        } else {
+            Failure("Insufficient permissions.")
         }
     }
 
@@ -128,60 +110,41 @@ class AdministratorService(
         userId: String,
         guildId: String,
         adminId: String,
-    ): OperationResult<String, String> {
-        return when (val guild = springGuildService.getGuild(guildId)) {
-            is Failure -> guild
-
-            is Success -> {
-                if (!guild.value.privilegedUsers.contains(userId)) {
-                    return Failure("Insufficient permissions.")
-                }
-                return springGuildService.removeModerator(guildId, adminId)
-            }
+    ): OperationResult<String, String> = springGuildService.getGuild(guildId).flatMap { guild ->
+        if (guild.privilegedUsers.contains(userId)) {
+            springGuildService.removeModerator(guildId, adminId)
+        } else {
+            Failure("Insufficient permissions.")
         }
     }
 
     fun deleteSpringGuild(
         userId: String,
         guildId: String,
-    ): OperationResult<String, String> {
-        return when (val guild = springGuildService.getGuild(guildId)) {
-            is Failure -> guild
-
-            is Success -> {
-                if (!guild.value.privilegedUsers.contains(userId)) {
-                    return Failure("Insufficient permissions.")
-                }
-                return springGuildService.deleteSpringGuild(guildId)
-            }
+    ): OperationResult<String, String> = springGuildService.getGuild(guildId).flatMap { guild ->
+        if (guild.privilegedUsers.contains(userId)) {
+            springGuildService.deleteSpringGuild(guildId)
+        } else {
+            Failure("Insufficient permissions.")
         }
     }
 
     fun getSpringGuild(
         userId: String,
         guildId: String,
-    ): OperationResult<SpringGuild, String> {
-        when (val guild = springGuildService.getGuild(guildId)) {
-            is Failure -> return guild
-
-            is Success -> {
-                if (!guild.value.privilegedUsers.contains(userId)) {
-                    return Failure("Insufficient permissions.")
-                }
-                return guild
-            }
+    ): OperationResult<SpringGuild, String> = springGuildService.getGuild(guildId).flatMap { guild ->
+        if (guild.privilegedUsers.contains(userId)) {
+            Success(guild)
+        } else {
+            Failure("Insufficient permissions.")
         }
     }
 
-    fun syncGuildAdmins(): OperationResult<String, String> = when (val guildsWithoutAdmins = springGuildService.getGuildsWithoutModerators()) {
-        is Failure -> guildsWithoutAdmins
-
-        is Success -> {
-            for (guild in guildsWithoutAdmins.value) {
-                syncGuildAdmin(guild)
-            }
-            Success("Updated ${guildsWithoutAdmins.value.size} guilds.")
+    fun syncGuildAdmins(): OperationResult<String, String> = springGuildService.getGuildsWithoutModerators().map { guildsWithoutAdmins ->
+        for (guild in guildsWithoutAdmins) {
+            syncGuildAdmin(guild)
         }
+        "Updated ${guildsWithoutAdmins.size} guilds."
     }
 
     private fun syncGuildAdmin(springGuild: SpringGuild): OperationResult<String, String> {
@@ -295,10 +258,7 @@ class AdministratorService(
                     return Failure("Does not have permission to view roles")
                 }
 
-                return when (val user = getBotAdministratorByDiscordId(discordId)) {
-                    is Failure -> user
-                    is Success -> Success(user.value.roles)
-                }
+                return getBotAdministratorByDiscordId(discordId).map { it.roles }
             }
         }
     }
@@ -306,25 +266,16 @@ class AdministratorService(
     private fun hasRolesByDiscordId(
         discordId: String,
         vararg roles: Role,
-    ): OperationResult<String, String> = when (val admin = getBotAdministratorByDiscordId(discordId)) {
-        is Failure -> admin
-        is Success -> hasRoles(admin.value.id, *roles)
-    }
+    ): OperationResult<String, String> = getBotAdministratorByDiscordId(discordId).flatMap { hasRoles(it.id, *roles) }
 
     fun hasRoles(
         userId: String,
         vararg roles: Role,
-    ): OperationResult<String, String> {
-        when (val admin = getBotAdministratorById(userId)) {
-            is Failure -> return admin
-
-            is Success -> {
-                val adminRoles = admin.value.roles
-                if (!adminRoles.containsAll(roles.toList()) && !adminRoles.contains(Role.Primary)) {
-                    return Failure("Does not have roles: $roles")
-                }
-                return Success("Has roles: $roles")
-            }
+    ): OperationResult<String, String> = getBotAdministratorById(userId).flatMap { admin ->
+        if (!admin.roles.containsAll(roles.toList()) && !admin.roles.contains(Role.Primary)) {
+            Failure("Does not have roles: $roles")
+        } else {
+            Success("Has roles: $roles")
         }
     }
 }

@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service
 import uk.me.danielharman.kotlinspringbot.helpers.Failure
 import uk.me.danielharman.kotlinspringbot.helpers.OperationResult
 import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.helpers.flatMap
+import uk.me.danielharman.kotlinspringbot.helpers.map
 import uk.me.danielharman.kotlinspringbot.properties.YoutubeDlProperties
 import java.io.IOException
 import java.net.URI
@@ -97,14 +99,10 @@ class YoutubeAudioService(
             if (cached != null) {
                 Success(toCachedAudio(metadata, cached, fromCache = true))
             } else {
-                when (val downloaded = download(metadata.id)) {
-                    is Failure -> downloaded
-
-                    is Success -> {
-                        markUsed(downloaded.value)
-                        evictCache(keep = downloaded.value)
-                        Success(toCachedAudio(metadata, downloaded.value, fromCache = false))
-                    }
+                download(metadata.id).map { downloaded ->
+                    markUsed(downloaded)
+                    evictCache(keep = downloaded)
+                    toCachedAudio(metadata, downloaded, fromCache = false)
                 }
             }
         }
@@ -155,10 +153,7 @@ class YoutubeAudioService(
                     target,
                 ),
             )
-        return when (result) {
-            is Failure -> result
-            is Success -> parseMetadata(result.value)
-        }
+        return result.flatMap { parseMetadata(it) }
     }
 
     private fun parseMetadata(stdout: String): OperationResult<VideoMetadata, String> {

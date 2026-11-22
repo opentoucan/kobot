@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
 import uk.me.danielharman.kotlinspringbot.events.DiscordMessageEvent
-import uk.me.danielharman.kotlinspringbot.helpers.Failure
-import uk.me.danielharman.kotlinspringbot.helpers.Success
+import uk.me.danielharman.kotlinspringbot.helpers.getOrElse
+import uk.me.danielharman.kotlinspringbot.helpers.map
 import uk.me.danielharman.kotlinspringbot.properties.KotlinBotProperties
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 
@@ -19,10 +19,10 @@ class ClearBotMessagesCommand(
 ) : Command("clear", "Clear command invocations and bot messages"),
     ISlashCommand {
     override fun execute(event: DiscordMessageEvent) {
-        val selfId =
-            when (val selfUser = discordService.getSelfUser()) {
-                is Failure -> ""
-                is Success -> selfUser.value.id
+        val selfId: String? =
+            discordService.getSelfUser().map { it.id }.getOrElse { reason ->
+                logger.warn("Could not get the bot's own user, only clearing other bot and command messages: $reason")
+                null
             }
 
         event.channel.history.retrievePast(HISTORY_LIMIT).complete().forEach { m ->
