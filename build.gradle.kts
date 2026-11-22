@@ -57,7 +57,7 @@ dependencies {
     implementation("club.minnced:jdave-native-linux-x86-64:0.1.8")
     implementation("club.minnced:jdave-native-win-x86-64:0.1.7")
 
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.1")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.23.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.10")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.10")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
