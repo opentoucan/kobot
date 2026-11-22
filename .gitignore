@@ -39,3 +39,4 @@ src/main/resources/public/*
 
 ### Local dev ###
 .env
+audio-cache/

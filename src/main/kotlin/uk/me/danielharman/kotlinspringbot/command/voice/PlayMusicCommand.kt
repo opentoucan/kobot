@@ -1,7 +1,13 @@
 package uk.me.danielharman.kotlinspringbot.command.voice
 
+import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.stereotype.Component
+import uk.me.danielharman.kotlinspringbot.audio.CachedAudioResultHandler
+import uk.me.danielharman.kotlinspringbot.audio.GuildMusicManager
 import uk.me.danielharman.kotlinspringbot.audio.NewAudioResultHandler
 import uk.me.danielharman.kotlinspringbot.command.interfaces.Command
 import uk.me.danielharman.kotlinspringbot.command.interfaces.ISlashCommand
@@ -12,24 +18,22 @@ import uk.me.danielharman.kotlinspringbot.helpers.Success
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter
 import uk.me.danielharman.kotlinspringbot.models.CommandParameter.ParamType
 import uk.me.danielharman.kotlinspringbot.provider.GuildMusicPlayerProvider
-import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 import uk.me.danielharman.kotlinspringbot.services.SpringGuildService
+import uk.me.danielharman.kotlinspringbot.services.YoutubeAudioService
 
 @Component
 class PlayMusicCommand(
     private val guildMusicPlayerProvider: GuildMusicPlayerProvider,
     private val springGuildService: SpringGuildService,
-    private val discordActionService: DiscordActionService,
+    private val youtubeAudioService: YoutubeAudioService,
 ) : Command(
     "play",
-    "Play audio via Youtube, Vimeo etc.",
-    listOf(CommandParameter(0, "url", ParamType.Word, "Url to play music from")),
+    "Play YouTube (url or search terms), Vimeo, SoundCloud etc. Pauses or resumes with no input",
+    listOf(CommandParameter(0, "query", ParamType.String, "YouTube search terms, or a url to play")),
 ),
     ISlashCommand {
 
     override fun execute(event: DiscordMessageEvent) {
-        val voiceChannel: VoiceChannel?
-
         val guild = event.guild
 
         if (guild == null) {
@@ -37,59 +41,85 @@ class PlayMusicCommand(
             return
         }
 
-        val paramValue = event.getParamValue(this.commandParameters[0])
-        val url = paramValue.asString()
+        val paramValue = event.getParamValue(commandParameters[0])
+        val query = paramValue.asString()
 
-        if (url == null || paramValue.error) {
+        if (query.isNullOrBlank() || paramValue.error) {
             val player = guildMusicPlayerProvider.getGuildAudioPlayer(guild).player
             player.isPaused = !player.isPaused
-
-            val message = if (player.isPaused) "Paused" else "Playing"
-            event.reply(message)
+            event.reply(if (player.isPaused) "Paused" else "Playing")
             return
         }
 
-        val member = guild.retrieveMember(event.author).complete()
-
-        if (member == null) {
-            event.reply("Can't find member!!!!")
-            return
-        }
-
-        val voiceState = member.voiceState
-
-        if (voiceState == null) {
-            event.reply("Can't find member voicestate! Are you in a channel?")
-            return
-        }
-
-        voiceChannel = voiceState.channel?.asVoiceChannel()
+        val voiceChannel =
+            guild
+                .retrieveMember(event.author)
+                .complete()
+                ?.voiceState
+                ?.channel
+                ?.takeIf { it.type == ChannelType.VOICE }
+                ?.asVoiceChannel()
 
         if (voiceChannel == null) {
-            event.reply("Can't find voice channel! Are you in a channel?")
+            event.reply(Embeds.createErrorEmbed("You need to be in a voice channel"))
             return
         }
-        when (val botVoiceChannel = discordActionService.getBotVoiceChannel(guild.id)) {
-            is Success -> {
-                logger.info("Bot's voice channel: " + botVoiceChannel.value.id)
-                guild.audioManager.openAudioConnection(botVoiceChannel.value)
+
+        val musicManager = guildMusicPlayerProvider.getGuildAudioPlayer(guild)
+        val handler = NewAudioResultHandler(voiceChannel, musicManager, event, springGuildService, guild)
+
+        if (youtubeAudioService.isYoutubeQuery(query)) {
+            playFromYoutube(query, event, guild, voiceChannel, musicManager, handler)
+        } else {
+            // Other sites are streamed by lavaplayer
+            if (joinVoiceChannel(event, guild, voiceChannel)) {
+                guildMusicPlayerProvider.playerManager.loadItemOrdered(musicManager, query.trim(), handler)
+            }
+        }
+    }
+
+    private fun playFromYoutube(
+        query: String,
+        event: DiscordMessageEvent,
+        guild: Guild,
+        voiceChannel: VoiceChannel,
+        musicManager: GuildMusicManager,
+        handler: AudioLoadResultHandler,
+    ) {
+        val audio =
+            when (val result = youtubeAudioService.fetchAudio(query)) {
+                is Failure -> {
+                    event.reply(Embeds.createErrorEmbed("Could not play: ${result.reason}"))
+                    return
+                }
+
+                is Success -> result.value
             }
 
-            is Failure<*> -> logger.info("Not in voice channel yet")
-        }
+        if (!joinVoiceChannel(event, guild, voiceChannel)) return
 
-        if (voiceChannel != guild.audioManager.connectedChannel) {
-            logger.info("My voice channel: " + voiceChannel.id)
-            guild.audioManager.closeAudioConnection()
-            guild.audioManager.openAudioConnection(voiceChannel)
-        }
-
-        logger.info("Connected voice channel from manager: " + guild.audioManager.connectedChannel?.id)
-        val musicManager = guildMusicPlayerProvider.getGuildAudioPlayer(voiceChannel.guild)
+        logger.info("Playing ${audio.videoId} from ${if (audio.fromCache) "cache" else "fresh download"}")
         guildMusicPlayerProvider.playerManager.loadItemOrdered(
             musicManager,
-            url,
-            NewAudioResultHandler(voiceChannel, musicManager, event, springGuildService, guild),
+            audio.file.toString(),
+            CachedAudioResultHandler(audio, handler),
         )
+    }
+
+    private fun joinVoiceChannel(
+        event: DiscordMessageEvent,
+        guild: Guild,
+        voiceChannel: VoiceChannel,
+    ): Boolean {
+        if (guild.audioManager.connectedChannel == voiceChannel) return true
+
+        return try {
+            guild.audioManager.openAudioConnection(voiceChannel)
+            true
+        } catch (e: InsufficientPermissionException) {
+            logger.error("Bot encountered an exception when attempting to join a voice channel ${e.message}")
+            event.reply(Embeds.createErrorEmbed("I don't have permission to join ${voiceChannel.name}"))
+            false
+        }
     }
 }
