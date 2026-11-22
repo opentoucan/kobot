@@ -5,8 +5,10 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
-import uk.me.danielharman.kotlinspringbot.helpers.Failure
-import uk.me.danielharman.kotlinspringbot.helpers.Success
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import uk.me.danielharman.kotlinspringbot.helpers.onFailure
+import uk.me.danielharman.kotlinspringbot.helpers.onSuccess
 import uk.me.danielharman.kotlinspringbot.services.DiscordActionService
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
@@ -16,6 +18,7 @@ class TrackScheduler(
     val guildId: String,
     val discordService: DiscordActionService,
 ) : AudioEventAdapter() {
+    private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     var queue: BlockingQueue<Pair<AudioTrack, String>> = LinkedBlockingQueue()
 
@@ -38,14 +41,14 @@ class TrackScheduler(
             return false
         }
 
-        when (val guild = discordService.getGuild(guildId)) {
-            is Success -> {
-                val channel = guild.value.getTextChannelById(trackMessageChannelPair.second)
+        discordService
+            .getGuild(guildId)
+            .onSuccess { guild ->
+                val channel = guild.getTextChannelById(trackMessageChannelPair.second)
                 channel?.sendMessage("Now playing ${trackMessageChannelPair.first.info.title}")?.queue()
+            }.onFailure { reason ->
+                logger.warn("Could not announce next track in guild $guildId: $reason")
             }
-
-            is Failure -> {}
-        }
         player.startTrack(trackMessageChannelPair.first, false)
         return true
     }
