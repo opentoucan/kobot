@@ -63,7 +63,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
     implementation("io.ktor:ktor-client-cio:3.4.1")
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
-    implementation("org.apache.commons:commons-lang3:3.20.0")
+    implementation("org.apache.commons:commons-lang3:3.22.0")
     implementation("commons-io:commons-io:2.21.0")
     testImplementation("org.springframework.boot:spring-boot-testcontainers:4.0.3")
     testImplementation("org.testcontainers:testcontainers-mongodb:2.0.3")
