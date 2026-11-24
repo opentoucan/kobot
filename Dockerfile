@@ -11,7 +11,7 @@ FROM denoland/deno:bin-${DENO_VERSION} AS deno
 FROM eclipse-temurin:25 AS yt-dlp
 ARG TARGETARCH
 # renovate: datasource=github-releases depName=yt-dlp/yt-dlp
-ARG YT_DLP_VERSION=2026.10.26
+ARG YT_DLP_VERSION=2026.11.23
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl ca-certificates \
     && case "${TARGETARCH}" in \
