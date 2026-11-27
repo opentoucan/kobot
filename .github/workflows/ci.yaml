@@ -29,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - name: Setup Homebrew
-        uses: Homebrew/actions/setup-homebrew@61b401267256bb9c047d6d1481b176d5772a0ba7 # main
+        uses: Homebrew/actions/setup-homebrew@b4c226ae32acab42c7c2c0745ad224a1e9958022 # main
 
       - name: Setup Workflow Tools
         run: brew install ktlint detekt
